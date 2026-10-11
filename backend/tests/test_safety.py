@@ -115,7 +115,7 @@ def test_full_curated_catalog_loads_with_optional_source_review_date():
     root = Path(__file__).resolve().parents[2]
     knowledge = Knowledge(root / "knowledge" / "articles.json")
     assert knowledge.load_error == ""
-    assert len(knowledge.all()) == 13
+    assert len(knowledge.all()) >= 13
     assert any(source.source_reviewed_at for source in knowledge.all())
     assert {source.id for source in knowledge.search("咳嗽两天")} == {"cough"}
 

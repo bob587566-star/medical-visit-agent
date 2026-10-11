@@ -2,37 +2,20 @@ from __future__ import annotations
 
 import time
 import re
-from dataclasses import dataclass
+from datetime import datetime, timezone
+from dataclasses import dataclass, field
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
 from .knowledge import Knowledge
 from .model import ModelService, minimal_symptom_payload
+from .planning import FIELD_LABELS, FOLLOWUP, collection_for, preparation_plan, suggest_candidates
 from .safety import check_urgent, safe_assistant_output
-from .schemas import ChecklistItem, ExtractedDetails, Intake, Risk, Source, Summary, TraceStep, Visit
+from .schemas import ChecklistItem, CollectionState, ExtractedDetails, Intake, IntakeCandidate, Observation, PreparationPlan, Risk, Source, Summary, TraceStep, Visit
 from .storage import now
 
 
-FIELD_LABELS = {
-    "chief_complaint": "主要不适／就诊原因",
-    "onset": "开始时间与变化",
-    "age_group": "年龄阶段",
-    "severity": "本人填报的程度",
-    "medications": "目前使用的药物（本人自述）",
-    "allergies": "过敏情况（本人自述）",
-    "medical_history": "既往情况（本人自述）",
-    "notes": "其他补充（本人自述）",
-}
-FOLLOWUP = {
-    "chief_complaint": "最想向医生说明的不适是什么？",
-    "onset": "不适从什么时候开始，有什么变化？",
-    "age_group": "就诊者属于哪个年龄阶段？",
-    "severity": "你自己感觉不适程度是轻、中还是重？",
-    "medications": "目前使用的药物或补充剂是否需要向医生核对？",
-    "allergies": "有没有需要告诉医生的过敏情况？不知道也可以写不知道。",
-    "medical_history": "有没有与本次就诊相关的既往情况？",
-}
 CHECKLIST = [
     ("details", "记录主要不适、开始时间、变化和想问医生的问题"),
     ("medications", "整理目前使用的药物或补充剂资料，供医生核对"),
@@ -54,11 +37,25 @@ class DetailsOutput(BaseModel):
     missing: list[str]
     extracted: ExtractedDetails | None = None
     mode: Literal["local", "model_assisted", "local_fallback"] = "local"
+    observations: list[Observation] = []
 
 
 class ChecklistOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     items: list[ChecklistItem]
+
+
+class CandidatesOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    candidates: list[IntakeCandidate]
+
+
+def ordered_observations(observations: list[Observation]) -> list[Observation]:
+    # Normalize only for ordering; the displayed self-report time remains exact.
+    def timestamp(item):
+        parsed = datetime.fromisoformat(item.recorded_at.replace("Z", "+00:00"))
+        return (parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)).timestamp()
+    return sorted(observations, key=timestamp)
 
 
 @dataclass
@@ -72,6 +69,8 @@ class AgentResult:
     duration_ms: int
     summary: Summary | None
     checklist: list[ChecklistItem]
+    intake_candidates: list[IntakeCandidate] = field(default_factory=list)
+    collection: CollectionState = field(default_factory=CollectionState)
 
 
 class Executor:
@@ -82,11 +81,14 @@ class Executor:
         "collect_visit_details": DetailsOutput,
         "build_visit_checklist": ChecklistOutput,
         "draft_visit_summary": Summary,
+        "suggest_intake_updates": CandidatesOutput,
+        "build_preparation_plan": PreparationPlan,
     }
 
-    def __init__(self, knowledge: Knowledge, model: ModelService):
+    def __init__(self, knowledge: Knowledge, model: ModelService, retriever=None):
         self.knowledge = knowledge
         self.model = model
+        self.retriever = retriever
 
     async def execute(self, tool: str, **kwargs):
         if tool not in self.ALLOWED:
@@ -100,7 +102,18 @@ class Executor:
         return check_urgent(text, intake)
 
     async def tool_search_health_knowledge(self, query: str):
-        return SearchOutput(sources=self.knowledge.search(query))
+        if self.retriever is None:
+            sources = self.knowledge.search(query)
+        else:
+            result = await self.retriever.search(query)
+            sources = result if isinstance(result, list) else result.sources
+        return SearchOutput(sources=sources)
+
+    async def tool_suggest_intake_updates(self, visit: Visit, text: str):
+        return CandidatesOutput(candidates=suggest_candidates(visit, text))
+
+    async def tool_build_preparation_plan(self, visit: Visit):
+        return preparation_plan(visit)
 
     async def tool_collect_visit_details(self, visit: Visit, text: str, sources: list[Source], use_model: bool):
         values = visit.intake.model_dump()
@@ -115,7 +128,7 @@ class Executor:
             payload = minimal_symptom_payload(text or visit.intake.chief_complaint, sources, self.knowledge) if sources else ""
             extracted = await self.model.extract(payload) if payload else None
             mode = "model_assisted" if extracted else "local_fallback"
-        return DetailsOutput(intake=visit.intake, user_reports=reports, missing=missing, extracted=extracted, mode=mode)
+        return DetailsOutput(intake=visit.intake, user_reports=reports, missing=missing, extracted=extracted, mode=mode, observations=visit.observations)
 
     async def tool_build_visit_checklist(self, visit: Visit, risk: Risk):
         existing = {item.id: item.done for item in visit.checklist}
@@ -135,6 +148,13 @@ class Executor:
         lines.extend(f"• {report}" for report in details.user_reports)
         if not details.user_reports:
             lines.append("未填写")
+        lines.extend(["", "本人观察时间线（原始记录，不作医学解读）："])
+        for observation in ordered_observations(details.observations):
+            labels = {"symptom": "症状观察", "temperature": "体温记录", "blood_pressure": "血压记录", "blood_glucose": "血糖记录", "note": "补充记录"}
+            suffix = "；备注：" + observation.notes if observation.notes else ""
+            lines.append(f"• {observation.recorded_at} {labels[observation.kind]}：{observation.value}{(' ' + observation.unit) if observation.unit else ''}{suffix}")
+        if not details.observations:
+            lines.append("尚无本人观察记录")
         lines.extend(["", "就诊时待核对：缺失信息、已有检查资料，以及本人希望咨询的问题。"])
         if risk.level == "emergency":
             lines.extend(["", "当前规则提示：" + risk.message])
@@ -144,16 +164,22 @@ class Executor:
         start = time.monotonic()
         trace: list[TraceStep] = []
         risk = await self.execute("check_urgent_signs", text=text, intake=visit.intake)
-        if purpose == "summary" and visit.risk.level == "emergency":
+        # A later greeting or unrelated short reply does not undo a prior
+        # urgent warning in this visit. Keep the warning ahead of all I/O.
+        if visit.risk.level == "emergency":
             risk = visit.risk
         trace.append(TraceStep(tool="check_urgent_signs", label="检查当前警示征象", status="done"))
+        collection = collection_for(visit.intake, risk)
         if risk.level == "emergency" and purpose == "message":
             # This branch must finish before any external request or model wait.
-            return AgentResult(risk.message, risk, self.knowledge.by_ids(risk.source_ids), trace, [], "local_emergency", int((time.monotonic() - start) * 1000), None, visit.checklist)
+            return AgentResult(risk.message, risk, self.knowledge.by_ids(risk.source_ids), trace, [], "local_emergency", int((time.monotonic() - start) * 1000), None, visit.checklist, collection=collection)
 
         if purpose == "message" and re.fullmatch(r"(?:你好|您好|嗨|hello|hi|在吗|谢谢|感谢)[\s！!。,.，？?]*", text.strip(), re.I):
             content = "你好，我是知禾。可以帮你整理就诊前想说的症状、查阅有来源的健康资料，并做一份给医生看的自述摘要。你可以先说哪里不舒服、从什么时候开始。\n\n我不提供诊断或用药方案；如有明显紧急情况，请立即联系当地急救。"
-            return AgentResult(content, risk, [], trace, ["就诊前要准备什么？", "帮我整理给医生看的摘要"], "local", int((time.monotonic() - start) * 1000), None, visit.checklist)
+            return AgentResult(content, risk, [], trace, [collection.next_question], "local", int((time.monotonic() - start) * 1000), None, visit.checklist, collection=collection)
+
+        candidates = await self.execute("suggest_intake_updates", visit=visit, text=text)
+        trace.append(TraceStep(tool="suggest_intake_updates", label="寻找需本人确认的表单片段", status="done"))
 
         treatment_request = purpose == "message" and bool(re.search(
             r"(?:什么药|哪种药|药.*(?:剂量|多少|怎么吃)|开(?:个|点|一张)?(?:药|处方)|诊断|确诊|是什么病|得了什么|能不能停药)", text))
@@ -162,6 +188,13 @@ class Executor:
             use_model = False
             trace.append(TraceStep(tool="search_health_knowledge", label="诊断与用药请求不进入自动回答", status="skipped"))
 
+        elif purpose == "message" and candidates.candidates and not any(item.field == "chief_complaint" for item in candidates.candidates) and not re.search(r"[?？]|怎么|为什么|如何|怎么办", text):
+            # A short answer to the active collection question is workflow
+            # input, not a new health question. Do not search unrelated sources.
+            sources = []
+            use_model = False
+            trace.append(TraceStep(tool="search_health_knowledge", label="当前回答用于信息采集，无需知识检索", status="skipped"))
+
         elif risk.level == "emergency":
             sources = self.knowledge.by_ids(risk.source_ids)
             use_model = False
@@ -169,25 +202,29 @@ class Executor:
         else:
             found = await self.execute("search_health_knowledge", query=text or visit.intake.chief_complaint or "就诊准备")
             sources = found.sources
-            trace.append(TraceStep(tool="search_health_knowledge", label="按人工主题标签检索权威资料", status="done"))
+            trace.append(TraceStep(tool="search_health_knowledge", label="在本机检索有来源的健康教育资料" if self.retriever is not None else "按人工主题标签检索权威资料", status="done"))
         details = await self.execute("collect_visit_details", visit=visit, text=text, sources=sources, use_model=use_model)
         trace.append(TraceStep(tool="collect_visit_details", label="整理自述并识别待补充信息", status="fallback" if details.mode == "local_fallback" else "done"))
         checklist = await self.execute("build_visit_checklist", visit=visit, risk=risk)
         trace.append(TraceStep(tool="build_visit_checklist", label="建立就诊准备清单", status="done"))
         summary = await self.execute("draft_visit_summary", details=details, risk=risk)
         trace.append(TraceStep(tool="draft_visit_summary", label="依据原始自述草拟就诊摘要", status="done"))
-        questions = [FOLLOWUP[key] for key in details.missing if key in FOLLOWUP][:3]
+        questions = [collection.next_question] if collection.missing_fields and collection.stage != "urgent" else []
         if treatment_request:
             paragraphs = ["我不能替你诊断、开药、决定剂量或停药。请由医生或药师结合本人情况核对；我可以帮你整理症状、已有用药和需要问的问题，方便就诊时说明。"]
         elif sources:
             paragraphs = ["以下内容仅用于健康教育与就诊准备："]
             paragraphs.extend(source.content for source in sources)
             paragraphs.append("资料：" + "；".join(f"{source.title}（{source.publisher}）" for source in sources))
+        elif candidates.candidates:
+            paragraphs = ["已从你的原话整理出待确认信息。请在“待确认信息”中核对后写入表单，确认后我们继续下一项。确认前不会写入表单，也不作为已核实的病情。"]
         else:
             paragraphs = ["当前知识库没有与你的问题对应的已核对资料，无法据此回答这一健康问题。可以继续整理不适、发生时间和想问医生的问题，并向专业医务人员确认。"]
         paragraphs.append(risk.message)
         if questions:
-            paragraphs.append("就诊前还可以补充：" + "；".join(questions))
+            paragraphs.append("下一步只补充一项：" + questions[0])
+        if candidates.candidates and sources:
+            paragraphs.append("这条自述中的表单片段已列为待确认信息；请本人核对，确认后才写入表单。")
         if details.mode == "model_assisted":
             # Validated fragments affect only a request to confirm, never a claim.
             pieces = details.extracted.symptoms + ([details.extracted.onset] if details.extracted.onset else [])
@@ -201,7 +238,7 @@ class Executor:
             sources = []
             content = "本次资料或模型片段未通过就诊准备输出校验。请向专业医务人员确认。\n\n" + risk.message
             details.mode = "local_fallback"
-        return AgentResult(content, risk, sources, trace, questions, details.mode, int((time.monotonic() - start) * 1000), summary, checklist.items)
+        return AgentResult(content, risk, sources, trace, questions, details.mode, int((time.monotonic() - start) * 1000), summary, checklist.items, intake_candidates=candidates.candidates, collection=collection)
 
 
 def export_text(visit: Visit) -> str:
@@ -216,9 +253,19 @@ def export_text(visit: Visit) -> str:
         reports = [message.content for message in visit.messages if message.role == "user"]
         if reports:
             lines.extend(["", "原始对话自述：", *reports])
+        if visit.observations:
+            lines.extend(["", "本人观察时间线（不作医学解读）："])
+            for item in ordered_observations(visit.observations):
+                lines.append(f"• {item.recorded_at} {item.kind}：{item.value} {item.unit}；{item.notes}")
     lines.extend(["", "就诊准备清单："])
     lines.extend(("[x] " if item.done else "[ ] ") + item.text for item in visit.checklist)
     if not visit.checklist:
         lines.append("尚未生成")
+    if visit.plan:
+        lines.extend(["", "就诊沟通与准备计划：", visit.plan.goal])
+        lines.extend(f"• {step.title}：{step.detail}" for step in visit.plan.steps)
+        lines.extend(["", "准备向医生提问："])
+        lines.extend("• " + question for question in visit.plan.questions)
+        lines.append(visit.plan.notice)
     lines.extend(["", "紧急提醒规则：" + visit.risk.message, "", "本摘要不能替代专业评估，不提供诊断或处方。"])
     return "\n".join(lines) + "\n"

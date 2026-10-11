@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Message } from '../types'
+import type { IntakeCandidate, Message } from '../types'
 import { replyText } from '../helpers'
 import LeafMark from './LeafMark.vue'
 import SourceCard from './SourceCard.vue'
-const props = defineProps<{ message: Message; disabled?: boolean }>()
-defineEmits<{ ask: [question: string] }>()
+import CandidateCard from './CandidateCard.vue'
+const props = defineProps<{ message: Message; disabled?: boolean; pendingCandidateIds?: string[] }>()
+defineEmits<{ ask: [question: string]; confirmCandidate: [candidate: IntakeCandidate] }>()
 const modeLabel = computed(() => {
   const mode = props.message.mode
   if (['model', 'deepseek', 'model_assisted'].includes(mode || '')) return 'DeepSeek 辅助'
@@ -28,6 +29,7 @@ function statusLabel(status: string): string {
     <div class="message-body">
       <div class="message-label"><span>{{ message.role === 'user' ? '你的自述' : '知禾' }}</span><span v-if="message.role === 'assistant'" class="message-mode">{{ modeLabel }}</span></div>
       <div class="message-content">{{ message.role === 'assistant' ? replyText(message) : message.content }}</div>
+      <div v-if="message.role === 'assistant' && message.intake_candidates?.length" class="message-candidates"><CandidateCard v-for="candidate in message.intake_candidates" :key="candidate.id" :candidate="candidate" :disabled="disabled" :pending="pendingCandidateIds === undefined || pendingCandidateIds.includes(candidate.id)" @confirm="$emit('confirmCandidate', $event)" /></div>
       <div v-if="message.role === 'assistant' && message.sources?.length" class="message-sources"><p class="small-heading">本次参考资料</p><SourceCard v-for="(source, index) in message.sources" :key="source.id || index" :source="source" :index="index" /></div>
       <details v-if="message.role === 'assistant' && message.trace?.length" class="execution-details">
         <summary>查看工具执行过程 <span>{{ message.trace.length }} 项</span></summary>

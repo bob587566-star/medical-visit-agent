@@ -121,12 +121,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2686,
+                  "duration": 4991,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-11T21:08:50.693Z",
+                  "startTime": "2026-10-11T21:31:38.166Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -155,12 +155,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 695,
+                  "duration": 726,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-11T21:08:53.583Z",
+                  "startTime": "2026-10-11T21:31:43.365Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -189,12 +189,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 559,
+                  "duration": 621,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-11T21:08:54.288Z",
+                  "startTime": "2026-10-11T21:31:44.101Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -208,7 +208,7 @@
           "column": 1
         },
         {
-          "title": "390px 手机：三页签与长内容无横向溢出",
+          "title": "390px 手机：六区导航与长内容无横向溢出",
           "ok": true,
           "tags": [],
           "tests": [
@@ -223,12 +223,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 997,
+                  "duration": 1516,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-11T21:08:54.855Z",
+                  "startTime": "2026-10-11T21:31:44.730Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -236,13 +236,13 @@
               "status": "expected"
             }
           ],
-          "id": "7303f99df23bbb402c10-99b44a546e58a40914e3",
+          "id": "7303f99df23bbb402c10-0ec4398ac1579f621265",
           "file": "visit-preparation.spec.ts",
           "line": 163,
           "column": 3
         },
         {
-          "title": "320px 手机：三页签与长内容无横向溢出",
+          "title": "320px 手机：六区导航与长内容无横向溢出",
           "ok": true,
           "tags": [],
           "tests": [
@@ -257,12 +257,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 933,
+                  "duration": 1522,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-11T21:08:55.859Z",
+                  "startTime": "2026-10-11T21:31:46.260Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -270,19 +270,87 @@
               "status": "expected"
             }
           ],
-          "id": "7303f99df23bbb402c10-d1cc6f2159ab9891cad5",
+          "id": "7303f99df23bbb402c10-d6b5633be2c2d64f9e0a",
           "file": "visit-preparation.spec.ts",
           "line": 163,
           "column": 3
+        },
+        {
+          "title": "V2工作台：真实统计、标题、时间线、资料检索收藏详情、准备计划",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1633,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T21:31:47.790Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7303f99df23bbb402c10-72645d3a41edda9e1f17",
+          "file": "visit-preparation.spec.ts",
+          "line": 208,
+          "column": 1
+        },
+        {
+          "title": "V2候选确认：不自动填表、显式确认、保留其它草稿和历史状态",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 869,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T21:31:49.431Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7303f99df23bbb402c10-86e7f73a6d72f5273e30",
+          "file": "visit-preparation.spec.ts",
+          "line": 268,
+          "column": 1
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-11T21:08:50.401Z",
-    "duration": 6630.839,
-    "expected": 5,
+    "startTime": "2026-10-11T21:31:37.825Z",
+    "duration": 12748.139,
+    "expected": 7,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

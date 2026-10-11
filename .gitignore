@@ -15,6 +15,7 @@ frontend/dist/
 *.sqlite*
 artifacts/*.png
 artifacts/*.log
+artifacts/.pytest-retrieval-*/
 artifacts/browser-*.json
 !artifacts/browser-results.json
 .DS_Store

@@ -2,12 +2,21 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { ApiError, request, setCsrfToken } from './api'
 import { copyIntake, emptyIntake, modelChoice, replyText, shortDate, visitHasIntake } from './helpers'
-import { intakeFields, type Bootstrap, type ChecklistItem, type Intake, type MessageResult, type SummaryResult, type Visit } from './types'
+import { intakeFields, intakeLabels, type Bootstrap, type ChecklistItem, type Intake, type IntakeCandidate, type MessageResult, type ObservationInput, type PreparationPlan, type Source, type SummaryResult, type Visit, type Workspace } from './types'
 import LeafMark from './components/LeafMark.vue'
 import MessageBubble from './components/MessageBubble.vue'
+import OverviewPanel from './components/OverviewPanel.vue'
+import TimelinePanel from './components/TimelinePanel.vue'
+import LibraryPanel from './components/LibraryPanel.vue'
+import PlanPanel from './components/PlanPanel.vue'
 
-type Tab = 'prepare' | 'chat' | 'summary'
-const tab = ref<Tab>('chat')
+type Tab = 'overview' | 'prepare' | 'chat' | 'timeline' | 'library' | 'summary'
+const tab = ref<Tab>('overview')
+const navigation: { id: Tab; label: string; short: string; icon: string }[] = [
+  { id: 'overview', label: '工作台总览', short: '总览', icon: '⊞' }, { id: 'prepare', label: '信息准备', short: '准备', icon: '▤' },
+  { id: 'chat', label: '健康问答', short: '问答', icon: '◌' }, { id: 'timeline', label: '变化时间线', short: '记录', icon: '◷' },
+  { id: 'library', label: '健康资料库', short: '资料', icon: '▧' }, { id: 'summary', label: '就诊摘要', short: '摘要', icon: '✧' },
+]
 const visits = ref<Visit[]>([])
 const currentVisit = ref<Visit | null>(null)
 const draft = reactive<Intake>(emptyIntake())
@@ -21,12 +30,20 @@ const messageInput = ref('')
 const modelAvailable = ref(false)
 const useModel = ref(false)
 const modelNotice = ref('默认关闭。开启后，脱敏后的有限症状词、时间和程度片段会发送给 DeepSeek；不发送身份、表单、访客 Cookie 或完整对话。')
-const draftLocked = computed(() => ['bootstrap', 'create', 'select', 'delete', 'clear'].includes(busy.value))
+const draftLocked = computed(() => ['bootstrap', 'create', 'select', 'delete', 'clear', 'candidate'].includes(busy.value))
+const workspaceData = ref<Workspace | null>(null)
+const workspaceError = ref('')
+const workspaceLoading = ref(false)
+const knowledgeSources = ref<Source[]>([])
+const libraryCategory = ref('')
+const recordTitleDraft = ref('')
+const pendingCandidateIds = computed(() => (currentVisit.value?.intake_candidates || []).map(candidate => candidate.id))
+let workspaceSequence = 0
 const conversation = ref<HTMLElement | null>(null)
 const composer = ref<HTMLTextAreaElement | null>(null)
 const dialog = ref<HTMLDialogElement | null>(null)
-const modal = ref<{ kind: 'records' | 'delete' | 'clear'; visitId?: string } | null>(null)
-const completion = computed(() => intakeFields.filter(key => draft[key].trim() && draft[key] !== '未填写').length)
+const modal = ref<{ kind: 'records' | 'delete' | 'clear' | 'rename' | 'candidate'; visitId?: string; candidate?: IntakeCandidate } | null>(null)
+const completion = computed(() => intakeFields.filter(key => key !== 'notes' && draft[key].trim() && draft[key] !== '未填写').length)
 const messages = computed(() => currentVisit.value?.messages || [])
 const checklist = computed(() => currentVisit.value?.checklist || [])
 const checklistDone = computed(() => checklist.value.filter(item => item.done).length)
@@ -58,7 +75,7 @@ function applyVisit(visit: Visit, forceDraft = false): void {
 async function run(action: string, work: () => Promise<void>): Promise<void> {
   if (busy.value) return
   busy.value = action; error.value = ''; notice.value = ''
-  try { await work() }
+  try { await work(); if (initialized.value) void loadWorkspace() }
   catch (caught) { error.value = caught instanceof Error ? caught.message : '操作没有完成，请稍后重试。' }
   finally { busy.value = '' }
 }
@@ -82,8 +99,9 @@ async function bootstrap(): Promise<void> {
     if (data.privacy && typeof data.privacy === 'object' && 'model_notice' in data.privacy && typeof data.privacy.model_notice === 'string') modelNotice.value = `默认关闭。${data.privacy.model_notice}`
     useModel.value = false
     visits.value = Array.isArray(data.visits) ? data.visits : []
+    knowledgeSources.value = Array.isArray(data.sources) ? data.sources : []
     const visit = data.current_visit || await request<Visit>('/api/visits', 'POST', {})
-    applyVisit(visit, true); initialized.value = true
+    applyVisit(visit, true); initialized.value = true; void loadWorkspace()
   } catch (caught) { error.value = caught instanceof Error ? caught.message : '连接失败，请重试。' }
   finally { busy.value = '' }
 }
@@ -190,6 +208,59 @@ async function clearData(): Promise<void> {
     applyVisit(await request<Visit>('/api/visits', 'POST', {}), true); tab.value = 'prepare'; notice.value = '本人的历史资料已清空。已打开一份空白记录。'
   })
 }
+async function loadWorkspace(): Promise<void> {
+  if (!initialized.value) return
+  const sequence = ++workspaceSequence
+  workspaceLoading.value = true; workspaceError.value = ''
+  try {
+    const data = await request<Workspace>('/api/workspace')
+    if (sequence !== workspaceSequence) return
+    if (!data || typeof data.visits_count !== 'number') throw new ApiError('工作台统计暂未就绪。现有就诊记录仍可正常使用。')
+    workspaceData.value = data
+  } catch (caught) { if (sequence === workspaceSequence) workspaceError.value = caught instanceof Error ? caught.message : '工作台没有加载完成，请重试。' }
+  finally { if (sequence === workspaceSequence) workspaceLoading.value = false }
+}
+function openCategory(category: string): void { libraryCategory.value = category; tab.value = 'library' }
+function openRename(): void { recordTitleDraft.value = currentVisit.value?.title || ''; modal.value = { kind: 'rename' } }
+async function renameVisit(): Promise<void> {
+  const title = recordTitleDraft.value.trim()
+  if (!currentVisit.value || !title) return
+  await run('rename', async () => { applyVisit(await request<Visit>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/title`, 'PATCH', { title })); modal.value = null; notice.value = '记录标题已更新。' })
+}
+function reviewCandidate(candidate: IntakeCandidate): void {
+  if (!pendingCandidateIds.value.includes(candidate.id)) { error.value = '这项候选已处理或失效，请查看最新就诊信息。'; return }
+  modal.value = { kind: 'candidate', candidate }
+}
+async function confirmCandidate(): Promise<void> {
+  const candidate = modal.value?.candidate
+  if (!candidate || !currentVisit.value) return
+  const hadDraft = dirty.value
+  const sentRevision = revision.value
+  await run('candidate', async () => {
+    const updated = await request<Visit>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/candidates/${encodeURIComponent(candidate.id)}/confirm`, 'POST', {})
+    applyVisit(updated)
+    if (hadDraft && revision.value === sentRevision) { draft[candidate.field] = copyIntake(updated.intake)[candidate.field]; markDraft() }
+    modal.value = null
+    notice.value = hadDraft ? '这一项已确认。其余未保存草稿仍保留，请核对后保存就诊信息。' : '这一项已由你确认并写入就诊信息。'
+  })
+}
+async function createObservation(input: ObservationInput): Promise<void> {
+  if (!currentVisit.value) return
+  await run('observation', async () => { applyVisit(await request<Visit>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/observations`, 'POST', input)); notice.value = '本人记录已添加到时间线。数值未作医学解释。' })
+}
+async function deleteObservation(id: string): Promise<void> {
+  if (!currentVisit.value) return
+  await run('observation', async () => { applyVisit(await request<Visit>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/observations/${encodeURIComponent(id)}`, 'DELETE')); notice.value = '这条时间线记录已删除。' })
+}
+async function generatePlan(): Promise<void> {
+  if (!currentVisit.value) return
+  await run('plan', async () => {
+    await persistDraft()
+    const result = await request<{ plan: PreparationPlan; visit: Visit }>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/plan`, 'POST', {})
+    if (!result.plan || !result.visit) throw new ApiError('准备计划没有生成完整，请重试。')
+    await refreshVisit(result.visit); notice.value = '就诊沟通与准备计划已更新，请核对后使用。'
+  })
+}
 async function scrollConversation(): Promise<void> { await nextTick(); conversation.value?.scrollTo({ top: conversation.value.scrollHeight, behavior: 'smooth' }) }
 function focusComposer(): void { tab.value = 'chat'; nextTick(() => composer.value?.focus()) }
 function composerKey(event: KeyboardEvent): void { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); void sendMessage() } }
@@ -203,7 +274,7 @@ onMounted(bootstrap)
     <aside class="sidebar" aria-label="就诊记录与设置">
       <a class="brand" href="#main" aria-label="知禾，就诊准备"><span class="brand-symbol"><LeafMark /></span><span><strong>知禾</strong><small>就诊准备</small></span></a>
       <button class="new-visit" :disabled="!!busy || !initialized" @click="createVisit"><span aria-hidden="true">＋</span> 新的就诊准备</button>
-      <div class="sidebar-section-title"><span>我的就诊记录</span><span>{{ visits.length }}</span></div>
+      <nav class="sidebar-main-nav" aria-label="工作台主导航"><button v-for="item in navigation" :key="item.id" :class="{ selected: tab === item.id }" :aria-current="tab === item.id ? 'page' : undefined" @click="tab = item.id"><span aria-hidden="true">{{ item.icon }}</span>{{ item.label }}<i v-if="tab === item.id" aria-hidden="true"></i></button></nav><div class="sidebar-section-title"><span>我的就诊记录</span><span>{{ visits.length }}</span></div>
       <nav class="visit-list" aria-label="本人就诊记录">
         <div v-for="visit in visits" :key="visit.id" :class="['visit-item', { active: visit.id === currentVisit?.id }]">
           <button class="visit-select" :disabled="!!busy" :aria-current="visit.id === currentVisit?.id ? 'page' : undefined" @click="selectVisit(visit.id)"><span class="record-icon" aria-hidden="true">▤</span><span><strong>{{ visit.title || '新的就诊准备' }}</strong><small>{{ shortDate(visit.updated_at || visit.created_at) }} · {{ visit.summary ? '已有摘要' : visitHasIntake(visit) ? '信息已填写' : '待整理' }}</small></span></button>
@@ -230,9 +301,9 @@ onMounted(bootstrap)
 
         <div class="work-grid">
           <section class="main-panel" :aria-busy="!!busy">
-            <div class="panel-top"><nav class="desktop-tabs" aria-label="工作区"><button :class="{ selected: tab === 'prepare' }" :aria-current="tab === 'prepare' ? 'page' : undefined" @click="tab = 'prepare'"><span aria-hidden="true">▤</span> 信息准备</button><button :class="{ selected: tab === 'chat' }" :aria-current="tab === 'chat' ? 'page' : undefined" @click="tab = 'chat'"><span aria-hidden="true">◌</span> 健康问答</button><button :class="{ selected: tab === 'summary' }" :aria-current="tab === 'summary' ? 'page' : undefined" @click="tab = 'summary'"><span aria-hidden="true">▧</span> 就诊摘要</button></nav><span class="record-indicator"><span aria-hidden="true"></span> 当前记录</span></div>
+            <div class="panel-top"><nav class="desktop-tabs" aria-label="工作区"><button v-for="item in navigation" :key="item.id" :data-tab="item.id" :class="{ selected: tab === item.id }" :aria-current="tab === item.id ? 'page' : undefined" @click="tab = item.id"><span aria-hidden="true">{{ item.icon }}</span>{{ item.label }}</button></nav></div>
 
-            <div v-if="tab === 'prepare'" class="prepare-panel">
+            <OverviewPanel v-if="tab === 'overview'" :visit="currentVisit" :workspace="workspaceData" :error="workspaceError" :loading="workspaceLoading" :sources="knowledgeSources" :completion="completion" :busy="!!busy" @navigate="tab = $event" @select="selectVisit" @category="openCategory" @refresh="loadWorkspace" @rename="openRename" /><TimelinePanel v-else-if="tab === 'timeline'" :observations="currentVisit?.observations || []" :busy="!!busy" :available="!!currentVisit" @create="createObservation" @delete="deleteObservation" /><LibraryPanel v-else-if="tab === 'library'" :initial-category="libraryCategory" :available="initialized" @changed="loadWorkspace" /><div v-else-if="tab === 'prepare'" class="prepare-panel">
               <div class="section-heading"><div><span class="step-caption">STEP 01 · 把感受写下来</span><h2>先从你知道的信息开始</h2><p>不确定的地方可以留空，医生会帮助你进一步确认。</p></div><button class="example-button" :disabled="!!busy || !currentVisit" @click="fillExample">填入虚构示例</button></div>
               <form class="intake-form" @submit.prevent="saveIntake">
                 <label class="field field-full"><span>主要不适 / 就诊原因</span><textarea v-model="draft.chief_complaint" rows="3" maxlength="2000" placeholder="例如：哪里不舒服？最希望医生帮你解决什么？" :disabled="!currentVisit || draftLocked" @input="markDraft"></textarea><small>用自己的话描述即可，不必先判断是什么疾病。</small></label>
@@ -248,22 +319,22 @@ onMounted(bootstrap)
             </div>
 
             <div v-else-if="tab === 'chat'" class="chat-panel">
-              <div class="intake-strip"><span class="strip-icon" aria-hidden="true">▤</span><div><strong>先了解你，再一起准备</strong><p>{{ completion ? `已填写 ${completion} 项就诊信息${dirty ? ' · 尚有修改未保存' : ''}` : '填写主要不适和开始时间，沟通会更清楚。' }}</p></div><button :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ completion ? '查看信息' : '填写信息' }} <span aria-hidden="true">→</span></button></div>
+              <div class="intake-strip"><span class="strip-icon" aria-hidden="true">▤</span><div><strong>先了解你，再一起准备</strong><p>{{ completion ? `已填写 ${completion} 项核心就诊信息${dirty ? ' · 尚有修改未保存' : ''}` : '填写主要不适和开始时间，沟通会更清楚。' }}</p></div><button :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ completion ? '查看信息' : '填写信息' }} <span aria-hidden="true">→</span></button></div>
               <div ref="conversation" class="conversation" aria-label="健康问答记录" tabindex="0">
                 <div v-if="!messages.length" class="welcome"><div class="welcome-mark"><LeafMark /></div><span class="welcome-overline">你好，我是知禾</span><h2>一起准备一次<br />更清楚的就诊沟通。</h2><p>你可以描述自己的不适，也可以问我就诊前要准备什么。<br class="desktop-break" />我会先核查紧急提醒，再查询有来源的健康资料。</p><div class="starter-grid"><button v-for="starter in starters" :key="starter.title" :disabled="!!busy || !currentVisit" @click="sendMessage(starter.text)"><span class="starter-icon" aria-hidden="true">{{ starter.icon }}</span><strong>{{ starter.title }}</strong><small>{{ starter.subtitle }}</small><span class="starter-arrow" aria-hidden="true">↗</span></button></div><p class="welcome-footnote">资料未覆盖的问题，会明确告诉你。儿童、孕产期等情况请向专业人员确认。</p></div>
-                <MessageBubble v-for="message in messages" :key="message.id" :message="message" :disabled="!!busy" @ask="sendMessage" />
+                <MessageBubble v-for="message in messages" :key="message.id" :message="message" :disabled="!!busy" :pending-candidate-ids="pendingCandidateIds" @ask="sendMessage" @confirm-candidate="reviewCandidate" />
                 <div v-if="busy === 'send'" class="working-message" role="status"><LeafMark /><span class="working-dots" aria-hidden="true"><i></i><i></i><i></i></span><p>正在核查紧急提醒、查询资料与整理信息…</p></div>
               </div>
               <form class="composer" @submit.prevent="sendMessage()"><label for="question" class="sr-only">描述不适或提出健康问题</label><textarea id="question" ref="composer" v-model="messageInput" rows="2" maxlength="4000" :disabled="!currentVisit" placeholder="描述你的不适，或问问就诊前需要准备什么…" @keydown="composerKey"></textarea><div class="composer-bottom"><span><span class="composer-lock" aria-hidden="true">◇</span> {{ useModel && modelAvailable ? '已选择 DeepSeek 辅助' : '默认在本机处理' }}<span class="enter-tip"> · Enter 发送，Shift + Enter 换行</span></span><button class="send-button" type="submit" :disabled="!!busy || !currentVisit || !messageInput.trim()" aria-label="发送问题"><span aria-hidden="true">↑</span></button></div></form>
               <p class="composer-note">避免填写姓名、电话、证件号或地址。回答仅用于健康教育与就诊准备。</p>
             </div>
 
-            <div v-else class="summary-panel"><div class="section-heading"><div><span class="step-caption">STEP 03 · 带着清楚的信息出发</span><h2>给医生看的自述摘要</h2><p>忠实整理你的填写和自述，请核对后使用。</p></div><span class="self-report-tag">本人自述</span></div><div v-if="summary" class="summary-document"><div class="document-heading"><LeafMark /><span>知禾 · 就诊准备记录</span><small v-if="currentVisit?.summary?.generated_at">{{ shortDate(currentVisit.summary.generated_at) }}</small></div><div class="summary-text">{{ summary }}</div><div class="document-footer">来源：本人填写与自述 · 未填写信息不作推测<br />本摘要不构成诊断、处方或医疗建议。</div></div><div v-else class="summary-empty"><div class="empty-document" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div><h3>让医生更快了解你的情况</h3><p>把已填写的信息和对话中的自述整理成一页摘要。<br />不确定或未填写的内容会明确标记。</p><button class="primary-button" :disabled="!!busy || !currentVisit" @click="generateSummary">{{ busy === 'summary' ? '正在生成…' : '生成就诊摘要' }} <span aria-hidden="true">✧</span></button></div><div class="summary-actions"><button v-if="summary" class="primary-button" :disabled="!!busy || !currentVisit" @click="generateSummary">{{ busy === 'summary' ? '正在整理…' : '重新生成摘要' }}</button><button class="secondary-button" :disabled="!!busy || !summary" @click="copySummary">复制摘要</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="downloadText">下载 TXT</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="printSummary">打印</button></div><p class="summary-help">修改就诊信息后，可重新生成摘要。没有摘要时，下载或打印会包含当前已填写资料。</p></div>
+            <div v-else class="summary-panel"><div class="section-heading"><div><span class="step-caption">STEP 03 · 带着清楚的信息出发</span><h2>给医生看的自述摘要</h2><p>忠实整理你的填写和自述，请核对后使用。</p></div><span class="self-report-tag">本人自述</span></div><div v-if="summary" class="summary-document"><div class="document-heading"><LeafMark /><span>知禾 · 就诊准备记录</span><small v-if="currentVisit?.summary?.generated_at">{{ shortDate(currentVisit.summary.generated_at) }}</small></div><div class="summary-text">{{ summary }}</div><div class="document-footer">来源：本人填写与自述 · 未填写信息不作推测<br />本摘要不构成诊断、处方或医疗建议。</div></div><div v-else class="summary-empty"><div class="empty-document" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div><h3>让医生更快了解你的情况</h3><p>把已填写的信息和对话中的自述整理成一页摘要。<br />不确定或未填写的内容会明确标记。</p><button class="primary-button" :disabled="!!busy || !currentVisit" @click="generateSummary">{{ busy === 'summary' ? '正在生成…' : '生成就诊摘要' }} <span aria-hidden="true">✧</span></button></div><div class="summary-actions"><button v-if="summary" class="primary-button" :disabled="!!busy || !currentVisit" @click="generateSummary">{{ busy === 'summary' ? '正在整理…' : '重新生成摘要' }}</button><button class="secondary-button" :disabled="!!busy || !summary" @click="copySummary">复制摘要</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="downloadText">下载 TXT</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="printSummary">打印</button></div><p class="summary-help">修改就诊信息后，可重新生成摘要。没有摘要时，下载或打印会包含当前已填写资料。</p><PlanPanel :plan="currentVisit?.plan || null" :busy="!!busy" :available="!!currentVisit" @generate="generatePlan" /></div>
             <div v-if="busy && busy !== 'send'" class="operation-status" role="status"><span class="spinner" aria-hidden="true"></span>{{ busyLabel }}</div>
           </section>
 
           <aside class="preparation-column" aria-label="就诊准备概览">
-            <section class="preparation-card"><div class="card-heading"><span class="card-title-icon" aria-hidden="true">▤</span><h2>这次就诊的准备</h2><span class="card-live-dot" aria-hidden="true"></span></div><p class="current-record-title">{{ currentTitle }}</p><div class="completion-row"><span>信息填写进度</span><strong>{{ completion }}<small> / 8</small></strong></div><div class="completion-track" role="progressbar" :aria-valuenow="completion" :aria-valuemin="0" :aria-valuemax="8" aria-label="就诊信息填写进度"><span :style="{ width: `${completion / 8 * 100}%` }"></span></div><div class="information-preview"><div><span>主要不适</span><p>{{ draft.chief_complaint || '等待你的描述' }}</p></div><div><span>开始时间</span><p>{{ draft.onset || '尚未填写' }}</p></div></div><button class="card-text-button" :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ dirty ? '继续编辑 · 有未保存修改' : '补充就诊信息' }} <span aria-hidden="true">→</span></button><div class="card-divider"></div><div class="checklist-heading"><h3>随身准备清单</h3><span>{{ checklist.length ? `${checklistDone}/${checklist.length}` : '待生成' }}</span></div><ul v-if="checklist.length" class="checklist"><li v-for="item in checklist" :key="item.id"><label :class="{ checked: item.done }"><input type="checkbox" :checked="item.done" :disabled="!!busy" @change="changeChecklist($event, item)" /><span>{{ item.text }}</span></label></li></ul><div v-else class="checklist-empty"><span aria-hidden="true">☑</span><p>生成摘要后，专属准备清单<br />会出现在这里。</p></div><button class="generate-button" :disabled="!!busy || !currentVisit" @click="generateSummary"><span aria-hidden="true">✧</span> {{ busy === 'summary' ? '正在整理摘要…' : summary ? '更新就诊摘要' : '一键生成就诊摘要' }} <span aria-hidden="true">→</span></button><small class="card-caption">整理你的自述，保留未知与待确认的信息。</small></section>
+            <section class="preparation-card"><div class="card-heading"><span class="card-title-icon" aria-hidden="true">▤</span><h2>这次就诊的准备</h2><span class="card-live-dot" aria-hidden="true"></span></div><p class="current-record-title">{{ currentTitle }}</p><div class="completion-row"><span>核心信息填写进度</span><strong>{{ completion }}<small> / 7</small></strong></div><div class="completion-track" role="progressbar" :aria-valuenow="completion" :aria-valuemin="0" :aria-valuemax="7" aria-label="就诊信息填写进度"><span :style="{ width: `${completion / 7 * 100}%` }"></span></div><div class="information-preview"><div><span>主要不适</span><p>{{ draft.chief_complaint || '等待你的描述' }}</p></div><div><span>开始时间</span><p>{{ draft.onset || '尚未填写' }}</p></div></div><button class="card-text-button" :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ dirty ? '继续编辑 · 有未保存修改' : '补充就诊信息' }} <span aria-hidden="true">→</span></button><div class="card-divider"></div><div class="checklist-heading"><h3>随身准备清单</h3><span>{{ checklist.length ? `${checklistDone}/${checklist.length}` : '待生成' }}</span></div><ul v-if="checklist.length" class="checklist"><li v-for="item in checklist" :key="item.id"><label :class="{ checked: item.done }"><input type="checkbox" :checked="item.done" :disabled="!!busy" @change="changeChecklist($event, item)" /><span>{{ item.text }}</span></label></li></ul><div v-else class="checklist-empty"><span aria-hidden="true">☑</span><p>生成摘要后，专属准备清单<br />会出现在这里。</p></div><button class="generate-button" :disabled="!!busy || !currentVisit" @click="generateSummary"><span aria-hidden="true">✧</span> {{ busy === 'summary' ? '正在整理摘要…' : summary ? '更新就诊摘要' : '一键生成就诊摘要' }} <span aria-hidden="true">→</span></button><small class="card-caption">整理你的自述，保留未知与待确认的信息。</small></section>
 
             <section class="model-card"><div class="model-heading"><div><span aria-hidden="true">◇</span><strong>外部模型辅助</strong></div><button class="toggle-switch" type="button" role="switch" :aria-checked="useModel" aria-label="允许将脱敏的有限症状片段发送给 DeepSeek" :disabled="!modelAvailable || !!busy" @click="useModel = !useModel"><span></span></button></div><p v-if="modelAvailable">{{ modelNotice }}</p><p v-else>本机资料整理可直接使用。DeepSeek 尚未配置，外部模型开关已禁用。</p><span class="privacy-state">{{ useModel && modelAvailable ? '已允许本次记录的外部辅助' : '当前：本机处理' }}</span></section>
 
@@ -275,13 +346,15 @@ onMounted(bootstrap)
       </main>
     </div>
 
-    <nav class="mobile-tabs" aria-label="移动端工作区"><button :class="{ selected: tab === 'prepare' }" :aria-current="tab === 'prepare' ? 'page' : undefined" @click="tab = 'prepare'"><span aria-hidden="true">▤</span>准备</button><button :class="{ selected: tab === 'chat' }" :aria-current="tab === 'chat' ? 'page' : undefined" @click="tab = 'chat'"><span aria-hidden="true">◌</span>问答</button><button :class="{ selected: tab === 'summary' }" :aria-current="tab === 'summary' ? 'page' : undefined" @click="tab = 'summary'"><span aria-hidden="true">▧</span>摘要</button></nav>
+    <nav class="mobile-tabs" aria-label="移动端工作区"><button v-for="item in navigation" :key="item.id" :class="{ selected: tab === item.id }" :aria-current="tab === item.id ? 'page' : undefined" @click="tab = item.id"><span aria-hidden="true">{{ item.icon }}</span>{{ item.short }}</button></nav>
 
     <dialog ref="dialog" class="modal-dialog" :aria-labelledby="modal?.kind === 'records' ? 'records-title' : 'confirm-title'" @cancel.prevent="closeModal" @click="($event.target === dialog) && closeModal()">
       <div v-if="modal?.kind === 'records'" class="modal-content"><div class="modal-heading"><h2 id="records-title">我的就诊记录</h2><button class="close-modal" :disabled="!!busy" aria-label="关闭记录列表" @click="closeModal">×</button></div><button class="primary-button modal-new" :disabled="!!busy" @click="createVisit">＋ 新的就诊准备</button><div class="modal-record-list"><div v-for="visit in visits" :key="visit.id" :class="['visit-item', { active: visit.id === currentVisit?.id }]"><button class="visit-select" :disabled="!!busy" @click="selectVisit(visit.id)"><span class="record-icon" aria-hidden="true">▤</span><span><strong>{{ visit.title || '新的就诊准备' }}</strong><small>{{ shortDate(visit.updated_at || visit.created_at) }}</small></span></button><button class="delete-record" :disabled="!!busy" :aria-label="`删除记录：${visit.title}`" @click="modal = { kind: 'delete', visitId: visit.id }">×</button></div></div><button class="clear-data" :disabled="!!busy" @click="modal = { kind: 'clear' }">清空本人全部资料</button></div>
+      <form v-else-if="modal?.kind === 'rename'" class="modal-content" @submit.prevent="renameVisit"><div class="modal-heading"><h2 id="confirm-title">给这次准备取个标题</h2><button type="button" class="close-modal" :disabled="!!busy" aria-label="关闭标题修改" @click="closeModal">×</button></div><label class="field"><span>记录标题</span><input v-model="recordTitleDraft" maxlength="100" required :disabled="!!busy" placeholder="例如：虚构示例 · 咳嗽就诊准备" /></label><p>使用能帮助你区分记录的标题，请勿填写姓名等身份信息。</p><div v-if="error" class="modal-error" role="alert">{{ error }}</div><div class="modal-actions"><button type="button" class="secondary-button" :disabled="!!busy" @click="closeModal">取消</button><button type="submit" class="primary-button" :disabled="!!busy || !recordTitleDraft.trim()">保存标题</button></div></form>
+      <div v-else-if="modal?.kind === 'candidate' && modal.candidate" class="modal-content"><div class="modal-heading"><h2 id="confirm-title">确认这项本人自述</h2><button class="close-modal" :disabled="!!busy" aria-label="关闭候选核对" @click="closeModal">×</button></div><span class="candidate-state">待本人确认</span><h3 class="candidate-review-label">{{ intakeLabels[modal.candidate.field] }}</h3><p class="candidate-review-value">{{ modal.candidate.value }}</p><blockquote class="candidate-evidence">{{ modal.candidate.evidence }}</blockquote><p>以上为依据自述提出的候选，不是已核实的医学结论。</p><div v-if="draft[modal.candidate.field] && draft[modal.candidate.field] !== '未填写'" class="candidate-existing"><strong>当前表单这一项</strong><p>{{ draft[modal.candidate.field] }}</p></div><p v-if="dirty" class="candidate-draft-warning">你有未保存的草稿。确认后仅替换上面这一项，其余草稿保留；请核对后再保存。</p><p v-else>确认后会把这一项写入就诊信息。请先检查是否准确。</p><div v-if="error" class="modal-error" role="alert">{{ error }}</div><div class="modal-actions"><button class="secondary-button" :disabled="!!busy" @click="closeModal">暂不确认</button><button class="primary-button" :disabled="!!busy" @click="confirmCandidate">确认写入这一项</button></div></div>
       <div v-else-if="modal" class="modal-content"><div class="confirmation-symbol" aria-hidden="true">⌫</div><h2 id="confirm-title">{{ modal.kind === 'clear' ? '清空本人的全部资料？' : '删除这份就诊记录？' }}</h2><p>{{ modal.kind === 'clear' ? '当前访客的全部就诊记录、对话、摘要与清单都会被删除。删除后无法恢复。' : '这份记录中的填写信息、对话、摘要与清单都会被删除。删除后无法恢复。' }}</p><div v-if="error" class="modal-error" role="alert">{{ error }}</div><div class="modal-actions"><button class="secondary-button" :disabled="!!busy" autofocus @click="closeModal">保留资料</button><button class="danger-button" :disabled="!!busy" @click="modal.kind === 'clear' ? clearData() : confirmDelete()">{{ busy ? '正在删除…' : modal.kind === 'clear' ? '确认清空' : '确认删除' }}</button></div></div>
     </dialog>
 
-    <section class="print-only"><h1>知禾 · 就诊准备记录</h1><p>以下为本人填写与自述，不构成诊断、处方或医疗建议。</p><div v-if="summary" class="summary-text">{{ summary }}</div><dl v-else><template v-for="[label, value] in printIntake" :key="label"><dt>{{ label }}</dt><dd>{{ value?.trim() || '未填写' }}</dd></template></dl><div v-if="checklist.length"><h2>就诊准备清单</h2><p v-for="item in checklist" :key="item.id">{{ item.done ? '☑' : '☐' }} {{ item.text }}</p></div><p v-if="risk?.message">就诊提醒：{{ risk.message }}</p></section>
+    <section class="print-only"><h1>知禾 · 就诊准备记录</h1><p>以下为本人填写与自述，不构成诊断、处方或医疗建议。</p><div v-if="summary" class="summary-text">{{ summary }}</div><dl v-else><template v-for="[label, value] in printIntake" :key="label"><dt>{{ label }}</dt><dd>{{ value?.trim() || '未填写' }}</dd></template></dl><div v-if="checklist.length"><h2>就诊准备清单</h2><p v-for="item in checklist" :key="item.id">{{ item.done ? '☑' : '☐' }} {{ item.text }}</p></div><div v-if="currentVisit?.plan"><h2>就诊沟通与准备计划</h2><p>{{ currentVisit.plan.goal }}</p><p v-for="question in currentVisit.plan.questions" :key="question">· {{ question }}</p><p v-for="step in currentVisit.plan.steps" :key="step.id">{{ step.title }}：{{ step.detail }}</p><p>{{ currentVisit.plan.notice }}</p></div><p v-if="risk?.message">就诊提醒：{{ risk.message }}</p></section>
   </div>
 </template>

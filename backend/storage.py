@@ -30,6 +30,7 @@ class Store:
             conn.execute("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, csrf TEXT NOT NULL, created_at TEXT NOT NULL)")
             conn.execute("CREATE TABLE IF NOT EXISTS visits (id TEXT PRIMARY KEY, owner TEXT NOT NULL REFERENCES sessions(id), payload TEXT NOT NULL, updated_at TEXT NOT NULL)")
             conn.execute("CREATE INDEX IF NOT EXISTS visits_owner ON visits(owner)")
+            conn.execute("CREATE TABLE IF NOT EXISTS bookmarks (owner TEXT NOT NULL REFERENCES sessions(id), source_id TEXT NOT NULL, PRIMARY KEY(owner,source_id))")
 
     @contextmanager
     def connect(self):
@@ -78,11 +79,26 @@ class Store:
     def clear(self, owner: str) -> None:
         with self.lock, self.connect() as conn:
             conn.execute("DELETE FROM visits WHERE owner=?", (owner,))
+            conn.execute("DELETE FROM bookmarks WHERE owner=?", (owner,))
+
+    def bookmarks(self, owner: str) -> list[str]:
+        with self.connect() as conn:
+            rows = conn.execute("SELECT source_id FROM bookmarks WHERE owner=? ORDER BY source_id", (owner,)).fetchall()
+        return [row[0] for row in rows]
+
+    def bookmark(self, owner: str, source_id: str, saved: bool) -> list[str]:
+        with self.lock, self.connect() as conn:
+            if saved:
+                conn.execute("INSERT OR IGNORE INTO bookmarks(owner,source_id) VALUES(?,?)", (owner,source_id))
+            else:
+                conn.execute("DELETE FROM bookmarks WHERE owner=? AND source_id=?", (owner,source_id))
+        return self.bookmarks(owner)
 
     def expire(self, cutoff: str) -> None:
         """Remove inactive records and expired visitor sessions from the live database."""
         with self.lock, self.connect() as conn:
             conn.execute("DELETE FROM visits WHERE updated_at < ? OR owner IN (SELECT id FROM sessions WHERE created_at < ?)", (cutoff, cutoff))
+            conn.execute("DELETE FROM bookmarks WHERE owner IN (SELECT id FROM sessions WHERE created_at < ?)", (cutoff,))
             conn.execute("DELETE FROM sessions WHERE created_at < ?", (cutoff,))
 
     def close(self) -> None:

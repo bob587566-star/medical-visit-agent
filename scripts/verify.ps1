@@ -1,4 +1,4 @@
-param([string]$BaseUrl = 'http://127.0.0.1:8270', [switch]$Browser)
+﻿param([string]$BaseUrl = 'http://127.0.0.1:8270', [switch]$Browser)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $pythonPath = Join-Path $projectRoot '.venv\Scripts\python.exe'
@@ -12,6 +12,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw '模拟模型边界测试失败。' }
     & $pythonPath tests/acceptance.py --base-url $BaseUrl
     if ($LASTEXITCODE -ne 0) { throw 'HTTP 验收失败，请确认服务已经启动。' }
+    & $pythonPath tests/acceptance_v2.py --base-url $BaseUrl
+    if ($LASTEXITCODE -ne 0) { throw '工作台 V2 HTTP 验收失败。' }
     Push-Location (Join-Path $projectRoot 'frontend')
     try {
         & npm.cmd test

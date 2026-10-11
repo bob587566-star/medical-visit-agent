@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $pidPath = Join-Path $projectRoot 'logs\server.pid'
 if (-not (Test-Path -LiteralPath $pidPath)) { Write-Output '没有本项目的启动记录。'; exit 0 }

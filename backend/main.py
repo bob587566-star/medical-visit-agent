@@ -12,7 +12,7 @@ from urllib.parse import quote
 from uuid import uuid4
 
 import httpx
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -22,7 +22,7 @@ from .agent import Executor, export_text
 from .knowledge import Knowledge
 from .model import ModelService, read_project_env
 from .safety import check_urgent
-from .schemas import ChecklistUpdate, CreateVisit, Intake, Message, MessageRequest, SummaryRequest, Visit
+from .schemas import BookmarkUpdate, ChecklistUpdate, CreateVisit, Intake, Message, MessageRequest, Observation, ObservationRequest, RenameVisit, SummaryRequest, Visit
 from .storage import Store, now
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,12 +47,28 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             application.state.model = model_service or ModelService(
                 config.get("DEEPSEEK_API_KEY", ""), config.get("DEEPSEEK_MODEL", "deepseek-chat"), client
             )
-            application.state.executor = Executor(application.state.knowledge, application.state.model)
+            application.state.retriever = None
+            warm_task = None
+            if db_path is None:
+                from .retrieval import HybridRetriever
+                application.state.retriever = HybridRetriever(application.state.knowledge, client,
+                                                               ROOT / "data" / "knowledge-vectors.json")
+                warm_task = asyncio.create_task(application.state.retriever.initialize())
+            application.state.executor = Executor(application.state.knowledge, application.state.model,
+                                                  application.state.retriever)
             cleanup()
-            yield
+            try:
+                yield
+            finally:
+                if warm_task:
+                    warm_task.cancel()
+                    try:
+                        await warm_task
+                    except (asyncio.CancelledError, Exception):
+                        pass
         application.state.store.close()
 
-    app = FastAPI(title="知禾 · 就诊准备 Agent", version="1.0.0", lifespan=lifespan,
+    app = FastAPI(title="知禾 · 健康沟通工作台", version="2.0.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]"])
     app.state.commit_lock = asyncio.Lock()
@@ -113,7 +129,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         if not secrets.compare_digest(request.headers.get("X-CSRF-Token", ""), token):
             raise HTTPException(403, "请求校验失败，请刷新页面后重试。")
         origin = request.headers.get("Origin")
-        allowed = {str(request.base_url).rstrip("/"), "http://127.0.0.1:5173", "http://localhost:5173"}
+        allowed = {str(request.base_url).rstrip("/"), "http://127.0.0.1:5174", "http://localhost:5174"}
         if origin and origin.rstrip("/") not in allowed:
             raise HTTPException(403, "不接受其他网站发起的修改请求。")
         return owner
@@ -122,6 +138,19 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         visit = app.state.store.get(owner, visit_id)
         if visit is None:
             raise HTTPException(404, "未找到这条就诊准备记录。")
+        from .planning import collection_for
+        visit.collection = collection_for(visit.intake, visit.risk)
+        return visit
+
+    def retrieval_status():
+        if app.state.retriever:
+            return app.state.retriever.status()
+        return {"mode": "topic_bm25", "embedding_available": False, "model": "bge-m3:latest",
+                "document_count": len(app.state.knowledge.all())}
+
+    def refresh_collection(visit: Visit):
+        from .planning import collection_for
+        visit.collection = collection_for(visit.intake, visit.risk)
         return visit
 
     def rate_limit(owner: str):
@@ -159,17 +188,67 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         else:
             owner, token = session
         visits = app.state.store.list_visits(owner)
+        visits = [refresh_collection(visit) for visit in visits]
         return {"csrf_token": token, "model_available": app.state.model.available,
                 "privacy": {
                     "local_default": True, "retention_days": retention,
                     "notice": "默认在本机整理。记录以本机数据库保存，可删除；请使用虚构演示资料。",
                     "model_notice": "主动开启后，仅向 DeepSeek 发送有限的症状词、时间和程度片段，不发送身份、表单或完整对话。",
                 }, "sources": app.state.knowledge.all(), "visits": visits,
-                "current_visit": visits[0] if visits else None}
+                "current_visit": visits[0] if visits else None,
+                "retrieval": retrieval_status(), "bookmark_ids": app.state.store.bookmarks(owner),
+                "version": "2.0.0"}
 
     @app.get("/api/knowledge")
     async def knowledge():
         return {"items": app.state.knowledge.all()}
+
+    @app.get("/api/workspace")
+    async def workspace(session=Depends(identity)):
+        visits = [refresh_collection(visit) for visit in app.state.store.list_visits(session[0])]
+        return {"visits_count": len(visits), "messages_count": sum(len(v.messages) for v in visits),
+                "observations_count": sum(len(v.observations) for v in visits),
+                "ready_count": sum(v.collection.stage == "ready" for v in visits),
+                "knowledge_count": len(app.state.knowledge.all()),
+                "bookmarks_count": len(app.state.store.bookmarks(session[0])),
+                "recent_visits": visits[:5], "retrieval": retrieval_status(),
+                "privacy": {"retention_days": retention, "local_default": True}}
+
+    @app.get("/api/library")
+    async def library(q: str = Query(default="", max_length=500), category: str = Query(default="", max_length=100),
+                      bookmarked: bool = False, session=Depends(identity)):
+        items = app.state.knowledge.all()
+        categories = sorted({item.category for item in items})
+        favorites = app.state.store.bookmarks(session[0])
+        if q.strip():
+            ids = {s.id for s in (await app.state.retriever.search(q, limit=50)
+                                  if app.state.retriever else app.state.knowledge.search(q, limit=50))}
+            # Catalog text lookup is explicit browsing, not a medical answer.
+            items = [s for s in items if s.id in ids or q.strip().lower() in (s.title + s.content + s.publisher).lower()]
+        if category:
+            items = [s for s in items if s.category == category]
+        if bookmarked:
+            items = [s for s in items if s.id in favorites]
+        return {"items": items, "categories": categories, "bookmark_ids": favorites,
+                "total": len(items), "retrieval": retrieval_status()}
+
+    @app.get("/api/library/evidence")
+    async def evidence(q: str = Query(min_length=1, max_length=500), session=Depends(identity)):
+        items = await app.state.retriever.search(q) if app.state.retriever else app.state.knowledge.search(q)
+        return {"items": items, "retrieval": retrieval_status()}
+
+    @app.get("/api/library/{source_id}")
+    async def article(source_id: str, session=Depends(identity)):
+        item = next((s for s in app.state.knowledge.all() if s.id == source_id), None)
+        if not item:
+            raise HTTPException(404, "未找到这条健康资料。")
+        return item
+
+    @app.put("/api/library/bookmarks/{source_id}")
+    async def bookmark(source_id: str, body: BookmarkUpdate, owner=Depends(mutation)):
+        if not any(s.id == source_id for s in app.state.knowledge.all()):
+            raise HTTPException(404, "未找到这条健康资料。")
+        return {"bookmark_ids": app.state.store.bookmark(owner, source_id, body.saved)}
 
     @app.post("/api/visits", response_model=Visit, status_code=201)
     async def create(body: CreateVisit, owner=Depends(mutation)):
@@ -179,6 +258,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             stamp = now()
             visit = Visit(id=uuid4().hex, title=body.title, created_at=stamp, updated_at=stamp,
                           risk=check_urgent("", Intake()))
+            refresh_collection(visit)
             app.state.store.put(owner, visit)
         return visit
 
@@ -190,9 +270,15 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
     async def update_intake(visit_id: str, body: Intake, owner=Depends(mutation)):
         async with app.state.commit_lock:
             visit = owned(owner, visit_id)
+            previous_risk = visit.risk
             visit.intake = body
             visit.risk = check_urgent("", body)
+            if previous_risk.level == "emergency" and visit.risk.level != "emergency":
+                visit.risk = previous_risk
             visit.summary = None
+            visit.plan = None
+            visit.intake_candidates = []
+            refresh_collection(visit)
             visit.updated_at = now()
             app.state.store.put(owner, visit)
         return visit
@@ -214,19 +300,42 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         assistant = Message(id=uuid4().hex, role="assistant", content=result.content, created_at=stamp,
                             risk=result.risk, sources=result.sources, trace=result.trace,
                             suggested_questions=result.suggested_questions, mode=result.mode,
-                            duration_ms=result.duration_ms)
+                            duration_ms=result.duration_ms, intake_candidates=result.intake_candidates)
         async with app.state.commit_lock:
             latest = owned(owner, visit_id)  # A deleted visit is never recreated by a slow model response.
             if len(latest.messages) >= 200:
                 raise HTTPException(409, "本条记录已达到对话上限，请新建记录。")
-            changed = latest.intake != visit.intake or latest.messages != visit.messages
+            changed = (latest.intake != visit.intake or latest.messages != visit.messages
+                       or latest.observations != visit.observations or latest.checklist != visit.checklist)
+            # Recompute against the latest form after asynchronous model work.
+            # A pending answer cannot downgrade a newer warning or dismiss an
+            # unresolved emergency reported elsewhere in this same record.
+            risk_options = [check_urgent(body.content, latest.intake)]
+            if changed or latest.risk.level == "emergency":
+                risk_options.append(latest.risk)
+            if not changed or result.risk.level == "emergency":
+                risk_options.append(result.risk)
+            merged_risk = max(risk_options, key=lambda risk: {"unknown": 0, "prompt": 1, "emergency": 2}[risk.level])
+            user.risk = assistant.risk = merged_risk
+            if merged_risk.level == "emergency" and result.risk.level != "emergency":
+                assistant.content = merged_risk.message + "\n\n" + assistant.content
+                assistant.suggested_questions = []
+                assistant.intake_candidates = []
+                assistant.sources = app.state.knowledge.by_ids(merged_risk.source_ids)
             latest.messages.extend([user, assistant])
             latest.summary = None if changed else result.summary
-            if latest.risk.level != "emergency" or result.risk.level == "emergency":
-                latest.risk = result.risk
+            latest.plan = None
+            # Only retain suggestions still absent in the latest saved form.
+            proposed = {c.field: c for c in latest.intake_candidates}
+            for candidate in ([] if merged_risk.level == "emergency" else result.intake_candidates):
+                if getattr(latest.intake, candidate.field) == getattr(visit.intake, candidate.field):
+                    proposed[candidate.field] = candidate
+            latest.intake_candidates = list(proposed.values())[:8]
+            latest.risk = merged_risk
             if not changed:
                 latest.checklist = result.checklist
             latest.updated_at = now()
+            refresh_collection(latest)
             app.state.store.put(owner, latest)
         return {"user_message": user, "assistant_message": assistant, "visit": latest}
 
@@ -237,15 +346,95 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         result = await app.state.executor.run(visit, use_model=body.use_model, purpose="summary")
         async with app.state.commit_lock:
             latest = owned(owner, visit_id)
-            if latest.intake != visit.intake or latest.messages != visit.messages:
+            if (latest.intake != visit.intake or latest.messages != visit.messages
+                    or latest.observations != visit.observations):
                 raise HTTPException(409, "资料在整理期间有更新，请重新生成摘要。")
             latest.summary = result.summary
+            checked = {item.id: item.done for item in latest.checklist}
             latest.checklist = result.checklist
+            for item in latest.checklist:
+                item.done = checked.get(item.id, item.done)
             if latest.risk.level != "emergency" or result.risk.level == "emergency":
                 latest.risk = result.risk
             latest.updated_at = now()
+            refresh_collection(latest)
             app.state.store.put(owner, latest)
         return {"summary": latest.summary, "checklist": latest.checklist, "visit": latest}
+
+    @app.patch("/api/visits/{visit_id}/title", response_model=Visit)
+    async def rename(visit_id: str, body: RenameVisit, owner=Depends(mutation)):
+        async with app.state.commit_lock:
+            visit = owned(owner, visit_id)
+            visit.title = body.title
+            visit.updated_at = now()
+            app.state.store.put(owner, visit)
+        return visit
+
+    @app.post("/api/visits/{visit_id}/candidates/{candidate_id}/confirm", response_model=Visit)
+    async def confirm_candidate(visit_id: str, candidate_id: str, owner=Depends(mutation)):
+        async with app.state.commit_lock:
+            visit = owned(owner, visit_id)
+            candidate = next((c for c in visit.intake_candidates if c.id == candidate_id), None)
+            if not candidate:
+                raise HTTPException(404, "这条待确认信息已经失效，请重新整理。")
+            # Never trust a value from the confirmation request body.
+            fields = visit.intake.model_dump()
+            fields[candidate.field] = candidate.value
+            visit.intake = Intake.model_validate(fields)
+            visit.intake_candidates = [c for c in visit.intake_candidates if c.id != candidate_id]
+            visit.risk = check_urgent("", visit.intake)
+            if visit.risk.level != "emergency":
+                # A field confirmation cannot dismiss an unresolved chat warning.
+                saved = app.state.store.get(owner, visit_id)
+                if saved.risk.level == "emergency":
+                    visit.risk = saved.risk
+            visit.summary, visit.plan = None, None
+            visit.updated_at = now()
+            refresh_collection(visit)
+            app.state.store.put(owner, visit)
+        return visit
+
+    @app.post("/api/visits/{visit_id}/observations", response_model=Visit)
+    async def add_observation(visit_id: str, body: ObservationRequest, owner=Depends(mutation)):
+        async with app.state.commit_lock:
+            visit = owned(owner, visit_id)
+            if len(visit.observations) >= 500:
+                raise HTTPException(409, "单条就诊记录的时间线已满，请新建记录。")
+            item = Observation(id=uuid4().hex, created_at=now(), **body.model_dump())
+            visit.observations.append(item)
+            visit.observations.sort(key=lambda o: datetime.fromisoformat(o.recorded_at))
+            if item.kind == "symptom":
+                age = datetime.now(timezone.utc) - datetime.fromisoformat(item.recorded_at)
+                context = "既往观察：" if age > timedelta(hours=24) else "当前观察："
+                risk = check_urgent(context + item.value + "，" + item.notes, visit.intake)
+                if visit.risk.level != "emergency" or risk.level == "emergency":
+                    visit.risk = risk
+            visit.summary, visit.plan = None, None
+            visit.updated_at = now()
+            refresh_collection(visit)
+            app.state.store.put(owner, visit)
+        return visit
+
+    @app.delete("/api/visits/{visit_id}/observations/{observation_id}", response_model=Visit)
+    async def delete_observation(visit_id: str, observation_id: str, owner=Depends(mutation)):
+        async with app.state.commit_lock:
+            visit = owned(owner, visit_id)
+            if not any(o.id == observation_id for o in visit.observations):
+                raise HTTPException(404, "未找到这条时间线记录。")
+            visit.observations = [o for o in visit.observations if o.id != observation_id]
+            visit.summary, visit.plan = None, None
+            visit.updated_at = now()
+            app.state.store.put(owner, visit)
+        return visit
+
+    @app.post("/api/visits/{visit_id}/plan")
+    async def plan(visit_id: str, owner=Depends(mutation)):
+        async with app.state.commit_lock:
+            visit = owned(owner, visit_id)
+            visit.plan = await app.state.executor.execute("build_preparation_plan", visit=visit)
+            visit.updated_at = now()
+            app.state.store.put(owner, visit)
+        return {"plan": visit.plan, "visit": visit}
 
     @app.patch("/api/visits/{visit_id}/checklist", response_model=Visit)
     async def checklist(visit_id: str, body: ChecklistUpdate, owner=Depends(mutation)):
