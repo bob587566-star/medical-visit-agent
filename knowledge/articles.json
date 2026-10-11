@@ -1,0 +1,152 @@
+[
+  {
+    "id": "visit_preparation",
+    "title": "第一次就诊，提前准备什么",
+    "publisher": "美国国家医学图书馆 MedlinePlus",
+    "url": "https://medlineplus.gov/talkingwithyourdoctor.html",
+    "reviewed_at": "2026-10-11",
+    "category": "就诊准备",
+    "topics": ["visit_preparation"],
+    "keywords": ["就诊准备", "看医生", "看病", "第一次", "门诊", "带什么", "带哪些", "准备什么", "就医清单", "就诊清单"],
+    "content": "就诊前列出最想讨论的问题，按重要程度排序。准备目前使用的药物、保健品和过敏记录，以及已有检查和病史资料。可以请信任的人陪同，帮助记录医生说明。具体证件及检查要求以就诊医院通知为准。"
+  },
+  {
+    "id": "symptom_record",
+    "title": "怎样把症状讲清楚",
+    "publisher": "美国国家医学图书馆 MedlinePlus",
+    "url": "https://medlineplus.gov/ency/patientinstructions/000860.htm",
+    "reviewed_at": "2026-10-11",
+    "category": "就诊准备",
+    "topics": ["symptom_record"],
+    "keywords": ["描述症状", "怎么描述", "怎么说", "告诉医生", "记录症状", "症状记录", "整理症状", "主诉", "症状摘要", "就诊摘要"],
+    "content": "记录主要不适是什么、何时开始、出现的位置、持续多久、是否变化，以及哪些情况会加重或缓解。不要把猜测写成确诊；没有测量或不确定的信息可以写“未测量”或“不清楚”。把笔记带给医生，方便准确沟通。"
+  },
+  {
+    "id": "medication_list",
+    "title": "就诊时的用药与过敏清单",
+    "publisher": "美国国家医学图书馆 MedlinePlus",
+    "url": "https://medlineplus.gov/talkingwithyourdoctor.html",
+    "reviewed_at": "2026-10-11",
+    "category": "就诊准备",
+    "topics": ["medication_list"],
+    "keywords": ["用药清单", "药物清单", "药盒", "保健品", "过敏记录", "过敏清单", "过敏史", "用药史", "正在吃的药"],
+    "content": "列出实际正在使用的处方药、非处方药、维生素、草药和保健品，并记录已知过敏情况。只有本人知道的信息才填写，不确定时带药盒或说明书让专业人员核对。助手不决定开始、停用或更改药物。"
+  },
+  {
+    "id": "questions_for_doctor",
+    "title": "哪些问题适合当面问医生",
+    "publisher": "美国国家医学图书馆 MedlinePlus",
+    "url": "https://medlineplus.gov/talkingwithyourdoctor.html",
+    "reviewed_at": "2026-10-11",
+    "category": "就诊准备",
+    "topics": ["questions_for_doctor"],
+    "keywords": ["问医生", "问题清单", "问什么", "复诊", "随访", "医嘱", "听不懂", "复查", "医生说明"],
+    "content": "可以问：这些症状需要进一步检查吗？如果加重或没有改善，何时应再次联系医生？是否需要复诊？对说明有疑问时请医生用容易理解的话解释，并索取书面注意事项。不要仅凭助手的文字自行改变医生的治疗安排。"
+  },
+  {
+    "id": "cough",
+    "title": "咳嗽：记录重点与就医提醒",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/symptoms/cough/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2023-12-08",
+    "category": "健康资料",
+    "topics": ["cough"],
+    "keywords": ["咳嗽", "干咳", "咳痰", "咳血", "嗓子咳", "止咳"],
+    "content": "咳嗽时可记录开始时间、持续情况、有无痰及伴随症状，供就诊沟通。一般资料建议休息并保持适当饮水。咳嗽超过三周应联系医生评估；明显加重、咳血、胸痛或呼吸困难时应及时寻求医疗帮助。仅凭咳嗽不能确定病因；是否需要药物由专业人员判断。"
+  },
+  {
+    "id": "fever",
+    "title": "成人发热：记录体温和变化",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/symptoms/fever-in-adults/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2023-05-24",
+    "category": "健康资料",
+    "topics": ["fever"],
+    "keywords": ["发热", "发烧", "体温", "高温", "低烧", "低热", "寒战"],
+    "content": "成人发热资料通常把 38°C 或更高视为高体温，但体温会因人和测量条件变化。记录实际读数、测量时间和方法；没有测量不要填写假读数。保持休息和适当饮水。持续没有改善或加重应联系医生；这份成人资料不能直接用于儿童、孕产期或其他特殊人群。"
+  },
+  {
+    "id": "diarrhoea",
+    "title": "腹泻与呕吐：留意饮水和症状变化",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/symptoms/diarrhoea-and-vomiting/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2023-12-21",
+    "category": "健康资料",
+    "topics": ["diarrhoea"],
+    "keywords": ["腹泻", "拉肚子", "呕吐", "吐了", "喝不下水", "便血", "腹痛"],
+    "content": "记录腹泻或呕吐的开始时间、次数、能否饮水和尿量变化。一般资料强调避免脱水，恶心时可尝试小口饮水。持续呕吐且留不住水、便血或脱水表现应及时就医；呕血、突然剧烈腹痛、意识异常或严重呼吸困难应立即寻求急救。儿童、老人等需专业人员评估。"
+  },
+  {
+    "id": "headache",
+    "title": "头痛：记录诱因，识别需要及时就医的变化",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/symptoms/headaches/",
+    "reviewed_at": "2026-10-11",
+    "category": "健康资料",
+    "topics": ["headache"],
+    "keywords": ["头痛", "头疼", "偏头痛", "头痛日记", "剧烈头痛"],
+    "content": "记录头痛开始时间、位置、是否反复、诱因和伴随变化，有助于与医生沟通。反复、持续或加重的头痛需要评估。突然出现的极剧烈头痛，或头痛伴肢体无力、说话困难、意识异常等情况，应立即寻求急救。助手不能凭症状诊断头痛类型或排除严重疾病。"
+  },
+  {
+    "id": "emergency_chest",
+    "title": "胸痛伴随异常：优先寻求紧急医疗帮助",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/symptoms/chest-pain/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2023-08-08",
+    "category": "紧急提醒",
+    "topics": ["chest_pain"],
+    "keywords": ["胸痛", "胸疼", "胸口疼", "胸口痛", "冷汗", "胸闷"],
+    "content": "突发且不缓解的胸痛、痛感扩散到手臂或颈颌，或胸痛伴出汗、头晕、恶心、呼吸困难，应立即联系当地急救服务，不要自己开车。即使胸痛很快消失或反复出现，也应由专业人员评估，不能凭助手判断排除严重问题。"
+  },
+  {
+    "id": "emergency_breathing",
+    "title": "严重呼吸困难：不要等待在线问答",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/symptoms/shortness-of-breath/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2024-01-30",
+    "category": "紧急提醒",
+    "topics": ["breathing"],
+    "keywords": ["呼吸困难", "喘不上气", "喘不过气", "气短", "嘴唇发紫", "不能说话", "说不出话"],
+    "content": "严重呼吸困难、喘到不能完整说话、嘴唇或皮肤发青发灰、突发意识混乱等情况，需要立即联系当地急救服务。呼吸困难也有多种原因，不应自行诊断；日常活动时加重或反复出现，应联系专业人员评估。"
+  },
+  {
+    "id": "emergency_stroke",
+    "title": "突发单侧无力或语言异常：及时急救",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/conditions/stroke/symptoms/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2024-09-12",
+    "category": "紧急提醒",
+    "topics": ["stroke"],
+    "keywords": ["单侧无力", "一侧无力", "半边无力", "口角歪", "嘴歪", "说话不清", "说话含糊", "突然麻木", "卒中", "中风"],
+    "content": "突然出现一侧面部下垂、手臂无力或说话含糊等表现，应立即联系当地急救服务。最近出现过这些表现，即使现在缓解，也不能据此判断已经安全；不要等待助手生成完整摘要再求助，不要自己开车。"
+  },
+  {
+    "id": "emergency_allergy",
+    "title": "突发喉舌肿胀与呼吸异常：立即求助",
+    "publisher": "英国国家医疗服务体系 NHS",
+    "url": "https://www.nhs.uk/conditions/anaphylaxis/",
+    "reviewed_at": "2026-10-11",
+    "source_reviewed_at": "2023-06-21",
+    "category": "紧急提醒",
+    "topics": ["allergy"],
+    "keywords": ["过敏", "喉咙肿", "舌头肿", "喉头肿", "吞咽困难", "过敏反应", "嘴唇肿"],
+    "content": "接触食物、药物或昆虫叮咬后迅速出现喉咙、舌头或嘴唇肿胀，或呼吸和吞咽困难，可能需要紧急救助。应立即联系当地急救服务。助手不提供药物剂量或替代专业人员的急救指导。"
+  },
+  {
+    "id": "emergency_call",
+    "title": "中国大陆急救电话",
+    "publisher": "中华人民共和国国家卫生健康委员会",
+    "url": "https://www.nhc.gov.cn/xcs/c100122/201411/32c1bd8c5b13436ba9ec83ef1834856e.shtml",
+    "reviewed_at": "2026-10-11",
+    "category": "紧急提醒",
+    "topics": ["emergency_contact"],
+    "keywords": ["急救电话", "120", "急救", "救护车"],
+    "content": "中国大陆需要紧急医疗救助时，拨打 120 联系急救服务；其他国家或地区请使用当地急救号码。助手无法替你拨号、定位、派遣救护车或确认医疗机构的实时情况。"
+  }
+]

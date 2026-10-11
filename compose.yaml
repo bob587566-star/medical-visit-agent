@@ -1,0 +1,23 @@
+services:
+  zhihe:
+    build: .
+    ports:
+      - "127.0.0.1:8271:8270"
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      MODEL_TIMEOUT_SECONDS: ${MODEL_TIMEOUT_SECONDS:-12}
+      DATA_RETENTION_DAYS: ${DATA_RETENTION_DAYS:-7}
+      VISIT_DATA_PATH: /app/data/visits.sqlite3
+    volumes:
+      - visit-data:/app/data
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  visit-data:

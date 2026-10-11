@@ -1,0 +1,159 @@
+{
+  "executed_at": "2026-10-11T21:08:38.866102+00:00",
+  "network_policy": "All model requests use httpx.MockTransport; no network connection is opened; all data is fictional.",
+  "passed": 18,
+  "failed": 0,
+  "total": 18,
+  "results": [
+    {
+      "name": "valid_exact_fragments_only",
+      "status": "pass",
+      "evidence": {
+        "accepted": {
+          "symptoms": [
+            "咳嗽"
+          ],
+          "onset": "2天",
+          "severity": "轻微"
+        },
+        "request_contains_only_minimal_user_payload": true
+      }
+    },
+    {
+      "name": "hallucinated_diagnosis_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "dose_and_medication_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "extra_tool_or_instruction_field_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "invalid_json_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "wrong_field_type_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "null_model_content_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "empty_model_object_fails_closed",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "oversized_model_fragment_rejected",
+      "status": "pass",
+      "evidence": {
+        "rejected": true
+      }
+    },
+    {
+      "name": "http_error_falls_back",
+      "status": "pass",
+      "evidence": {
+        "fallback": true
+      }
+    },
+    {
+      "name": "timeout_falls_back",
+      "status": "pass",
+      "evidence": {
+        "fallback": true
+      }
+    },
+    {
+      "name": "identity_history_cookie_and_instructions_minimized",
+      "status": "pass",
+      "evidence": {
+        "minimal_payload": "咳嗽；今天；2天；轻微",
+        "identity_cookie_history_and_instructions_absent": true
+      }
+    },
+    {
+      "name": "fixed_executor_rejects_unknown_tools",
+      "status": "pass",
+      "evidence": {
+        "unsupported_tool_rejected": true
+      }
+    },
+    {
+      "name": "emergency_bypasses_even_selected_model",
+      "status": "pass",
+      "evidence": {
+        "model_call_count": 0,
+        "risk_level": "emergency",
+        "trace": [
+          {
+            "tool": "check_urgent_signs",
+            "label": "检查当前警示征象",
+            "status": "done"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown_query_does_not_reuse_intake_or_call_model",
+      "status": "pass",
+      "evidence": {
+        "model_call_count": 0,
+        "mode": "local_fallback",
+        "nonempty_local_answer": true
+      }
+    },
+    {
+      "name": "executor_timeout_preserves_sourced_local_answer",
+      "status": "pass",
+      "evidence": {
+        "mode": "local_fallback",
+        "model_requests": 1,
+        "source_ids": [
+          "cough"
+        ],
+        "fallback_trace": true
+      }
+    },
+    {
+      "name": "unconfigured_model_never_opens_transport",
+      "status": "pass",
+      "evidence": {
+        "model_call_count": 0
+      }
+    },
+    {
+      "name": "default_local_executor_never_calls_model",
+      "status": "pass",
+      "evidence": {
+        "model_call_count": 0,
+        "mode": "local"
+      }
+    }
+  ]
+}

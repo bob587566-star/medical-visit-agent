@@ -1,0 +1,26 @@
+{
+  "name": "zhihe-medical-visit-preparation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "vue": "3.5.22"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@vitejs/plugin-vue": "5.2.4",
+    "@vue/test-utils": "2.4.6",
+    "jsdom": "26.1.0",
+    "typescript": "5.8.3",
+    "vite": "6.3.6",
+    "vitest": "3.2.4",
+    "vue-tsc": "2.2.12"
+  }
+}
