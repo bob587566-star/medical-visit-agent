@@ -2,6 +2,55 @@ import { expect, test, type Page } from '@playwright/test'
 import { mkdir, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
+test('间接危机：温和支持、摘要与任务暂停，原资料和手机聊天仍可使用', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await openApp(page)
+  await fillFictionalIntake(page)
+  await ask(page, '【虚构安全验收】活着没意思')
+  const bootstrap = await (await page.request.get('/api/bootstrap')).json()
+  const visit = bootstrap.current_visit
+  expect(visit.risk.level).toBe('prompt')
+  expect(visit.risk.kind).toBe('self_harm')
+  expect(visit.collection.stage).toBe('support')
+  expect(visit.summary).toBeNull()
+  await expect(page.locator('.crisis-support')).toContainText('先让你得到陪伴和支持')
+  await expect(page.locator('.message-assistant').last().locator('.message-mode')).toHaveText('陪伴支持优先')
+  await expect(page.locator('.message-assistant').last().locator('.followup-prompt')).toHaveCount(0)
+  await expect(page.locator('.generate-button')).toBeDisabled()
+  await tab(page, '就诊摘要')
+  await expect(page.locator('.summary-support-note')).toContainText('支持')
+  await expect(page.locator('.summary-empty button')).toBeDisabled()
+  await expect(page.locator('.plan-heading button')).toBeDisabled()
+  await expect(page.getByRole('button', { name: '下载 TXT', exact: true })).toBeEnabled()
+  const rejected = await page.request.post(`/api/visits/${visit.id}/summary`, { headers: { 'X-CSRF-Token': bootstrap.csrf_token }, data: { use_model: false } })
+  expect(rejected.status()).toBe(409)
+  expect(await (await page.request.get(`/api/visits/${visit.id}`)).json()).toEqual(visit)
+  await tab(page, '信息准备')
+  await expect(page.getByLabel('主要不适 / 就诊原因')).toHaveValue(fictionalChief)
+  await tab(page, '健康问答')
+  await page.getByRole('button', { name: '运行准备任务', exact: false }).click()
+  await page.locator('.task-start').click()
+  await expect(page.locator('.task-state')).toHaveText('先获得陪伴支持', { timeout: 20_000 })
+  await expect(page.locator('.task-result-content')).not.toBeEmpty()
+  const task = (await (await page.request.get(`/api/visits/${visit.id}/tasks`)).json()).items[0]
+  expect(task.status).toBe('support_required')
+  expect(task.result.status).toBe('support_required')
+  expect(task.result.steps).toHaveLength(1)
+  expect(task.result.summary).toBeNull()
+  expect(task.can_apply).toBe(false)
+  await expect(page.locator('.task-start')).toBeEnabled()
+  await expect(page.locator('.task-agent-panel .task-save>.primary-button')).toHaveCount(0)
+  await expect(page.locator('.task-agent-panel .task-risk').first()).toContainText('陪伴支持')
+  await screenshot(page, 'zhihe-indirect-support-desktop-1440.png')
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 })
+    await assertNoOverflow(page, width)
+    await screenshot(page, `zhihe-indirect-support-mobile-${width}.png`)
+  }
+  expect(errors).toEqual([])
+})
+
 const artifacts = resolve(process.cwd(), '../artifacts')
 const fictionalChief = '【虚构病例】轻微咳嗽持续两天，想整理需要向医生说明的信息。'
 
@@ -452,7 +501,7 @@ test('任务安全状态：真实只读草稿完成后新红警禁止保存、�
   await expect(panel.getByRole('button', { name: '检查并保存准备结果', exact: true })).toHaveCount(0)
   await expect(panel.getByRole('button', { name: '确认保存准备结果', exact: true })).toHaveCount(0)
   await expect(panel.locator('.task-result-content')).toHaveText(oldResultContent)
-  await panel.getByText('查看待保存的自述摘要', { exact: true }).click()
+  await panel.locator('.task-document > summary').first().click()
   await expect(panel.locator('.task-document').first()).toContainText(fictionalChief)
   const currentJob = await (await page.request.get(`/api/visits/${visitId}/tasks/${oldJob.id}`)).json()
   expect(currentJob.status).toBe('emergency')

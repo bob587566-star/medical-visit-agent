@@ -14,7 +14,7 @@ const stats = computed(() => props.workspace ? [
   { value: props.workspace.bookmarks_count, title: '已收藏的资料', icon: '⌑' },
   { value: props.workspace.knowledge_count, title: '本机教育资料条目', icon: '▧' },
 ] : [])
-const stage = computed(() => ({ start: '从已知信息开始', collecting: '正在补充信息', ready: '基础信息已整理', urgent: '紧急提醒优先' }[props.visit?.collection?.stage || 'start']))
+const stage = computed(() => ({ start: '从已知信息开始', collecting: '正在补充信息', ready: '基础信息已整理', urgent: '紧急提醒优先', support: '先获得陪伴支持' }[props.visit?.collection?.stage || 'start']))
 </script>
 
 <template>

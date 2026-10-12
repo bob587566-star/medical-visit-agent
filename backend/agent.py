@@ -15,6 +15,7 @@ from .conversation import render_reply
 from .safety import check_conversation_urgent, check_urgent, safe_assistant_output
 from .schemas import ChecklistItem, CollectionState, ExtractedDetails, Intake, IntakeCandidate, Observation, PreparationPlan, Risk, Source, Summary, TraceStep, Visit
 from .storage import now
+from .risk_policy import requires_human_support
 
 
 CHECKLIST = [
@@ -184,9 +185,9 @@ class Executor:
             risk = await self.safety_review.review(text, risk)
         trace.append(TraceStep(tool="check_urgent_signs", label="检查当前警示征象", status="done"))
         collection = collection_for(visit.intake, risk)
-        if risk.level == "emergency" and purpose == "message":
+        if requires_human_support(risk):
             # This branch must finish before any external request or model wait.
-            return AgentResult(risk.message, risk, self.knowledge.by_ids(risk.source_ids), trace, [], "local_emergency", int((time.monotonic() - start) * 1000), None, visit.checklist, collection=collection)
+            return AgentResult(risk.message, risk, self.knowledge.by_ids(risk.source_ids), trace, [], "local_emergency" if risk.level == 'emergency' else 'local_support', int((time.monotonic() - start) * 1000), None, visit.checklist, collection=collection)
 
         if purpose == "message" and re.fullmatch(r"(?:你好|您好|嗨|hello|hi|在吗|谢谢|感谢)[\s！!。,.，？?]*", text.strip(), re.I):
             reply = render_reply(visit, text, risk, [], [])

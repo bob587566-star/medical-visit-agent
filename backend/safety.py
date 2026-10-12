@@ -15,6 +15,12 @@ SELF_HARM_MESSAGE = (
     "如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；"
     "中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？" + LIMITATION
 )
+SELF_HARM_SUPPORT_MESSAGE = (
+    "听起来你现在很难熬，谢谢你愿意说出来。你不需要一个人撑着；如果可以，先联系一位你信任的人，"
+    "告诉对方你现在的感受，请对方陪你，并尽快联系心理健康专业人员。"
+    "我不会仅凭这句话断定你会伤害自己。如果你已经伤害自己、服用了过量药物，或担心马上会行动、无法保证安全，"
+    "请立即联系当地急救或请人陪你去急诊。你现在是否安全，有没有人可以陪着你？" + LIMITATION
+)
 # Bounded warnings only. 无力/无法呼吸/没有反应 are positive warning signs.
 DENIAL = re.compile(
     r"(?:没有|没(?:有)?|并无|未出现|未发生|不伴|不曾|否认|已无|不再|并非|不是|"
@@ -23,12 +29,22 @@ DENIAL = re.compile(
     r"无(?=(?:明显|任何)?(?:胸|冷汗|大汗|呼吸困难|气短|意识异常|意识模糊|头痛|头疼|抽搐|出血|咯血|咳血|自伤|自杀|晕倒|昏倒|昏睡|呕吐|服药过量)))"
     r"[^，。；！？\n]{0,32}"
 )
-POSITIVE_INABILITY = re.compile(r"没(?:有)?(?:任何|明显|正常)?反应|没有(?:醒过来|恢复清醒)|无法呼吸|不能呼吸|无力")
-HISTORY = re.compile(r"(?:去年|前年|(?:\d+|[一二三四五六七八九十百]+)年前|小时候|幼时|曾经|以前|(?<!晕)(?<!昏)过去|上次|历史|既往|当时|上个月|上周)")
-OLD_HISTORY = re.compile(r"(?:去年|前年|(?:\d+|[一二三四五六七八九十百]+)年前|小时候|幼时|上个月|上周)")
+POSITIVE_INABILITY = re.compile(r"没(?:有)?(?:任何|明显|正常)?反应|没有(?:醒过来|恢复清醒)|无法呼吸|不能呼吸|无力|没(?:有)?力气|使不上劲|没(?:有)?(?:什么|一点)?意思|没(?:有)?意义|没(?:有)?退")
+HISTORY = re.compile(r"(?:去年|前年|(?:\d+|[一二三四五六七八九十百]+)年前|小时候|幼时|从小|自幼|自小|出生以来|天生|曾经|以前|(?<!晕)(?<!昏)过去|上次|历史|既往|当时|上个月|上周)")
+OLD_HISTORY = re.compile(r"(?:去年|前年|(?:\d+|[一二三四五六七八九十百]+)年前|小时候|幼时|从小|自幼|自小|出生以来|天生|上个月|上周)")
 CURRENT = re.compile(r"(?:现在|目前|此刻|今天|今日|今早|今晨|刚刚|刚才|正在|这次|昨晚|昨天)")
 RECENT = re.compile(r"(?:今天|今日|今早|今晨|刚刚|刚才|昨晚|昨天|(?:过去|最近)?\s*(?:[1-9]|1\d|2[0-4])\s*小时(?:前|内))")
-HARD_EDUCATION = re.compile(r"(?:科普|举例|故事|小说|角色|假设|假如|如果(?=(?:我|他|她|有人|宝宝|孩子|患者))|请解释|资料中的|知识库中的)")
+HARD_EDUCATION = re.compile(
+    r"(?:科普|举例|故事|小说|角色|假设|假如|"
+    r"如果(?=.{0,8}(?:我|他|她|有人|一个人|宝宝|孩子|患者))|"
+    r"^(?:遇到|碰到)(?:旁边)?有人.{0,18}(?:怎么|怎样|如何|该).{0,12}(?:处理|急救|帮助|救)|"
+    r"请解释|资料中的|知识库中的)"
+)
+QUOTED_CONTEXT = re.compile(
+    r"(?:新闻(?:里|中|上)?|书上(?:看到|读到|看见)?|书里|视频(?:里|中)|"
+    r"(?:刷到|看到|看了|转发|读到).{0,10}(?:视频|报道|文章|帖子)|"
+    r"(?:群里|群中|聊天群).{0,12}(?:说|提到|转发|分享)|听说|传闻)"
+)
 EDUCATION = re.compile(r"(?:是什么|什么意思|有哪些|如何识别|怎样识别|介绍一下|一般|为什么|危险吗)")
 PERSON = r"(?:我|本人|孩子|宝宝|父亲|母亲|爸爸|妈妈|丈夫|妻子|家人|患者|病人|朋友|同事|老人)"
 REPORT_PREDICATES = r"疼|痛|无力|说话|呼吸|喘|冷汗|叫不醒|没有反应|肿|不想活|想死|自杀|自伤|轻生|吃|吞|晕|昏|抽搐|抽蓄|出血|咳.*血|发烧|发热|吐|拒奶"
@@ -66,13 +82,25 @@ def current_clauses(text: str) -> list[str]:
     for sentence in re.split(r"[。；！？\n]", text):
         if not sentence.strip():
             continue
-        if HARD_EDUCATION.search(sentence):
+        # An explicitly live request in a group is not a news excerpt. Keep
+        # the reported event, without making it a fact about this visitor.
+        group = re.match(r'^(?:在)?(?:群里|群中|聊天群).{0,12}(?:说|求助|问)[：:\s]*(.+)', sentence)
+        if group:
+            report = group.group(1)
+            live = re.search(PERSON + r'(?:的)?(?:现在|此刻|正在).{0,20}(?:' + REPORT_PREDICATES + r')', report)
+            if live and not HARD_EDUCATION.search(report) and not QUOTED_CONTEXT.search(report) and _affirmed(live.group(), REPORT_PREDICATES):
+                sentence = report
+        context_markers = [marker for pattern in (HARD_EDUCATION, QUOTED_CONTEXT)
+                           if (marker := pattern.search(sentence)) is not None]
+        if context_markers:
             # Current-tense examples remain examples. Only a separate contrast
             # that explicitly reports a present event can reset that context.
             parts = re.split(r'(?:但是|但(?!愿)|可是|(?<!喘)不过)', sentence)
             reports = []
             for part in parts:
-                marker = HARD_EDUCATION.search(part)
+                markers = [marker for pattern in (HARD_EDUCATION, QUOTED_CONTEXT)
+                           if (marker := pattern.search(part)) is not None]
+                marker = min(markers, key=lambda item: item.start()) if markers else None
                 actual = part[:marker.start()] if marker else part
                 if EXPLICIT_CURRENT_REPORT.search(actual) and _affirmed(actual, REPORT_PREDICATES):
                     reports.append(actual)
@@ -119,10 +147,10 @@ def current_clauses(text: str) -> list[str]:
 
 
 CHEST = r"胸痛|胸口痛|胸部疼痛|胸口疼|胸部痛|胸疼|胸口(?:很|非常)?疼"
-BREATH = r"呼吸困难|呼吸不畅|气短|喘不过气|无法呼吸|不能呼吸|喘不上气"
+BREATH = r"呼吸(?:也|同样|都|很|非常|十分|特别|越来越)?困难|呼吸不畅|气短|喘不过气|无法呼吸|不能呼吸|喘不上气"
 SEVERE_BREATH = r"严重呼吸困难|呼吸(?:非常|十分|很|特别)困难|喘不过气|无法呼吸|不能呼吸|喘不上气|呼吸困难(?:很严重|严重|加重)"
-SIDE_WEAKNESS = r"(?:单侧|一侧|左侧|右侧|左边|右边|左手|右手|左臂|右臂|左腿|右腿).{0,12}(?:无力|麻木|抬不起来)|(?:嘴角|一侧脸).{0,8}(?:歪|下垂)"
-SPEECH = r"说不出话|说话不清|口齿不清|语言异常|言语异常|无法说话|不能说话"
+SIDE_WEAKNESS = r"(?:单侧|一侧|左侧|右侧|左边|右边|左手|右手|左臂|右臂|左腿|右腿).{0,12}(?:无力|没(?:有)?力气|使不上劲|使不出劲|麻木|抬不起来)|(?:嘴角|一侧脸).{0,8}(?:歪|下垂)"
+SPEECH = r"说不出话|说话(?:也|都|突然|变得|越来越)?(?:不清|不利索|含糊)|口齿(?:不清|不利索)|语言异常|言语异常|无法说话|不能说话|(?:说话|口齿).{0,5}大舌头"
 SUDDEN = r"突然|突发|刚刚|刚才"
 SWELLING = r"(?:喉|舌|咽|嘴唇).{0,6}(?:肿|肿胀)|(?:肿|肿胀).{0,6}(?:喉|舌)"
 HEADACHE = r"头痛|头疼"
@@ -135,15 +163,21 @@ SELF_HARM = (
     r"(?:想(?!知道|了解|询问|咨询|学习|研究)|打算|准备|计划|决定|要).{0,6}(?:自杀|自傷|自伤|轻生|寻短见|伤害自己|结束(?:自己)?(?:的)?生命|了结自己)|"
     r"(?:自杀|自傷|自伤|轻生)(?:念头|想法|意念|计划)|(?:想|打算|准备).{0,4}一了百了"
 )
+INDIRECT_SELF_HARM = (
+    r"活(?:着|下去)(?:也|都|已经|越来越|真|真的|好像|觉得|感觉)?(?:没(?:有)?(?:什么|一点)?意思|没(?:有)?意义)|"
+    r"不想(?:再)?(?:撑|坚持|熬)下去(?:了)?"
+)
+CRISIS_PREPARATION = r"我(?:已经|都)?(?:准备好(?:了)?|想好怎么做(?:了)?)(?=[，,。；！？\s]|$)"
 CONSCIOUSNESS = r"昏迷|意识不清|意识(?:有点|有些|越来越)?模糊|神[志智]不清|失去意识|意识异常|叫不醒|喊不醒|(?:怎么|怎样)(?:叫|喊).{0,6}(?:不醒|没(?:有)?反应)|呼之不应|没(?:有)?(?:任何|明显|正常)?反应|不省人事|没有醒过来|没有恢复清醒"
 FAINT = r"晕倒|晕到(?:了|地上)|昏倒|昏到(?:了|地上)|晕过去|昏过去|晕厥|昏厥"
 RECOVERED = r"(?:完全|彻底)(?:恢复|清醒|缓过来)|(?:已经|现在|目前)(?:恢复正常|完全好了)|(?:已经|现在|目前)(?:都)?(?:清醒了|缓过来了|醒过来了)"
 SEIZURE = r"(?:全身|四肢|手脚|身体)(?:都|突然|一直)?(?:抽搐|抽蓄|抽风)|(?<!眼皮)(?<!眼睑)(?<!嘴角)(?<!眼角)(?:抽搐|抽蓄)|癫痫发作|癫癎发作"
 BLEEDING = r"血流不止|血止不住|止不住(?:的)?血|血流个不停|血一直(?:流|往外冒)|伤口.{0,8}(?:流血不停|血流不停|止不住)|(?:按住|压住).{0,12}(?:还在|还是|仍然|仍在).{0,4}(?:流血|出血)"
-HAEMOPTYSIS = r"咯血|咳血|咳出(?:来)?[^，。；！？\n]{0,18}血|咳嗽.{0,5}(?:带血|有血)"
+HAEMOPTYSIS = r"咯血|咳血|咳出(?:来)?[^，。；！？\n]{0,18}血|咳嗽.{0,18}(?:带血|有血|血丝)|痰(?:里|中|内)(?:有|带|带有|带着|夹着|夹杂)?(?:一点点|一点|少量|一些)?(?:血丝|血)"
 LARGE_BLOOD = r"全是血|都是血|满口血|一(?:大)?口一(?:大)?口|大量|很多血|血.{0,4}(?:不停|不止)|不(?:只|止)是(?:一点|少量|血丝)"
 PREGNANCY = r"怀孕|孕妇|孕期|孕晚期|妊娠|孕\s*\d+\s*周|孕\s*[一二三四五六七八九十]+\s*周"
-VAGINAL_BLEED = r"阴道(?:在|有|少量|大量|一点|点滴){0,2}(?:出血|流血)|下面(?:在|有|少量|大量){0,2}(?:出血|流血)|见红"
+VAGINAL_BLEED = r"(?:阴道|下面)(?:在|有|少量|大量|一点点|一点|点滴){0,3}(?:出血|流血)|见红"
+OTHER_BLEED_SITE = r"手指|手部|手上|手掌|胳膊|手臂|腿部|脚部|擦伤|划伤|割伤|伤口|鼻子|鼻腔|鼻血|牙龈|牙齿|痔疮|肛门|便血|尿血|咯血|咳血|痰.{0,8}血"
 ABDOMINAL_PAIN = r"腹痛|(?:肚子|小腹|下腹)(?:还|也|一直|又|很|有点|有一点点)?(?:疼|痛)|腹部(?:疼|痛)"
 HEAD_INJURY = r"摔(?:到|了|伤)?(?:头|脑袋)|撞(?:到|了|伤)?(?:头|脑袋)|磕(?:到|了|伤)?(?:头|脑袋)|头部(?:外伤|受伤)|头被撞|脑袋.{0,3}(?:磕|撞)"
 WORSENING_DROWSINESS = r"越来越(?:困|嗜睡|难叫醒)|无法保持清醒|昏睡|困得(?:睁不开眼|叫不醒)|睡着(?:后)?叫不醒"
@@ -195,11 +229,39 @@ def check_conversation_urgent(text: str, visit: Visit) -> Risk:
     direct = check_urgent(text, visit.intake)
     if visit.risk.level == "emergency":
         if direct.kind == "self_harm":
+            if direct.level != "emergency":
+                # Support must not erase an already recorded medical warning.
+                return direct.model_copy(update={
+                    "level": "emergency",
+                    "message": direct.message + "\n" + visit.risk.message,
+                    "reasons": list(dict.fromkeys([*direct.reasons, *visit.risk.reasons])),
+                    "source_ids": list(dict.fromkeys([*direct.source_ids, *visit.risk.source_ids])),
+                })
             return direct
+        return visit.risk
+    # A vague preparation statement is not a crisis on its own. A bounded,
+    # immediately preceding self-harm report can make it safety-relevant.
+    previous = next((message for message in reversed(visit.messages) if message.role == "user"), None)
+    if previous is not None and _affirmed(text, CRISIS_PREPARATION):
+        try:
+            stamp = datetime.fromisoformat(previous.created_at.replace("Z", "+00:00"))
+            elapsed = datetime.now(timezone.utc) - stamp if stamp.tzinfo is not None else timedelta(days=1)
+        except (ValueError, TypeError):
+            elapsed = timedelta(days=1)
+        if timedelta(0) <= elapsed <= timedelta(minutes=30) and any(
+            _affirmed(clause, SELF_HARM + "|" + INDIRECT_SELF_HARM)
+            for clause in current_clauses(previous.content)
+        ) and not (HARD_EDUCATION.search(text) or QUOTED_CONTEXT.search(text)):
+            return Risk(level="emergency", kind="self_harm", message=SELF_HARM_MESSAGE,
+                        reasons=["紧邻的危机自述之后出现已准备好或想好行动的表述，需要立即获得真人支持"],
+                        source_ids=["crisis_support"])
+    if visit.risk.kind == 'self_harm' and direct.level != 'emergency' and direct.kind != 'self_harm':
+        # A greeting, an unrelated edit or a vague continuation is not a
+        # confirmation that a previously reported support need has resolved.
         return visit.risk
     if direct.level == "emergency" or not re.match(r"^(?:还|也|并且|而且|同时|伴(?:有|着)?|痛得|疼得|更|越来越)", text.strip()):
         return direct
-    if HARD_EDUCATION.search(text) or EDUCATION.search(text):
+    if HARD_EDUCATION.search(text) or QUOTED_CONTEXT.search(text) or EDUCATION.search(text):
         return direct
     # A newly named person is a new report, not an implicit continuation.
     if re.search(r"爸爸|父亲|妈妈|母亲|爷爷|奶奶|外公|外婆|姥姥|姥爷|哥哥|姐姐|弟弟|妹妹|叔叔|阿姨|伯伯|姑姑|舅舅|家人|孩子|宝宝|老人|朋友|同事|丈夫|妻子|患者|病人|另一个人|其他人|别人", text):
@@ -209,7 +271,6 @@ def check_conversation_urgent(text: str, visit: Visit) -> Risk:
     continuation = re.sub(r"^(?:还|也|并且|而且|同时|伴(?:有|着)?|更|越来越)[，,\s]*", "", text.strip(), count=1)
     if not re.match(r"^(?:冒(?:冷|大)汗|(?:有|出现|感觉|觉得)(?:些|一些|点|有点|比较|更|很|特别|非常|严重)?(?:冷汗|大汗|胸|呼吸|气短|喉|舌|肿|头|痛|疼)|胸|呼吸|气短|喘|冷汗|大汗|喉|舌|肿|说话|痛|疼|无法呼吸|不能呼吸|严重呼吸困难|肚子|小腹|下腹|腹痛|出血|流血|阴道|吐|呕吐|困|昏睡|不吃奶|抽搐|意识|没有|不伴|并无|没|不)", continuation):
         return direct
-    previous = next((message for message in reversed(visit.messages) if message.role == "user"), None)
     if previous is None:
         return direct
     try:
@@ -243,7 +304,11 @@ def check_urgent(text: str, intake: Intake | None = None) -> Risk:
     source_ids: list[str] = []
     prompt_reasons: list[str] = []
     prompt_sources: list[str] = []
-    if any(_affirmed(clause, SELF_HARM) for clause in clauses):
+    explicit_crisis = any(_affirmed(clause, SELF_HARM) for clause in clauses)
+    indirect_crisis = any(_affirmed(clause, INDIRECT_SELF_HARM) for clause in clauses)
+    immediate_danger = any(_reported_overdose(clause) or _affirmed(clause, r"马上.{0,8}(?:行动|去死|跳|自杀|伤害自己)|已经.{0,8}(?:自伤|伤害自己)|无法保证(?:自己)?(?:的)?安全") for clause in clauses)
+    crisis_preparation = any(_affirmed(clause, CRISIS_PREPARATION) for clause in clauses)
+    if explicit_crisis or (indirect_crisis and (immediate_danger or crisis_preparation)):
         return Risk(level="emergency", kind="self_harm", message=SELF_HARM_MESSAGE,
                     reasons=["当前自述包含自伤或自杀意念，需要立即获得真人陪伴与危机支持"], source_ids=["crisis_support"])
     # A user may put associated symptoms into separate sentences.
@@ -262,9 +327,9 @@ def check_urgent(text: str, intake: Intake | None = None) -> Risk:
             source_ids.append("emergency_breathing")
         # A later 'currently no symptoms' cannot erase a separate recent
         # positive stroke-warning report. NHS recommends help even if resolved.
-        if (RECENT.search(clause) or CURRENT.search(clause) or re.search(SUDDEN, clause)) and (
-            _affirmed(clause, SIDE_WEAKNESS) or _affirmed(clause, SPEECH)
-        ):
+        # The user need not know to write 突然/现在. The context filter has
+        # already excluded old, negated, hypothetical and quoted events.
+        if _affirmed(clause, SIDE_WEAKNESS) or _affirmed(clause, SPEECH):
             reasons.append("当前或近期描述包含单侧无力或语言异常，即使已缓解也应立即求助")
             source_ids.append("emergency_stroke")
         if _affirmed(clause, CONSCIOUSNESS):
@@ -312,14 +377,21 @@ def check_urgent(text: str, intake: Intake | None = None) -> Risk:
                 source_ids.append("seizure")
 
     pregnant = (intake is not None and intake.age_group == "孕产期") or _affirmed(current_text, PREGNANCY)
-    if pregnant and _affirmed(current_text, VAGINAL_BLEED):
+    unspecified_pregnancy_bleed = any(
+        _affirmed(clause, r"(?:有)?(?:一点点|一点|少量|点滴)?(?:出血|流血)")
+        and not re.search(OTHER_BLEED_SITE, clause)
+        for clause in clauses
+    )
+    if pregnant and (_affirmed(current_text, VAGINAL_BLEED) or unspecified_pregnancy_bleed):
         small_mild = _affirmed(current_text, r"少量|一点(?:点)?|点滴|一丝|血丝") and _affirmed(current_text, r"轻微|隐隐|有一点点疼|有一点点痛")
         danger = _affirmed(current_text, LARGE_BLOOD + "|" + FAINT + "|" + CONSCIOUSNESS + "|" + EXTREME_PAIN)
-        if danger or (_affirmed(current_text, ABDOMINAL_PAIN) and not small_mild):
+        known_vaginal_bleed = _affirmed(current_text, VAGINAL_BLEED)
+        if known_vaginal_bleed and (danger or (_affirmed(current_text, ABDOMINAL_PAIN) and not small_mild)):
             reasons.append("当前孕期出血伴腹痛或其他危险征象，需要立即获得产科或急救评估")
             source_ids.append("pregnancy_bleeding")
         else:
-            prompt_reasons.append("孕期出血需要尽快联系产科专业人员，少量出血也需要评估")
+            prompt_reasons.append("孕期出血需要尽快联系产科专业人员，少量出血也需要评估" if known_vaginal_bleed else
+                                  "孕期自述有出血但部位未明确，需要尽快联系专业人员确认，不能据此判断来源")
             prompt_sources.append("pregnancy_bleeding")
 
     infant_age = _infant_age_months(current_text)
@@ -349,10 +421,16 @@ def check_urgent(text: str, intake: Intake | None = None) -> Risk:
                 prompt_sources.append("head_injury")
     if reasons:
         return Risk(level="emergency", kind="medical", message=EMERGENCY_MESSAGE, reasons=list(dict.fromkeys(reasons)), source_ids=list(dict.fromkeys(source_ids)))
+    if indirect_crisis:
+        return Risk(level="prompt", kind="self_harm", message=SELF_HARM_SUPPORT_MESSAGE,
+                    reasons=["当前表述显示难以承受的感受，需要温和的真人支持；不能据此确认自伤计划"],
+                    source_ids=["crisis_support"])
     if prompt_reasons:
         return Risk(level="prompt", kind="medical", message="请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。" + LIMITATION,
                     reasons=list(dict.fromkeys(prompt_reasons)), source_ids=list(dict.fromkeys(prompt_sources)))
-    persistent_fever = r"(?:高烧|高热|发烧|发热).{0,10}(?:三天|3天|[4-9]天|\d{2,}天).{0,6}(?:不退|没退|未退|持续)|(?:持续|连续).{0,4}(?:高热|高烧).{0,6}(?:三天|3天|[4-9]天|\d{2,}天)"
+    fever_days = r"(?:[3-9]|\d{2,}|[三四五六七八九十]|[一二三四五六七八九]十[一二三四五六七八九]?)\s*天"
+    persistent_fever = (r"(?:高烧|高热|发烧|发热).{0,10}" + fever_days +
+                        r".{0,8}(?:不退|没退|未退|没(?:有)?退|持续)|(?:持续|连续).{0,4}(?:高热|高烧).{0,6}" + fever_days)
     if any(_affirmed(clause, persistent_fever) for clause in clauses):
         return Risk(level="prompt", kind="medical", message="持续发热需要及时向专业医务人员咨询或就诊；出现意识异常、呼吸困难等危险表现时立即联系当地急救。" + LIMITATION,
                     reasons=["当前描述包含多日持续高热或发热不退"], source_ids=["fever"])

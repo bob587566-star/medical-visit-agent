@@ -28,6 +28,7 @@ from .task_agent import TaskEngine
 from .task_storage import TaskStore
 from .tasks_api import register_task_routes
 from .safety_review import LocalSafetyReview
+from .risk_policy import requires_human_support, risk_order
 
 ROOT = Path(__file__).resolve().parents[1]
 COOKIE = "zhihe_visitor"
@@ -288,8 +289,8 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             previous_risk = visit.risk
             visit.intake = body
             visit.risk = check_urgent("", body)
-            if previous_risk.level == "emergency" and visit.risk.level != "emergency":
-                visit.risk = previous_risk
+            if requires_human_support(previous_risk):
+                visit.risk = max((previous_risk, visit.risk), key=risk_order)
             visit.summary = None
             visit.plan = None
             visit.intake_candidates = []
@@ -304,7 +305,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         if len(visit.messages) >= 200:
             raise HTTPException(409, "本条记录已达到对话上限，请新建记录。")
         # Emergency rules run inside Executor before any model I/O; do not queue that check.
-        if check_conversation_urgent(body.content, visit).level != "emergency":
+        if not requires_human_support(check_conversation_urgent(body.content, visit)):
             rate_limit(owner)
         result = await app.state.executor.run(visit, body.content, body.use_model)
         if not result.content.strip():
@@ -327,27 +328,28 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             # A pending answer cannot downgrade a newer warning or dismiss an
             # unresolved emergency reported elsewhere in this same record.
             risk_options = [check_conversation_urgent(body.content, latest)]
-            if changed or latest.risk.level == "emergency":
+            if changed or requires_human_support(latest.risk):
                 risk_options.append(latest.risk)
-            if not changed or result.risk.level == "emergency":
+            if not changed or requires_human_support(result.risk):
                 risk_options.append(result.risk)
-            merged_risk = max(risk_options, key=lambda risk: {"unknown": 0, "prompt": 1, "emergency": 2}[risk.level])
+            merged_risk = max(risk_options, key=risk_order)
             user.risk = assistant.risk = merged_risk
-            if merged_risk.level == "emergency" and result.risk.level != "emergency":
-                assistant.content = merged_risk.message + "\n\n" + assistant.content
+            if requires_human_support(merged_risk):
+                assistant.content = merged_risk.message
                 assistant.suggested_questions = []
                 assistant.followup_field = None
                 assistant.intake_candidates = []
                 assistant.sources = app.state.knowledge.by_ids(merged_risk.source_ids)
+                assistant.mode = 'local_emergency' if merged_risk.level == 'emergency' else 'local_support'
             latest.messages.extend([user, assistant])
-            latest.summary = None if changed else result.summary
+            latest.summary = None if changed or requires_human_support(merged_risk) else result.summary
             latest.plan = None
             # Only retain suggestions still absent in the latest saved form.
             proposed = {c.field: c for c in latest.intake_candidates}
-            for candidate in ([] if merged_risk.level == "emergency" else result.intake_candidates):
+            for candidate in ([] if requires_human_support(merged_risk) else result.intake_candidates):
                 if getattr(latest.intake, candidate.field) == getattr(visit.intake, candidate.field):
                     proposed[candidate.field] = candidate
-            latest.intake_candidates = list(proposed.values())[:8]
+            latest.intake_candidates = [] if requires_human_support(merged_risk) else list(proposed.values())[:8]
             latest.risk = merged_risk
             if not changed:
                 latest.checklist = result.checklist
@@ -359,10 +361,14 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
     @app.post("/api/visits/{visit_id}/summary")
     async def summary(visit_id: str, body: SummaryRequest, owner=Depends(mutation)):
         visit = owned(owner, visit_id)
+        if requires_human_support(visit.risk) or requires_human_support(check_conversation_urgent('', visit)):
+            raise HTTPException(409, '当前记录需要先关注安全与支持，已暂停生成就诊摘要。')
         rate_limit(owner)
         result = await app.state.executor.run(visit, use_model=body.use_model, purpose="summary")
         async with app.state.commit_lock:
             latest = owned(owner, visit_id)
+            if requires_human_support(latest.risk) or requires_human_support(check_conversation_urgent('', latest)) or requires_human_support(result.risk):
+                raise HTTPException(409, '当前记录需要先关注安全与支持，已暂停生成就诊摘要。')
             if (latest.intake != visit.intake or latest.messages != visit.messages
                     or latest.observations != visit.observations):
                 raise HTTPException(409, "资料在整理期间有更新，请重新生成摘要。")
@@ -448,6 +454,8 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
     async def plan(visit_id: str, owner=Depends(mutation)):
         async with app.state.commit_lock:
             visit = owned(owner, visit_id)
+            if requires_human_support(visit.risk) or requires_human_support(check_conversation_urgent('', visit)):
+                raise HTTPException(409, '当前记录需要先关注安全与支持，已暂停生成准备计划。')
             visit.plan = await app.state.executor.execute("build_preparation_plan", visit=visit)
             visit.updated_at = now()
             app.state.store.put(owner, visit)

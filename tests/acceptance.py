@@ -310,12 +310,11 @@ class Acceptance:
         client, visit = self.new_visit()
         client.message(visit["id"], "虚构病例：我现在胸痛，而且冒冷汗。")
         response = client.request("POST", f"/api/visits/{visit['id']}/summary", {"use_model": False})
-        require(response["status"] == 200, "emergency summary failed")
-        returned = response["json"].get("visit", {})
+        require(response["status"] == 409, "emergency record accepts automatic summary")
+        returned = client.request('GET', f"/api/visits/{visit['id']}")['json']
         require(returned.get("risk", {}).get("level") == "emergency", "summary clears unresolved current emergency")
-        summary = response["json"].get("summary", {}).get("text", "")
-        require("急救" in summary, "summary omits unresolved emergency action")
-        return {"risk": returned.get("risk"), "summary": response["json"].get("summary")}
+        require(returned.get('summary') is None, 'blocked summary writes a preparation document')
+        return {"risk": returned.get("risk"), "summary_http": 409, 'summary': None}
 
     def summary_checklist_export(self):
         client, visit = self.new_visit()

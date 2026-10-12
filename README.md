@@ -35,6 +35,8 @@ Ollama 不可用时自动回退，接口和页面显示真实状态。**当前�
 
 可选本机语义复核默认关闭，仅允许升级求助提示，不能降级规则结果；当前没有完成真实本机模型验收，也未经临床评测，不能把该模块算作已验证的第二道医疗防线。规则未命中、模型可用或有限回归集通过，都不代表安全。
 
+同义表达与引用语境已补最小差异回归：支持“没力气”“不利索”“呼吸也困难”“痰里带血丝”等自述；新闻、书籍、视频、假设与实际当前求助分开处理，实际第三方危险报告不因“朋友”一词而忽略。“活着没意思”等间接表达使用 `prompt + self_harm` 的温和陪伴支持；孤立“我已经准备好了”不判危机，紧邻危机语境另行检查。摘要、准备计划与任务保存统一暂停于需要先获得人类支持的记录，保留聊天、本人原资料及原文导出。依据和分级取舍见 [复审依据](docs/review-safety-boundaries.md)，当前软件验收见 [复审修复记录](artifacts/复审修复验收-20261012.md)。
+
 资料说明与官方来源见 [knowledge/README.md](knowledge/README.md)。reviewed_at 是本项目核对网页的日期，不代表医生审核。
 
 ## 本机启动
@@ -86,6 +88,7 @@ Linux/macOS 可创建 .venv，安装 backend/requirements.txt，在 frontend 执
 .\.venv\Scripts\python.exe tests/acceptance_v2.py
 .\.venv\Scripts\python.exe tests/acceptance_conversation.py
 .\.venv\Scripts\python.exe tests/acceptance_redflags.py
+.\.venv\Scripts\python.exe tests/acceptance_rewording.py
 .\.venv\Scripts\python.exe tests/acceptance_tasks.py
 .\.venv\Scripts\python.exe tests/model_boundary.py
 cd frontend

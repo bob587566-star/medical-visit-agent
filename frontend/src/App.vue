@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { ApiError, request, setCsrfToken } from './api'
-import { copyIntake, emptyIntake, modelChoice, replyText, shortDate, visitHasIntake } from './helpers'
+import { copyIntake, emptyIntake, modelChoice, replyText, requiresHumanSupport, shortDate, visitHasIntake } from './helpers'
 import { intakeFields, intakeLabels, type Bootstrap, type ChecklistItem, type Intake, type IntakeCandidate, type MessageResult, type ObservationInput, type PreparationPlan, type Source, type SummaryResult, type Visit, type Workspace } from './types'
 import LeafMark from './components/LeafMark.vue'
 import MessageBubble from './components/MessageBubble.vue'
@@ -54,6 +54,8 @@ const checklist = computed(() => currentVisit.value?.checklist || [])
 const checklistDone = computed(() => checklist.value.filter(item => item.done).length)
 const summary = computed(() => currentVisit.value?.summary?.text || '')
 const risk = computed(() => currentVisit.value?.risk)
+const humanSupport = computed(() => requiresHumanSupport(risk.value))
+const supportNotice = computed(() => risk.value?.kind === 'self_harm' ? '先获得陪伴和支持，暂不生成摘要或准备计划。你的原始记录仍保留，可以下载，也可以继续聊。' : '当前需要立即关注安全，暂不生成摘要或准备计划。你的原始记录仍保留，可以下载。')
 const currentTitle = computed(() => currentVisit.value?.title || '新的就诊准备')
 const busyLabel = computed(() => ({ bootstrap: '正在连接本机服务…', create: '正在新建记录…', select: '正在打开记录…', save: '正在保存信息…', send: '正在核查提醒与查询资料…', summary: '正在整理自述摘要…', checklist: '正在更新清单…', delete: '正在删除记录…', clear: '正在清空本人的数据…', export: '正在准备下载…' }[busy.value] || '正在处理…'))
 const printIntake = computed(() => [
@@ -146,9 +148,11 @@ async function sendMessage(question?: string): Promise<void> {
 }
 async function generateSummary(): Promise<void> {
   if (!currentVisit.value) return
+  if (humanSupport.value) { notice.value = supportNotice.value; return }
   tab.value = 'summary'
   await run('summary', async () => {
     await persistDraft()
+    if (humanSupport.value) throw new ApiError(supportNotice.value)
     const result = await request<SummaryResult>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/summary`, 'POST', { use_model: modelChoice(useModel.value, modelAvailable.value) })
     if (!result.visit) throw new ApiError('摘要生成结果不完整，请稍后重试。')
     await refreshVisit(result.visit)
@@ -266,8 +270,10 @@ async function deleteObservation(id: string): Promise<void> {
 }
 async function generatePlan(): Promise<void> {
   if (!currentVisit.value) return
+  if (humanSupport.value) { notice.value = supportNotice.value; return }
   await run('plan', async () => {
     await persistDraft()
+    if (humanSupport.value) throw new ApiError(supportNotice.value)
     const result = await request<{ plan: PreparationPlan; visit: Visit }>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/plan`, 'POST', {})
     if (!result.plan || !result.visit) throw new ApiError('准备计划没有生成完整，请重试。')
     await refreshVisit(result.visit); notice.value = '就诊沟通与准备计划已更新，请核对后使用。'
@@ -353,12 +359,12 @@ onMounted(bootstrap)
               <p class="composer-note">避免填写姓名、电话、证件号或地址。回答仅用于健康教育与就诊准备。</p>
             </div>
 
-            <div v-else class="summary-panel"><div class="section-heading"><div><span class="step-caption">STEP 03 · 带着清楚的信息出发</span><h2>给医生看的自述摘要</h2><p>忠实整理你的填写和自述，请核对后使用。</p></div><span class="self-report-tag">本人自述</span></div><div v-if="summary" class="summary-document"><div class="document-heading"><LeafMark /><span>知禾 · 就诊准备记录</span><small v-if="currentVisit?.summary?.generated_at">{{ shortDate(currentVisit.summary.generated_at) }}</small></div><div class="summary-text">{{ summary }}</div><div class="document-footer">来源：本人填写与自述 · 未填写信息不作推测<br />本摘要不构成诊断、处方或医疗建议。</div></div><div v-else class="summary-empty"><div class="empty-document" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div><h3>让医生更快了解你的情况</h3><p>把已填写的信息和对话中的自述整理成一页摘要。<br />不确定或未填写的内容会明确标记。</p><button class="primary-button" :disabled="!!busy || !currentVisit" @click="generateSummary">{{ busy === 'summary' ? '正在生成…' : '生成就诊摘要' }} <span aria-hidden="true">✧</span></button></div><div class="summary-actions"><button v-if="summary" class="primary-button" :disabled="!!busy || !currentVisit" @click="generateSummary">{{ busy === 'summary' ? '正在整理…' : '重新生成摘要' }}</button><button class="secondary-button" :disabled="!!busy || !summary" @click="copySummary">复制摘要</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="downloadText">下载 TXT</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="printSummary">打印</button></div><p class="summary-help">修改就诊信息后，可重新生成摘要。没有摘要时，下载或打印会包含当前已填写资料。</p><PlanPanel :plan="currentVisit?.plan || null" :busy="!!busy" :available="!!currentVisit" @generate="generatePlan" /></div>
+            <div v-else class="summary-panel"><p v-if="humanSupport" class="summary-support-note" role="status">{{ supportNotice }}</p><div class="section-heading"><div><span class="step-caption">STEP 03 · 带着清楚的信息出发</span><h2>给医生看的自述摘要</h2><p>忠实整理你的填写和自述，请核对后使用。</p></div><span class="self-report-tag">本人自述</span></div><div v-if="summary" class="summary-document"><div class="document-heading"><LeafMark /><span>知禾 · 就诊准备记录</span><small v-if="currentVisit?.summary?.generated_at">{{ shortDate(currentVisit.summary.generated_at) }}</small></div><div class="summary-text">{{ summary }}</div><div class="document-footer">来源：本人填写与自述 · 未填写信息不作推测<br />本摘要不构成诊断、处方或医疗建议。</div></div><div v-else class="summary-empty"><div class="empty-document" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div><h3>让医生更快了解你的情况</h3><p>把已填写的信息和对话中的自述整理成一页摘要。<br />不确定或未填写的内容会明确标记。</p><button class="primary-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary">{{ busy === 'summary' ? '正在生成…' : '生成就诊摘要' }} <span aria-hidden="true">✧</span></button></div><div class="summary-actions"><button v-if="summary" class="primary-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary">{{ busy === 'summary' ? '正在整理…' : '重新生成摘要' }}</button><button class="secondary-button" :disabled="!!busy || !summary" @click="copySummary">复制摘要</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="downloadText">下载 TXT</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="printSummary">打印</button></div><p class="summary-help">修改就诊信息后，可重新生成摘要。没有摘要时，下载或打印会包含当前已填写资料。</p><PlanPanel :plan="currentVisit?.plan || null" :busy="!!busy" :available="!!currentVisit && !humanSupport" @generate="generatePlan" /></div>
             <div v-if="busy && busy !== 'send'" class="operation-status" role="status"><span class="spinner" aria-hidden="true"></span>{{ busyLabel }}</div>
           </section>
 
           <aside class="preparation-column" aria-label="就诊准备概览">
-            <section class="preparation-card"><div class="card-heading"><span class="card-title-icon" aria-hidden="true">▤</span><h2>这次就诊的准备</h2><span class="card-live-dot" aria-hidden="true"></span></div><p class="current-record-title">{{ currentTitle }}</p><div class="completion-row"><span>核心信息填写进度</span><strong>{{ completion }}<small> / 7</small></strong></div><div class="completion-track" role="progressbar" :aria-valuenow="completion" :aria-valuemin="0" :aria-valuemax="7" aria-label="就诊信息填写进度"><span :style="{ width: `${completion / 7 * 100}%` }"></span></div><div class="information-preview"><div><span>主要不适</span><p>{{ draft.chief_complaint || '等待你的描述' }}</p></div><div><span>开始时间</span><p>{{ draft.onset || '尚未填写' }}</p></div></div><button class="card-text-button" :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ dirty ? '继续编辑 · 有未保存修改' : '补充就诊信息' }} <span aria-hidden="true">→</span></button><div class="card-divider"></div><div class="checklist-heading"><h3>随身准备清单</h3><span>{{ checklist.length ? `${checklistDone}/${checklist.length}` : '待生成' }}</span></div><ul v-if="checklist.length" class="checklist"><li v-for="item in checklist" :key="item.id"><label :class="{ checked: item.done }"><input type="checkbox" :checked="item.done" :disabled="!!busy" @change="changeChecklist($event, item)" /><span>{{ item.text }}</span></label></li></ul><div v-else class="checklist-empty"><span aria-hidden="true">☑</span><p>生成摘要后，专属准备清单<br />会出现在这里。</p></div><button class="generate-button" :disabled="!!busy || !currentVisit" @click="generateSummary"><span aria-hidden="true">✧</span> {{ busy === 'summary' ? '正在整理摘要…' : summary ? '更新就诊摘要' : '一键生成就诊摘要' }} <span aria-hidden="true">→</span></button><small class="card-caption">整理你的自述，保留未知与待确认的信息。</small></section>
+            <section class="preparation-card"><div class="card-heading"><span class="card-title-icon" aria-hidden="true">▤</span><h2>这次就诊的准备</h2><span class="card-live-dot" aria-hidden="true"></span></div><p class="current-record-title">{{ currentTitle }}</p><div class="completion-row"><span>核心信息填写进度</span><strong>{{ completion }}<small> / 7</small></strong></div><div class="completion-track" role="progressbar" :aria-valuenow="completion" :aria-valuemin="0" :aria-valuemax="7" aria-label="就诊信息填写进度"><span :style="{ width: `${completion / 7 * 100}%` }"></span></div><div class="information-preview"><div><span>主要不适</span><p>{{ draft.chief_complaint || '等待你的描述' }}</p></div><div><span>开始时间</span><p>{{ draft.onset || '尚未填写' }}</p></div></div><button class="card-text-button" :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ dirty ? '继续编辑 · 有未保存修改' : '补充就诊信息' }} <span aria-hidden="true">→</span></button><div class="card-divider"></div><div class="checklist-heading"><h3>随身准备清单</h3><span>{{ checklist.length ? `${checklistDone}/${checklist.length}` : '待生成' }}</span></div><ul v-if="checklist.length" class="checklist"><li v-for="item in checklist" :key="item.id"><label :class="{ checked: item.done }"><input type="checkbox" :checked="item.done" :disabled="!!busy" @change="changeChecklist($event, item)" /><span>{{ item.text }}</span></label></li></ul><div v-else class="checklist-empty"><span aria-hidden="true">☑</span><p>生成摘要后，专属准备清单<br />会出现在这里。</p></div><button class="generate-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary"><span aria-hidden="true">✧</span> {{ busy === 'summary' ? '正在整理摘要…' : summary ? '更新就诊摘要' : '一键生成就诊摘要' }} <span aria-hidden="true">→</span></button><small class="card-caption">{{ humanSupport ? supportNotice : '整理你的自述，保留未知与待确认的信息。' }}</small></section>
 
             <section class="model-card"><div class="model-heading"><div><span aria-hidden="true">◇</span><strong>外部模型辅助</strong></div><button class="toggle-switch" type="button" role="switch" :aria-checked="useModel" aria-label="允许将脱敏的有限症状片段发送给 DeepSeek" :disabled="!modelAvailable || !!busy" @click="useModel = !useModel"><span></span></button></div><p v-if="modelAvailable">{{ modelNotice }}</p><p v-else>本机资料整理可直接使用。DeepSeek 尚未配置，外部模型开关已禁用。</p><span class="privacy-state">{{ useModel && modelAvailable ? '已允许本次记录的外部辅助' : '当前：本机处理' }}</span></section>
 

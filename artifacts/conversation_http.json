@@ -1,5 +1,5 @@
 {
-  "executed_at": "2026-10-12T11:08:47.748356+00:00",
+  "executed_at": "2026-10-12T13:26:27.341762+00:00",
   "base_url": "http://127.0.0.1:8270",
   "passed": 4,
   "failed": 0,
@@ -14,31 +14,31 @@
             "user": "头疼想睡觉",
             "assistant": "你说的是“头疼想睡觉”，我听到了。\n\n这种不舒服大概从什么时候开始的？",
             "next_field": "onset",
-            "elapsed_ms": 31.0
+            "elapsed_ms": 46.0
           },
           {
             "user": "昨晚开始的",
             "assistant": "明白，时间是“昨晚开始”。\n\n你自己感觉不适程度是轻、中，还是重？",
             "next_field": "severity",
-            "elapsed_ms": 32.0
+            "elapsed_ms": 16.0
           },
           {
             "user": "轻微",
             "assistant": "明白，你自己感觉“轻微”。\n\n方便说一下，你属于成人、儿童、老年人，还是孕产期？",
             "next_field": "age_group",
-            "elapsed_ms": 31.0
+            "elapsed_ms": 16.0
           },
           {
             "user": "成人",
             "assistant": "年龄阶段收到。\n\n目前有没有在用药物或补充剂？没有也可以直接说。",
             "next_field": "medications",
-            "elapsed_ms": 15.0
+            "elapsed_ms": 31.0
           },
           {
             "user": "没有用药",
             "assistant": "这项信息收到。\n\n有没有已知的过敏？不清楚也可以说不清楚。",
             "next_field": "allergies",
-            "elapsed_ms": 32.0
+            "elapsed_ms": 0.0
           },
           {
             "user": "不知道",
@@ -50,13 +50,13 @@
             "user": "没有既往病史",
             "assistant": "这项信息收到。\n\n你已经提到的基本情况都接上了。需要时可以让我整理成就诊摘要；写入资料前再逐项核对。",
             "next_field": null,
-            "elapsed_ms": 31.0
+            "elapsed_ms": 15.0
           }
         ],
         "saved_form_progress": 0,
         "confirmation_required_only_for_saving": true
       },
-      "duration_ms": 266.0
+      "duration_ms": 250.0
     },
     {
       "name": "contextual_question_and_unknown_institution",
@@ -90,7 +90,7 @@
           }
         ]
       },
-      "duration_ms": 172.0
+      "duration_ms": 156.0
     },
     {
       "name": "linked_warning_and_denial_history_person_exclusions",
@@ -122,7 +122,7 @@
           "level": "unknown"
         }
       ],
-      "duration_ms": 2515.0
+      "duration_ms": 547.0
     }
   ],
   "cleanup": {

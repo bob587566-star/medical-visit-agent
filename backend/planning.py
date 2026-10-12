@@ -67,10 +67,10 @@ def collection_for(intake: Intake, risk: Risk) -> CollectionState:
     missing = [key for key in REQUIRED_FIELDS if key not in captured]
     urgent = risk.level == "emergency"
     return CollectionState(
-        stage="urgent" if urgent else ("ready" if not missing else ("collecting" if captured else "start")),
+        stage="urgent" if urgent else ('support' if risk.kind == 'self_harm' else ("ready" if not missing else ("collecting" if captured else "start"))),
         completion=round(len(captured) / len(REQUIRED_FIELDS) * 100),
         captured_fields=captured, missing_fields=missing,
-        next_question="请先联系当地急救，不要等待补全资料。" if urgent else (FOLLOWUP[missing[0]] if missing else "资料已整理；就诊时请与医生核对尚不确定的部分。"),
+        next_question=("先获得真人陪伴与支持，不必继续补全资料。" if risk.kind == 'self_harm' else "请先联系当地急救，不要等待补全资料。") if urgent or risk.kind == 'self_harm' else (FOLLOWUP[missing[0]] if missing else "资料已整理；就诊时请与医生核对尚不确定的部分。"),
     )
 
 

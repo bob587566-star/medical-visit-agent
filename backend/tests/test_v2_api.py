@@ -132,8 +132,10 @@ def test_saving_intake_cannot_silently_dismiss_chat_emergency(tmp_path):
         edited = client.patch(base + "/intake", json={"chief_complaint": "虚构咳嗽"}, headers=headers)
         assert edited.json()["risk"]["level"] == "emergency"
         result = client.post(base + "/summary", json={}, headers=headers)
-        assert result.json()["visit"]["risk"]["level"] == "emergency"
-        assert "120" in result.json()["summary"]["text"]
+        assert result.status_code == 409
+        current = client.get(base).json()
+        assert current['risk']['level'] == 'emergency'
+        assert current['summary'] is None
 
 
 def test_actual_vite_development_origin_can_save_with_csrf(tmp_path):

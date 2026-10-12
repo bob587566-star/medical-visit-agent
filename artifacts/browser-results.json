@@ -106,6 +106,40 @@
       "line": 0,
       "specs": [
         {
+          "title": "间接危机：温和支持、摘要与任务暂停，原资料和手机聊天仍可使用",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3241,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-12T13:32:48.858Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7303f99df23bbb402c10-9ad7aa98b405197d7250",
+          "file": "visit-preparation.spec.ts",
+          "line": 5,
+          "column": 1
+        },
+        {
           "title": "真实 UI：填表保存刷新、健康来源/未知题、摘要、清单、下载与打印",
           "ok": true,
           "tags": [],
@@ -121,12 +155,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5868,
+                  "duration": 4190,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:25.030Z",
+                  "startTime": "2026-10-12T13:32:52.541Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -136,7 +170,7 @@
           ],
           "id": "7303f99df23bbb402c10-d75f9f42c0017205d06f",
           "file": "visit-preparation.spec.ts",
-          "line": 59,
+          "line": 108,
           "column": 1
         },
         {
@@ -155,12 +189,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 956,
+                  "duration": 1167,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:31.193Z",
+                  "startTime": "2026-10-12T13:32:56.741Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -170,7 +204,7 @@
           ],
           "id": "7303f99df23bbb402c10-1667f355fc4757ddf819",
           "file": "visit-preparation.spec.ts",
-          "line": 131,
+          "line": 180,
           "column": 1
         },
         {
@@ -189,12 +223,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 774,
+                  "duration": 880,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:32.162Z",
+                  "startTime": "2026-10-12T13:32:57.917Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -204,7 +238,7 @@
           ],
           "id": "7303f99df23bbb402c10-548236065e6cce588bd0",
           "file": "visit-preparation.spec.ts",
-          "line": 152,
+          "line": 201,
           "column": 1
         },
         {
@@ -223,12 +257,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2111,
+                  "duration": 2194,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:32.953Z",
+                  "startTime": "2026-10-12T13:32:58.809Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -238,7 +272,7 @@
           ],
           "id": "7303f99df23bbb402c10-0ec4398ac1579f621265",
           "file": "visit-preparation.spec.ts",
-          "line": 163,
+          "line": 212,
           "column": 3
         },
         {
@@ -257,12 +291,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1840,
+                  "duration": 2106,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:35.072Z",
+                  "startTime": "2026-10-12T13:33:01.013Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -272,7 +306,7 @@
           ],
           "id": "7303f99df23bbb402c10-d6b5633be2c2d64f9e0a",
           "file": "visit-preparation.spec.ts",
-          "line": 163,
+          "line": 212,
           "column": 3
         },
         {
@@ -291,12 +325,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2070,
+                  "duration": 2200,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:36.921Z",
+                  "startTime": "2026-10-12T13:33:03.131Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -306,7 +340,7 @@
           ],
           "id": "7303f99df23bbb402c10-72645d3a41edda9e1f17",
           "file": "visit-preparation.spec.ts",
-          "line": 208,
+          "line": 257,
           "column": 1
         },
         {
@@ -325,12 +359,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1126,
+                  "duration": 1138,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:39.000Z",
+                  "startTime": "2026-10-12T13:33:05.340Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -340,7 +374,7 @@
           ],
           "id": "7303f99df23bbb402c10-86e7f73a6d72f5273e30",
           "file": "visit-preparation.spec.ts",
-          "line": 268,
+          "line": 317,
           "column": 1
         },
         {
@@ -359,12 +393,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1971,
+                  "duration": 3992,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:40.135Z",
+                  "startTime": "2026-10-12T13:33:06.487Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -374,7 +408,7 @@
           ],
           "id": "7303f99df23bbb402c10-dd7b345872234785f291",
           "file": "visit-preparation.spec.ts",
-          "line": 292,
+          "line": 341,
           "column": 1
         },
         {
@@ -393,12 +427,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1231,
+                  "duration": 1277,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:42.114Z",
+                  "startTime": "2026-10-12T13:33:10.488Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -408,7 +442,7 @@
           ],
           "id": "7303f99df23bbb402c10-482161184c8e25736168",
           "file": "visit-preparation.spec.ts",
-          "line": 362,
+          "line": 411,
           "column": 1
         },
         {
@@ -427,12 +461,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4803,
+                  "duration": 3330,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-12T11:10:43.354Z",
+                  "startTime": "2026-10-12T13:33:11.775Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -442,7 +476,7 @@
           ],
           "id": "7303f99df23bbb402c10-58134461365dde401f74",
           "file": "visit-preparation.spec.ts",
-          "line": 410,
+          "line": 459,
           "column": 1
         }
       ]
@@ -450,9 +484,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-12T11:10:24.594Z",
-    "duration": 23930.256,
-    "expected": 10,
+    "startTime": "2026-10-12T13:32:48.379Z",
+    "duration": 27118.809999999998,
+    "expected": 11,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

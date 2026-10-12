@@ -1,9 +1,9 @@
 {
-  "executed_at": "2026-10-12T11:17:11.499553+00:00",
+  "executed_at": "2026-10-12T13:26:38.405787+00:00",
   "base_url": "http://127.0.0.1:8270",
-  "passed": 11,
+  "passed": 10,
   "failed": 0,
-  "total": 11,
+  "total": 10,
   "results": [
     {
       "name": "local_prepare_needs_input_readonly",
@@ -11,9 +11,10 @@
       "evidence": {
         "observed_states": [
           "queued",
+          "running",
           "needs_input"
         ],
-        "elapsed_ms": 16.0,
+        "elapsed_ms": 2109.0,
         "initial_http_status": 202,
         "status": "needs_input",
         "result_status": "needs_input",
@@ -72,10 +73,10 @@
           }
         ],
         "evidence_count": 3,
-        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "knowledge_version": "b154c82e12321c5d49b691d45c4b0f4d035e5fe7730f0c1f09bf5db99938921b",
         "visit_unchanged_until_apply": true
       },
-      "duration_ms": 172.0
+      "duration_ms": 2250.0
     },
     {
       "name": "local_prepare_completed_readonly",
@@ -85,7 +86,7 @@
           "queued",
           "completed"
         ],
-        "elapsed_ms": 15.0,
+        "elapsed_ms": 16.0,
         "initial_http_status": 202,
         "status": "completed",
         "result_status": "completed",
@@ -144,10 +145,10 @@
           }
         ],
         "evidence_count": 10,
-        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "knowledge_version": "b154c82e12321c5d49b691d45c4b0f4d035e5fe7730f0c1f09bf5db99938921b",
         "visit_unchanged_until_apply": true
       },
-      "duration_ms": 125.0
+      "duration_ms": 141.0
     },
     {
       "name": "local_understand_with_exact_source_evidence",
@@ -190,10 +191,10 @@
           }
         ],
         "evidence_count": 2,
-        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "knowledge_version": "b154c82e12321c5d49b691d45c4b0f4d035e5fe7730f0c1f09bf5db99938921b",
         "visit_unchanged_until_apply": true
       },
-      "duration_ms": 172.0
+      "duration_ms": 140.0
     },
     {
       "name": "local_timeline_uses_original_observation",
@@ -203,7 +204,7 @@
           "queued",
           "completed"
         ],
-        "elapsed_ms": 16.0,
+        "elapsed_ms": 32.0,
         "initial_http_status": 202,
         "status": "completed",
         "result_status": "completed",
@@ -236,10 +237,10 @@
           }
         ],
         "evidence_count": 9,
-        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "knowledge_version": "b154c82e12321c5d49b691d45c4b0f4d035e5fe7730f0c1f09bf5db99938921b",
         "visit_unchanged_until_apply": true
       },
-      "duration_ms": 187.0
+      "duration_ms": 219.0
     },
     {
       "name": "explicit_apply_and_duplicate_rejection",
@@ -308,12 +309,12 @@
           }
         ],
         "evidence_count": 10,
-        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "knowledge_version": "b154c82e12321c5d49b691d45c4b0f4d035e5fe7730f0c1f09bf5db99938921b",
         "apply_http": 200,
         "duplicate_apply_http": 409,
         "facts_unchanged": true
       },
-      "duration_ms": 172.0
+      "duration_ms": 187.0
     },
     {
       "name": "csrf_and_cross_visitor_isolation",
@@ -344,7 +345,7 @@
         ],
         "owner_data_unchanged": true
       },
-      "duration_ms": 219.0
+      "duration_ms": 172.0
     },
     {
       "name": "updated_record_supersedes_historical_task",
@@ -355,7 +356,7 @@
         "apply_http": 409,
         "historical_result_unchanged": true
       },
-      "duration_ms": 172.0
+      "duration_ms": 157.0
     },
     {
       "name": "new_red_alert_invalidates_card_and_apply",
@@ -367,7 +368,7 @@
         "historical_result_status": "completed",
         "historical_result_unchanged": true
       },
-      "duration_ms": 250.0
+      "duration_ms": 187.0
     },
     {
       "name": "urgent_task_local_safety_short_circuit",
@@ -377,7 +378,7 @@
           "queued",
           "emergency"
         ],
-        "elapsed_ms": 16.0,
+        "elapsed_ms": 0.0,
         "initial_http_status": 202,
         "status": "emergency",
         "result_status": "emergency",
@@ -396,7 +397,7 @@
         "evidence_count": 1,
         "knowledge_version": ""
       },
-      "duration_ms": 125.0
+      "duration_ms": 94.0
     },
     {
       "name": "audit_is_integrity_checked_metadata",
@@ -407,89 +408,15 @@
         "raw_clinical_input_in_events": false,
         "notice": "Local HMAC integrity check, not external immutable auditing."
       },
-      "duration_ms": 125.0
-    },
-    {
-      "name": "explicit_external_planner_actual_mode",
-      "status": "pass",
-      "evidence": {
-        "observed_states": [
-          "queued",
-          "running",
-          "completed"
-        ],
-        "elapsed_ms": 1078.0,
-        "initial_http_status": 202,
-        "status": "completed",
-        "result_status": "completed",
-        "goal": "prepare_visit",
-        "planner_mode": "model",
-        "planner_error": null,
-        "can_apply": true,
-        "tools": [
-          {
-            "tool": "check_urgent_signs",
-            "status": "done",
-            "depends_on": [],
-            "executed_by": "executor"
-          },
-          {
-            "tool": "collect_visit_details",
-            "status": "done",
-            "depends_on": [
-              "safety"
-            ],
-            "executed_by": "executor"
-          },
-          {
-            "tool": "build_visit_checklist",
-            "status": "done",
-            "depends_on": [
-              "details"
-            ],
-            "executed_by": "executor"
-          },
-          {
-            "tool": "draft_visit_summary",
-            "status": "done",
-            "depends_on": [
-              "details"
-            ],
-            "executed_by": "executor"
-          },
-          {
-            "tool": "build_preparation_plan",
-            "status": "done",
-            "depends_on": [
-              "details",
-              "checklist"
-            ],
-            "executed_by": "executor"
-          }
-        ],
-        "evidence_count": 8,
-        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
-        "requested": true,
-        "attempted": true,
-        "model_available": true,
-        "model_planner_succeeded": true,
-        "notice": "Only goal enum, filled field names, observation count and public source IDs are supplied to the external planner; clinical field values, chat history and identity are not included."
-      },
-      "duration_ms": 1187.0
+      "duration_ms": 172.0
     }
   ],
   "external_planner": {
-    "requested": true,
-    "attempted": true,
-    "model_available": true,
-    "planner_mode": "model",
-    "planner_error": null,
-    "status": "completed",
-    "model_planner_succeeded": true,
-    "notice": "Only goal enum, filled field names, observation count and public source IDs are supplied to the external planner; clinical field values, chat history and identity are not included."
+    "requested": false,
+    "attempted": false
   },
   "cleanup": {
-    "fictional_test_sessions": 12,
+    "fictional_test_sessions": 11,
     "cleanup_failures": []
   },
   "data_policy": "Independent fictional visitors only; own sessions cleared through authenticated DELETE /api/data. Only --external-planner enables one metadata-only planner attempt. No credentials, cookies or CSRF values are written to reports."

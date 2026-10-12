@@ -1,6 +1,9 @@
-import { intakeFields, type Intake, type Message, type Visit } from './types'
+import { intakeFields, type Intake, type Message, type Risk, type Visit } from './types'
 
 export const EMPTY_REPLY = '本次未收到有效答复。请稍后重试；你已填写的信息仍保留。'
+export function requiresHumanSupport(risk?: Risk | null): boolean {
+  return risk?.level === 'emergency' || risk?.kind === 'self_harm'
+}
 export function emptyIntake(): Intake {
   return { chief_complaint: '', onset: '', age_group: '未填写', severity: '未填写', medications: '', allergies: '', medical_history: '', notes: '' }
 }

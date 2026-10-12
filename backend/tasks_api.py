@@ -15,6 +15,7 @@ from .storage import now
 from .task_agent import TaskGoal, TaskRun
 from .task_storage import TaskIntegrityError
 from .knowledge_versions import knowledge_version
+from .risk_policy import requires_human_support, support_status
 
 
 class TaskRequest(StrictModel):
@@ -26,7 +27,7 @@ class TaskJob(StrictModel):
     id: str
     visit_id: str
     goal: TaskGoal
-    status: Literal['queued', 'running', 'completed', 'needs_input', 'emergency', 'failed', 'interrupted', 'superseded'] = 'queued'
+    status: Literal['queued', 'running', 'completed', 'needs_input', 'emergency', 'support_required', 'failed', 'interrupted', 'superseded'] = 'queued'
     created_at: str
     updated_at: str
     source_revision: str
@@ -48,8 +49,8 @@ def register_task_routes(app, owned, identity, mutation, rate_limit, refresh_col
         # Keep the encrypted execution result historical, but expose current
         # eligibility separately; old successful output cannot overrule safety.
         job.current_risk = visit.risk
-        if visit.risk.level == 'emergency':
-            job.status = 'emergency'
+        if requires_human_support(visit.risk):
+            job.status = support_status(visit.risk)
             job.invalidated_reason = '当前记录需要立即关注安全，已暂停使用原任务结果。'
             job.can_apply = False
         elif revision(visit) != job.source_revision and not job.applied_at:
@@ -83,11 +84,11 @@ def register_task_routes(app, owned, identity, mutation, rate_limit, refresh_col
                         return
                     # Fresh emergency information takes priority over a result
                     # drafted from an earlier snapshot, without model I/O.
-                    if latest.risk.level == 'emergency' and result.status != 'emergency':
+                    if requires_human_support(latest.risk) and result.status not in {'emergency', 'support_required'}:
                         result = await app.state.task_engine.run(latest, job.goal, use_model=False)
                         result.id = job.id
                     job.result, job.status = result, result.status
-                    if revision(latest) != job.source_revision and result.status != 'emergency':
+                    if revision(latest) != job.source_revision and result.status not in {'emergency', 'support_required'}:
                         job.error = '本次任务基于启动时的资料；记录已更新，请重新运行后保存。'
                     job.updated_at = now()
                     app.state.task_store.put(owner, job.model_dump(mode='json'), 'task_finished')
@@ -138,7 +139,7 @@ def register_task_routes(app, owned, identity, mutation, rate_limit, refresh_col
         async with app.state.commit_lock:
             visit = owned(owner, visit_id)
             job = read_job(owner, visit_id, task_id)
-            if visit.risk.level == 'emergency':
+            if requires_human_support(visit.risk):
                 raise HTTPException(409, '当前记录需要立即关注安全，已暂停保存准备任务结果。')
             if job.applied_at:
                 raise HTTPException(409, '这份结果已经保存，请查看当前记录。')

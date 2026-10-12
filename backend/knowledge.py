@@ -46,6 +46,7 @@ TOPIC_ALIASES = {
     "fainting": ["晕倒", "昏厥", "晕厥", "短暂失去意识"],
     "nosebleed": ["鼻出血", "流鼻血", "鼻子出血"],
     "child_fever": ["孩子发烧", "小孩发烧", "宝宝发烧", "儿童发热", "儿童发烧", "婴儿发烧", "孩子发热"],
+    "infant_warning": ["婴儿", "小月龄", "新生儿", "婴儿发热", "婴儿高烧", "婴儿昏睡"],
     "pregnancy_preparation": ["产检", "孕期就诊", "孕期检查", "怀孕看医生", "孕期准备", "怀孕就诊"],
     "blood_test_preparation": ["抽血准备", "验血准备", "抽血前", "空腹抽血", "抽血要空腹", "验血前", "禁食"],
     "lab_results": ["化验结果", "化验单", "检查报告", "参考范围", "检验报告", "化验报告", "化验异常"],
@@ -139,7 +140,7 @@ class Knowledge:
             return []
         eligible = [item for item in items if any(matches(query, alias) for alias in self.aliases(item))]
         # A child's fever question is not evidence for applying adult advice.
-        if re.search(r"孩子|小孩|儿童|宝宝|婴儿", query) and re.search(r"发烧|发热|体温", query):
+        if re.search(r"孩子|小孩|儿童|宝宝|婴儿|新生儿|小月龄", query) and re.search(r"发烧|发热|高热|高烧|体温", query):
             eligible = [item for item in eligible if item.id != "fever"]
         return eligible
 

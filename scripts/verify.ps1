@@ -18,6 +18,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw '连续对话验收失败。' }
     & $pythonPath tests/acceptance_redflags.py --base-url $BaseUrl
     if ($LASTEXITCODE -ne 0) { throw '独立安全有限集验收失败。' }
+    & $pythonPath tests/acceptance_rewording.py --base-url $BaseUrl
+    if ($LASTEXITCODE -ne 0) { throw '同义表达与引用语境验收失败。' }
     & $pythonPath tests/acceptance_tasks.py --base-url $BaseUrl
     if ($LASTEXITCODE -ne 0) { throw '异步任务验收失败。' }
     Push-Location (Join-Path $projectRoot 'frontend')

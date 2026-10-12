@@ -22,6 +22,7 @@ from .safety import check_conversation_urgent, safe_assistant_output
 from .schemas import ChecklistItem, PreparationPlan, Risk, Source, Summary, Visit
 from .storage import now
 from .knowledge_versions import knowledge_version
+from .risk_policy import requires_human_support, support_status, risk_order
 
 
 TaskGoal = Literal["prepare_visit", "understand_symptom", "organize_timeline"]
@@ -96,7 +97,7 @@ class EvidenceClause(TaskModel):
 class TaskRun(TaskModel):
     id: str
     goal: TaskGoal
-    status: Literal["completed", "needs_input", "emergency", "failed"]
+    status: Literal["completed", "needs_input", "emergency", "support_required", "failed"]
     created_at: str
     duration_ms: int = 0
     plan: TaskPlan
@@ -321,12 +322,12 @@ class TaskEngine:
         identifier = uuid.uuid4().hex
         # This synchronous local gate precedes planning, retrieval and all I/O.
         risk = check_conversation_urgent("", snapshot)
-        if snapshot.risk.level == "emergency":
-            risk = snapshot.risk
-        if risk.level == "emergency":
+        if requires_human_support(snapshot.risk):
+            risk = max((risk, snapshot.risk), key=risk_order)
+        if requires_human_support(risk):
             safety = PlannedStep(id="safety", tool="check_urgent_signs", label=LABELS["check_urgent_signs"])
             sources = self._verified_sources(self.executor.knowledge.by_ids(risk.source_ids))
-            return TaskRun(id=identifier, goal=goal, status="emergency", created_at=stamp, duration_ms=int((time.monotonic() - started) * 1000), plan=TaskPlan(objective="优先处理当前紧急警示，暂停其他任务。", steps=[safety]), steps=[TaskStep(**safety.model_dump(), status="done", executed_by="local_safety", output=risk.model_dump(), source_ids=risk.source_ids, started_at=stamp, finished_at=now())], content=risk.message, risk=risk, sources=sources, evidence_ledger=[EvidenceClause(clause=risk.message, kind="safety_rule", reference="local.emergency_gate", exact_span=risk.message, start=0, end=len(risk.message), notice="本机有限紧急规则提示；不能覆盖全部紧急情况。")])
+            return TaskRun(id=identifier, goal=goal, status=support_status(risk), created_at=stamp, duration_ms=int((time.monotonic() - started) * 1000), plan=TaskPlan(objective="先获得真人陪伴与支持，暂停资料整理。" if risk.kind == "self_harm" else "优先处理当前紧急警示，暂停其他任务。", steps=[safety]), steps=[TaskStep(**safety.model_dump(), status="done", executed_by="local_safety", output=risk.model_dump(), source_ids=risk.source_ids, started_at=stamp, finished_at=now())], content=risk.message, risk=risk, sources=sources, evidence_ledger=[EvidenceClause(clause=risk.message, kind="safety_rule", reference="local.emergency_gate", exact_span=risk.message, start=0, end=len(risk.message), notice="本机有限紧急规则提示；不能覆盖全部紧急情况。")])
 
         plan, planner_error = await self._plan(snapshot, goal, use_model)
         plan = _ordered_plan(plan, goal)

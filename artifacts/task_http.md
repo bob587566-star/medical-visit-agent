@@ -1,9 +1,9 @@
 # 异步任务真实 HTTP 验收
 
-时间：2026-10-12T11:17:11.499553+00:00
+时间：2026-10-12T13:26:38.405787+00:00
 服务：http://127.0.0.1:8270
 
-结果：11/11 通过，0 项失败。
+结果：10/10 通过，0 项失败。
 
 | 场景 | 结果 |
 | --- | --- |
@@ -17,20 +17,13 @@
 | new_red_alert_invalidates_card_and_apply | pass |
 | urgent_task_local_safety_short_circuit | pass |
 | audit_is_integrity_checked_metadata | pass |
-| explicit_external_planner_actual_mode | pass |
 
 外部规划实际结果：
 
 ```json
 {
-  "requested": true,
-  "attempted": true,
-  "model_available": true,
-  "planner_mode": "model",
-  "planner_error": null,
-  "status": "completed",
-  "model_planner_succeeded": true,
-  "notice": "Only goal enum, filled field names, observation count and public source IDs are supplied to the external planner; clinical field values, chat history and identity are not included."
+  "requested": false,
+  "attempted": false
 }
 ```
 

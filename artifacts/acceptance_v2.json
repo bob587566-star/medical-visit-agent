@@ -1,5 +1,5 @@
 {
-  "executed_at": "2026-10-12T11:08:43.192616+00:00",
+  "executed_at": "2026-10-12T13:26:24.712112+00:00",
   "base_url": "http://127.0.0.1:8270",
   "passed": 8,
   "failed": 0,
@@ -21,7 +21,7 @@
         "completion": 100,
         "ready_count": 1
       },
-      "duration_ms": 453.0
+      "duration_ms": 484.0
     },
     {
       "name": "focused_short_answer_uses_collection_context",
@@ -31,7 +31,7 @@
         "candidate_field": "age_group",
         "stored_only_after_confirmation": true
       },
-      "duration_ms": 109.0
+      "duration_ms": 141.0
     },
     {
       "name": "timeline_plan_summary_export_and_invalidation",
@@ -41,7 +41,7 @@
         "timeline_in_summary_and_export": true,
         "stale_plan_and_summary_cleared": true
       },
-      "duration_ms": 172.0
+      "duration_ms": 156.0
     },
     {
       "name": "source_details_categories_and_private_bookmarks",
@@ -64,7 +64,7 @@
         },
         "bookmark_isolation": true
       },
-      "duration_ms": 188.0
+      "duration_ms": 187.0
     },
     {
       "name": "supported_vs_unknown_evidence_and_repeated_answers",
@@ -74,7 +74,7 @@
         "unknown_sources": 0,
         "repeated_nonempty_answers": 3
       },
-      "duration_ms": 140.0
+      "duration_ms": 188.0
     },
     {
       "name": "new_mutations_csrf_and_cross_visitor_authorization",
@@ -85,7 +85,7 @@
         "cross_visitor_denied": 404,
         "rename_persisted": true
       },
-      "duration_ms": 219.0
+      "duration_ms": 265.0
     },
     {
       "name": "invalid_observations_do_not_mutate_record",
@@ -95,7 +95,7 @@
         "status": 422,
         "observations": 0
       },
-      "duration_ms": 94.0
+      "duration_ms": 125.0
     },
     {
       "name": "five_parallel_timeline_writes_no_lost_updates",
@@ -103,14 +103,14 @@
       "evidence": {
         "stored_observations": 5,
         "elapsed_ms": [
-          15.0,
-          47.0,
+          63.0,
           31.0,
-          47.0,
-          47.0
+          31.0,
+          63.0,
+          31.0
         ]
       },
-      "duration_ms": 203.0
+      "duration_ms": 157.0
     }
   ],
   "cleanup": {

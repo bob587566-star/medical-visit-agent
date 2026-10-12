@@ -80,3 +80,5 @@
   .chat-panel .composer textarea{font-size:16px;min-height:53px}
   .chat-panel .composer-note{font-size:10px;line-height:1.8}
 }
+
+.summary-support-note{padding:14px 16px;margin-bottom:20px;border:1px solid #dfc9b9;border-radius:9px;background:#fff8f2;color:#805749;font-size:13px;line-height:1.9;overflow-wrap:anywhere}

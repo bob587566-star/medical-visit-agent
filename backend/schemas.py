@@ -57,7 +57,7 @@ IntakeField = Literal["chief_complaint", "onset", "age_group", "severity", "medi
 
 
 class CollectionState(StrictModel):
-    stage: Literal["start", "collecting", "ready", "urgent"] = "start"
+    stage: Literal["start", "collecting", "ready", "urgent", "support"] = "start"
     completion: int = Field(default=0, ge=0, le=100)
     missing_fields: list[IntakeField] = Field(default_factory=list, max_length=8)
     next_question: str = Field(default="", max_length=1000)
