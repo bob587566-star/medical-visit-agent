@@ -21,9 +21,13 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .agent import Executor, export_text
 from .knowledge import Knowledge
 from .model import ModelService, read_project_env
-from .safety import check_urgent
+from .safety import check_conversation_urgent, check_urgent
 from .schemas import BookmarkUpdate, ChecklistUpdate, CreateVisit, Intake, Message, MessageRequest, Observation, ObservationRequest, RenameVisit, SummaryRequest, Visit
 from .storage import Store, now
+from .task_agent import TaskEngine
+from .task_storage import TaskStore
+from .tasks_api import register_task_routes
+from .safety_review import LocalSafetyReview
 
 ROOT = Path(__file__).resolve().parents[1]
 COOKIE = "zhihe_visitor"
@@ -33,7 +37,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
     config = read_project_env(ROOT / ".env")
     config.update({key: os.environ[key] for key in (
         "DEEPSEEK_API_KEY", "DEEPSEEK_MODEL", "MODEL_TIMEOUT_SECONDS", "DATA_RETENTION_DAYS",
-        "VISIT_DATA_PATH", "COOKIE_SECURE",
+        "VISIT_DATA_PATH", "COOKIE_SECURE", "LOCAL_SAFETY_ENABLED", "LOCAL_SAFETY_MODEL",
     ) if key in os.environ})
     retention = max(1, min(30, int(config.get("DATA_RETENTION_DAYS", "7"))))
     timeout = max(1, min(30, float(config.get("MODEL_TIMEOUT_SECONDS", "12"))))
@@ -48,6 +52,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                 config.get("DEEPSEEK_API_KEY", ""), config.get("DEEPSEEK_MODEL", "deepseek-chat"), client
             )
             application.state.retriever = None
+            application.state.safety_review = LocalSafetyReview(client, config.get('LOCAL_SAFETY_ENABLED', 'false').lower() == 'true', config.get('LOCAL_SAFETY_MODEL', 'qwen2.5:7b'))
             warm_task = None
             if db_path is None:
                 from .retrieval import HybridRetriever
@@ -55,11 +60,21 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                                                                ROOT / "data" / "knowledge-vectors.json")
                 warm_task = asyncio.create_task(application.state.retriever.initialize())
             application.state.executor = Executor(application.state.knowledge, application.state.model,
-                                                  application.state.retriever)
+                                                  application.state.retriever, application.state.safety_review)
+            application.state.task_engine = TaskEngine(application.state.executor, application.state.model)
+            application.state.task_store = TaskStore(application.state.store)
+            application.state.task_store.interrupt_unfinished()
+            application.state.task_slots = asyncio.Semaphore(2)
+            application.state.task_workers = {}
             cleanup()
             try:
                 yield
             finally:
+                workers = list(application.state.task_workers.values())
+                for worker in workers:
+                    worker.cancel()
+                if workers:
+                    await asyncio.gather(*workers, return_exceptions=True)
                 if warm_task:
                     warm_task.cancel()
                     try:
@@ -197,7 +212,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                 }, "sources": app.state.knowledge.all(), "visits": visits,
                 "current_visit": visits[0] if visits else None,
                 "retrieval": retrieval_status(), "bookmark_ids": app.state.store.bookmarks(owner),
-                "version": "2.0.0"}
+                "version": "2.0.0", "safety_review": app.state.safety_review.status()}
 
     @app.get("/api/knowledge")
     async def knowledge():
@@ -289,7 +304,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         if len(visit.messages) >= 200:
             raise HTTPException(409, "本条记录已达到对话上限，请新建记录。")
         # Emergency rules run inside Executor before any model I/O; do not queue that check.
-        if check_urgent(body.content, visit.intake).level != "emergency":
+        if check_conversation_urgent(body.content, visit).level != "emergency":
             rate_limit(owner)
         result = await app.state.executor.run(visit, body.content, body.use_model)
         if not result.content.strip():
@@ -300,7 +315,8 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         assistant = Message(id=uuid4().hex, role="assistant", content=result.content, created_at=stamp,
                             risk=result.risk, sources=result.sources, trace=result.trace,
                             suggested_questions=result.suggested_questions, mode=result.mode,
-                            duration_ms=result.duration_ms, intake_candidates=result.intake_candidates)
+                            duration_ms=result.duration_ms, intake_candidates=result.intake_candidates,
+                            followup_field=result.followup_field)
         async with app.state.commit_lock:
             latest = owned(owner, visit_id)  # A deleted visit is never recreated by a slow model response.
             if len(latest.messages) >= 200:
@@ -310,7 +326,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             # Recompute against the latest form after asynchronous model work.
             # A pending answer cannot downgrade a newer warning or dismiss an
             # unresolved emergency reported elsewhere in this same record.
-            risk_options = [check_urgent(body.content, latest.intake)]
+            risk_options = [check_conversation_urgent(body.content, latest)]
             if changed or latest.risk.level == "emergency":
                 risk_options.append(latest.risk)
             if not changed or result.risk.level == "emergency":
@@ -320,6 +336,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             if merged_risk.level == "emergency" and result.risk.level != "emergency":
                 assistant.content = merged_risk.message + "\n\n" + assistant.content
                 assistant.suggested_questions = []
+                assistant.followup_field = None
                 assistant.intake_candidates = []
                 assistant.sources = app.state.knowledge.by_ids(merged_risk.source_ids)
             latest.messages.extend([user, assistant])
@@ -467,6 +484,8 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         async with app.state.commit_lock:
             app.state.store.clear(owner)
         return Response(status_code=204)
+
+    register_task_routes(app, owned, identity, mutation, rate_limit, refresh_collection)
 
     @app.api_route("/api/{path:path}", methods=["GET", "POST", "PATCH", "PUT", "DELETE"])
     async def unknown_api(path: str):

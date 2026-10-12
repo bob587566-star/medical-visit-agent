@@ -126,6 +126,7 @@ class Source(StrictModel):
 
 class Risk(StrictModel):
     level: Literal["emergency", "prompt", "unknown"] = "unknown"
+    kind: Literal["medical", "self_harm", "unknown"] = "unknown"
     message: str
     reasons: list[str] = Field(default_factory=list)
     source_ids: list[str] = Field(default_factory=list)
@@ -161,6 +162,7 @@ class Message(StrictModel):
     mode: str = "local"
     duration_ms: int = 0
     intake_candidates: list[IntakeCandidate] = Field(default_factory=list)
+    followup_field: IntakeField | None = None
 
 
 class Visit(StrictModel):

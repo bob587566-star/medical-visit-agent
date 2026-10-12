@@ -66,12 +66,13 @@ def execute(coroutine):
     return asyncio.run(coroutine)
 
 
-def test_curated_library_has_37_distinct_topics_and_safe_sources():
+def test_curated_library_has_46_distinct_articles_and_safe_sources():
     library = Knowledge(Path(__file__).resolve().parents[2] / "knowledge" / "articles.json")
     articles = library.all()
     assert not library.load_error
-    assert len(articles) == 37
-    assert len({item.id for item in articles}) == 37
+    assert len(articles) == 46
+    assert len({item.id for item in articles}) == 46
+    assert {'crisis_support', 'poisoning', 'seizure', 'severe_bleeding', 'pregnancy_bleeding', 'infant_warning', 'head_injury', 'severe_haemoptysis'}.issubset({item.id for item in articles})
     assert len(library.categories()) == 6
     assert all(item.url.startswith("https://") for item in articles)
     assert {item.id for item in library.search("咳嗽两天")} == {"cough"}

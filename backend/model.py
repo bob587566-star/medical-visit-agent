@@ -73,6 +73,7 @@ class ModelService:
                 json={
                     "model": self.model,
                     "temperature": 0,
+                    "thinking": {"type": "disabled"},
                     "max_tokens": 250,
                     "response_format": {"type": "json_object"},
                     "messages": [

@@ -48,6 +48,7 @@ describe('V2 本人确认与草稿', () => {
     const fields = wrapper.findAll('.intake-form textarea')
     await fields.at(-1)!.setValue('应该保留的未保存备注')
     await wrapper.get('[data-tab="chat"]').trigger('click')
+    await wrapper.get('.candidate-details summary').trigger('click')
     await wrapper.get('.candidate-confirm').trigger('click')
     expect(fetchMock.mock.calls.filter(([path]) => String(path).endsWith('/confirm'))).toHaveLength(0)
     expect(wrapper.get('.modal-content').text()).toContain('其余草稿保留')

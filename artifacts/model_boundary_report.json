@@ -1,5 +1,5 @@
 {
-  "executed_at": "2026-10-11T21:32:36.637490+00:00",
+  "executed_at": "2026-10-12T11:16:53.730608+00:00",
   "network_policy": "All model requests use httpx.MockTransport; no network connection is opened; all data is fictional.",
   "passed": 18,
   "failed": 0,

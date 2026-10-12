@@ -6,7 +6,7 @@ $testTemp = Join-Path $projectRoot ('.pytest-tmp\verify-' + [guid]::NewGuid().To
 New-Item -ItemType Directory -Path $testTemp -Force | Out-Null
 Push-Location $projectRoot
 try {
-    & $pythonPath -m pytest backend/tests -q --basetemp=$testTemp
+    & $pythonPath -m pytest backend/tests tests -q --basetemp=$testTemp
     if ($LASTEXITCODE -ne 0) { throw '后端测试失败。' }
     & $pythonPath tests/model_boundary.py
     if ($LASTEXITCODE -ne 0) { throw '模拟模型边界测试失败。' }
@@ -14,6 +14,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'HTTP 验收失败，请确认服务已经启动。' }
     & $pythonPath tests/acceptance_v2.py --base-url $BaseUrl
     if ($LASTEXITCODE -ne 0) { throw '工作台 V2 HTTP 验收失败。' }
+    & $pythonPath tests/acceptance_conversation.py --base-url $BaseUrl
+    if ($LASTEXITCODE -ne 0) { throw '连续对话验收失败。' }
+    & $pythonPath tests/acceptance_redflags.py --base-url $BaseUrl
+    if ($LASTEXITCODE -ne 0) { throw '独立安全有限集验收失败。' }
+    & $pythonPath tests/acceptance_tasks.py --base-url $BaseUrl
+    if ($LASTEXITCODE -ne 0) { throw '异步任务验收失败。' }
     Push-Location (Join-Path $projectRoot 'frontend')
     try {
         & npm.cmd test

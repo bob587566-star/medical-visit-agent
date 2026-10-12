@@ -1,7 +1,7 @@
 {
   "status": 200,
   "mode": "model_assisted",
-  "duration_ms": 2000,
+  "duration_ms": 2672,
   "nonempty_answer": true,
   "has_sources": true,
   "input": "固定虚构咳嗽症状，发送有限别名与时间／程度片段，无真实患者资料"

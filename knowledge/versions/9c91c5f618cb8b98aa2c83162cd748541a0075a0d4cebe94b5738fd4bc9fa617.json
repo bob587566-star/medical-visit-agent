@@ -1,0 +1,793 @@
+{
+  "version": "9c91c5f618cb8b98aa2c83162cd748541a0075a0d4cebe94b5738fd4bc9fa617",
+  "created_at": "2026-10-12T08:42:06+00:00",
+  "items": [
+    {
+      "id": "visit_preparation",
+      "title": "第一次就诊，提前准备什么",
+      "publisher": "美国国家医学图书馆 MedlinePlus",
+      "url": "https://medlineplus.gov/talkingwithyourdoctor.html",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": null,
+      "content": "就诊前列出最想讨论的问题，按重要程度排序。准备目前使用的药物、保健品和过敏记录，以及已有检查和病史资料。可以请信任的人陪同，帮助记录医生说明。具体证件及检查要求以就诊医院通知为准。",
+      "category": "就诊准备",
+      "keywords": [
+        "就诊准备",
+        "看医生",
+        "看病",
+        "第一次",
+        "门诊",
+        "带什么",
+        "带哪些",
+        "准备什么",
+        "就医清单",
+        "就诊清单"
+      ],
+      "topics": [
+        "visit_preparation"
+      ]
+    },
+    {
+      "id": "symptom_record",
+      "title": "怎样把症状讲清楚",
+      "publisher": "美国国家医学图书馆 MedlinePlus",
+      "url": "https://medlineplus.gov/ency/patientinstructions/000860.htm",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": null,
+      "content": "记录主要不适是什么、何时开始、出现的位置、持续多久、是否变化，以及哪些情况会加重或缓解。不要把猜测写成确诊；没有测量或不确定的信息可以写“未测量”或“不清楚”。把笔记带给医生，方便准确沟通。",
+      "category": "就诊准备",
+      "keywords": [
+        "描述症状",
+        "怎么描述",
+        "怎么说",
+        "告诉医生",
+        "记录症状",
+        "症状记录",
+        "整理症状",
+        "主诉",
+        "症状摘要",
+        "就诊摘要"
+      ],
+      "topics": [
+        "symptom_record"
+      ]
+    },
+    {
+      "id": "medication_list",
+      "title": "就诊时的用药与过敏清单",
+      "publisher": "美国国家医学图书馆 MedlinePlus",
+      "url": "https://medlineplus.gov/talkingwithyourdoctor.html",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": null,
+      "content": "列出实际正在使用的处方药、非处方药、维生素、草药和保健品，并记录已知过敏情况。只有本人知道的信息才填写，不确定时带药盒或说明书让专业人员核对。助手不决定开始、停用或更改药物。",
+      "category": "就诊准备",
+      "keywords": [
+        "用药清单",
+        "药物清单",
+        "药盒",
+        "保健品",
+        "过敏记录",
+        "过敏清单",
+        "过敏史",
+        "用药史",
+        "正在吃的药"
+      ],
+      "topics": [
+        "medication_list"
+      ]
+    },
+    {
+      "id": "questions_for_doctor",
+      "title": "哪些问题适合当面问医生",
+      "publisher": "美国国家医学图书馆 MedlinePlus",
+      "url": "https://medlineplus.gov/talkingwithyourdoctor.html",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": null,
+      "content": "可以问：这些症状需要进一步检查吗？如果加重或没有改善，何时应再次联系医生？是否需要复诊？对说明有疑问时请医生用容易理解的话解释，并索取书面注意事项。不要仅凭助手的文字自行改变医生的治疗安排。",
+      "category": "就诊准备",
+      "keywords": [
+        "问医生",
+        "问题清单",
+        "问什么",
+        "复诊",
+        "随访",
+        "医嘱",
+        "听不懂",
+        "复查",
+        "医生说明"
+      ],
+      "topics": [
+        "questions_for_doctor"
+      ]
+    },
+    {
+      "id": "cough",
+      "title": "咳嗽：记录重点与就医提醒",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/cough/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2023-12-08",
+      "content": "咳嗽时可记录开始时间、持续情况、有无痰及伴随症状，供就诊沟通。一般资料建议休息并保持适当饮水。咳嗽超过三周应联系医生评估；明显加重、咳血、胸痛或呼吸困难时应及时寻求医疗帮助。仅凭咳嗽不能确定病因；是否需要药物由专业人员判断。",
+      "category": "健康资料",
+      "keywords": [
+        "咳嗽",
+        "干咳",
+        "咳痰",
+        "咳血",
+        "嗓子咳",
+        "止咳"
+      ],
+      "topics": [
+        "cough"
+      ]
+    },
+    {
+      "id": "fever",
+      "title": "成人发热：记录体温和变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/fever-in-adults/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2023-05-24",
+      "content": "成人发热资料通常把 38°C 或更高视为高体温，但体温会因人和测量条件变化。记录实际读数、测量时间和方法；没有测量不要填写假读数。保持休息和适当饮水。持续没有改善或加重应联系医生；这份成人资料不能直接用于儿童、孕产期或其他特殊人群。",
+      "category": "健康资料",
+      "keywords": [
+        "发热",
+        "发烧",
+        "体温",
+        "高温",
+        "低烧",
+        "低热",
+        "寒战"
+      ],
+      "topics": [
+        "fever"
+      ]
+    },
+    {
+      "id": "diarrhoea",
+      "title": "腹泻与呕吐：留意饮水和症状变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/diarrhoea-and-vomiting/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2023-12-21",
+      "content": "记录腹泻或呕吐的开始时间、次数、能否饮水和尿量变化。一般资料强调避免脱水，恶心时可尝试小口饮水。持续呕吐且留不住水、便血或脱水表现应及时就医；呕血、突然剧烈腹痛、意识异常或严重呼吸困难应立即寻求急救。儿童、老人等需专业人员评估。",
+      "category": "健康资料",
+      "keywords": [
+        "腹泻",
+        "拉肚子",
+        "呕吐",
+        "吐了",
+        "喝不下水",
+        "便血",
+        "腹痛"
+      ],
+      "topics": [
+        "diarrhoea"
+      ]
+    },
+    {
+      "id": "headache",
+      "title": "头痛：记录诱因，识别需要及时就医的变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/headaches/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": null,
+      "content": "记录头痛开始时间、位置、是否反复、诱因和伴随变化，有助于与医生沟通。反复、持续或加重的头痛需要评估。突然出现的极剧烈头痛，或头痛伴肢体无力、说话困难、意识异常等情况，应立即寻求急救。助手不能凭症状诊断头痛类型或排除严重疾病。",
+      "category": "健康资料",
+      "keywords": [
+        "头痛",
+        "头疼",
+        "偏头痛",
+        "头痛日记",
+        "剧烈头痛"
+      ],
+      "topics": [
+        "headache"
+      ]
+    },
+    {
+      "id": "emergency_chest",
+      "title": "胸痛伴随异常：优先寻求紧急医疗帮助",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/chest-pain/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2023-08-08",
+      "content": "突发且不缓解的胸痛、痛感扩散到手臂或颈颌，或胸痛伴出汗、头晕、恶心、呼吸困难，应立即联系当地急救服务，不要自己开车。即使胸痛很快消失或反复出现，也应由专业人员评估，不能凭助手判断排除严重问题。",
+      "category": "紧急提醒",
+      "keywords": [
+        "胸痛",
+        "胸疼",
+        "胸口疼",
+        "胸口痛",
+        "冷汗",
+        "胸闷"
+      ],
+      "topics": [
+        "chest_pain"
+      ]
+    },
+    {
+      "id": "emergency_breathing",
+      "title": "严重呼吸困难：不要等待在线问答",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/shortness-of-breath/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2024-01-30",
+      "content": "严重呼吸困难、喘到不能完整说话、嘴唇或皮肤发青发灰、突发意识混乱等情况，需要立即联系当地急救服务。呼吸困难也有多种原因，不应自行诊断；日常活动时加重或反复出现，应联系专业人员评估。",
+      "category": "紧急提醒",
+      "keywords": [
+        "呼吸困难",
+        "喘不上气",
+        "喘不过气",
+        "气短",
+        "嘴唇发紫",
+        "不能说话",
+        "说不出话"
+      ],
+      "topics": [
+        "breathing"
+      ]
+    },
+    {
+      "id": "emergency_stroke",
+      "title": "突发单侧无力或语言异常：及时急救",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/stroke/symptoms/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2024-09-12",
+      "content": "突然出现一侧面部下垂、手臂无力或说话含糊等表现，应立即联系当地急救服务。最近出现过这些表现，即使现在缓解，也不能据此判断已经安全；不要等待助手生成完整摘要再求助，不要自己开车。",
+      "category": "紧急提醒",
+      "keywords": [
+        "单侧无力",
+        "一侧无力",
+        "半边无力",
+        "口角歪",
+        "嘴歪",
+        "说话不清",
+        "说话含糊",
+        "突然麻木",
+        "卒中",
+        "中风"
+      ],
+      "topics": [
+        "stroke"
+      ]
+    },
+    {
+      "id": "emergency_allergy",
+      "title": "突发喉舌肿胀与呼吸异常：立即求助",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/anaphylaxis/",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": "2023-06-21",
+      "content": "接触食物、药物或昆虫叮咬后迅速出现喉咙、舌头或嘴唇肿胀，或呼吸和吞咽困难，可能需要紧急救助。应立即联系当地急救服务。助手不提供药物剂量或替代专业人员的急救指导。",
+      "category": "紧急提醒",
+      "keywords": [
+        "过敏",
+        "喉咙肿",
+        "舌头肿",
+        "喉头肿",
+        "吞咽困难",
+        "过敏反应",
+        "嘴唇肿"
+      ],
+      "topics": [
+        "allergy"
+      ]
+    },
+    {
+      "id": "emergency_call",
+      "title": "中国大陆急救电话",
+      "publisher": "中华人民共和国国家卫生健康委员会",
+      "url": "https://www.nhc.gov.cn/xcs/c100122/201411/32c1bd8c5b13436ba9ec83ef1834856e.shtml",
+      "reviewed_at": "2026-10-11",
+      "source_reviewed_at": null,
+      "content": "中国大陆需要紧急医疗救助时，拨打 120 联系急救服务；其他国家或地区请使用当地急救号码。助手无法替你拨号、定位、派遣救护车或确认医疗机构的实时情况。",
+      "category": "紧急提醒",
+      "keywords": [
+        "急救电话",
+        "120",
+        "急救",
+        "救护车"
+      ],
+      "topics": [
+        "emergency_contact"
+      ]
+    },
+    {
+      "id": "sore_throat",
+      "title": "喉咙痛：记录吞咽变化和持续时间",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/sore-throat/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-04-08",
+      "content": "记录喉咙不适何时开始、吞咽是否疼痛、能否喝水及有无其他变化。持续超过一周未改善或反复出现，应联系专业人员。若呼吸困难、无法吞咽、流口水或症状严重且迅速加重，应立即寻求紧急医疗帮助。助手不能仅凭咽痛确定病因或决定用药。",
+      "category": "健康资料",
+      "keywords": [
+        "喉咙痛",
+        "嗓子疼",
+        "咽痛",
+        "吞咽疼",
+        "喉咙疼"
+      ],
+      "topics": [
+        "sore_throat"
+      ]
+    },
+    {
+      "id": "back_pain",
+      "title": "腰背不适：描述活动影响与异常变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/back-pain/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2026-03-05",
+      "content": "记录疼痛部位、开始时间、有无受伤，以及对走路、睡眠和日常活动的影响。持续数周未改善、夜间更明显或影响生活，应联系医生。腰背痛伴双腿无力或麻木、会阴感觉变化、大小便控制变化，或严重事故后出现疼痛，应立即寻求紧急医疗帮助。助手不判断具体疾病。",
+      "category": "健康资料",
+      "keywords": [
+        "腰痛",
+        "腰疼",
+        "背痛",
+        "背疼",
+        "腰背疼",
+        "下背痛"
+      ],
+      "topics": [
+        "back_pain"
+      ]
+    },
+    {
+      "id": "dizziness",
+      "title": "头晕：把感觉、诱因和伴随变化说清楚",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/dizziness/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2023-04-21",
+      "content": "头晕可表现为发飘、站不稳或周围旋转。记录发作时间、是否与起身有关及听力、视力等伴随变化。头晕时不要驾驶、登高或操作危险设备。持续不消失、反复出现或伴其他异常，应联系专业人员；不要自行把头晕归为某一种病因。",
+      "category": "健康资料",
+      "keywords": [
+        "头晕",
+        "眩晕",
+        "天旋地转",
+        "站起来发晕",
+        "失去平衡"
+      ],
+      "topics": [
+        "dizziness"
+      ]
+    },
+    {
+      "id": "fatigue",
+      "title": "持续疲倦：就诊前整理生活影响",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/tiredness-and-fatigue/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2023-06-02",
+      "content": "记录疲倦持续多久、睡眠情况和对工作生活的影响。无法解释的疲倦持续数周、影响日常活动，或伴体重和情绪等变化，应由医生评估。疲倦可能涉及多种因素，仅凭这个表现不能确定疾病；可以先整理睡眠、活动和实际正在使用的药物供沟通。",
+      "category": "健康资料",
+      "keywords": [
+        "疲劳",
+        "疲倦",
+        "乏力",
+        "总觉得累",
+        "没精神",
+        "容易累"
+      ],
+      "topics": [
+        "fatigue"
+      ]
+    },
+    {
+      "id": "insomnia",
+      "title": "睡眠困扰：记录作息与白天影响",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/insomnia/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-03-19",
+      "content": "记录上床、起床、入睡困难和夜间醒来的情况，以及白天是否受影响。资料建议保持规律起床时间、睡前放松并减少临睡前使用屏幕。睡眠问题持续数月、改变习惯仍无改善或明显影响生活，应联系医生。助手不推荐助眠药，也不能确定失眠原因。",
+      "category": "健康资料",
+      "keywords": [
+        "失眠",
+        "睡不着",
+        "入睡困难",
+        "半夜醒",
+        "睡眠不好",
+        "早醒"
+      ],
+      "topics": [
+        "insomnia"
+      ]
+    },
+    {
+      "id": "abdominal_pain",
+      "title": "腹部不适：记录位置与需要尽快求助的变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/stomach-ache/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": null,
+      "content": "记录腹部不适的位置、起始时间、是否反复以及进食和排便等相关变化。持续、反复或明显加重，应联系医生。突然或剧烈腹痛、呕血、黑色黏稠便、不能排尿，或伴胸痛、呼吸困难、倒地等情况，应立即寻求紧急医疗帮助。不能凭疼痛位置自行确诊。",
+      "category": "健康资料",
+      "keywords": [
+        "腹痛",
+        "肚子痛",
+        "肚子疼",
+        "腹部疼痛",
+        "胃疼",
+        "胃痛"
+      ],
+      "topics": [
+        "abdominal_pain"
+      ]
+    },
+    {
+      "id": "constipation",
+      "title": "排便困扰：记录变化而不是自行确诊",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/constipation/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2023-10-26",
+      "content": "记录排便频率、是否干硬、是否费力及近期变化，供就诊沟通。成人资料介绍逐步增加膳食纤维、适当饮水和活动等一般方法。反复或没有改善、便血、不明原因体重下降或排便习惯突然变化，应联系医生。不要因怀疑药物影响而自行停用处方药；儿童需要相应专业建议。",
+      "category": "健康资料",
+      "keywords": [
+        "便秘",
+        "排便困难",
+        "大便干",
+        "大便很硬",
+        "拉不出来"
+      ],
+      "topics": [
+        "constipation"
+      ]
+    },
+    {
+      "id": "urinary_symptoms",
+      "title": "排尿不适：准备时间、颜色和伴随症状记录",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/urinary-tract-infections-utis/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2025-07-11",
+      "content": "记录排尿是否疼痛、次数是否变化、有无可见血迹和发热等表现。症状迅速加重、血尿、腰背痛，或儿童、老人、孕期人员出现这些问题，应及时联系专业人员。意识混乱、明显嗜睡或说话困难需要紧急医疗帮助。助手不能凭排尿不适确认感染或开药。",
+      "category": "健康资料",
+      "keywords": [
+        "尿痛",
+        "尿频",
+        "尿急",
+        "小便疼",
+        "排尿痛",
+        "尿血",
+        "血尿"
+      ],
+      "topics": [
+        "urinary_symptoms"
+      ]
+    },
+    {
+      "id": "dehydration",
+      "title": "饮水和尿量变化：留意脱水相关表现",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/dehydration/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2026-05-01",
+      "content": "口渴、尿色变深、尿量减少和头晕等变化值得记录，婴幼儿和老人更容易受到脱水影响。喝不进或留不住水、站起后持续头晕或尿量明显减少，应及时寻求专业帮助。伴意识混乱、难以唤醒、呼吸困难或皮肤异常苍白发青等情况，应立即求助。助手不依据这些表现独立确诊。",
+      "category": "健康资料",
+      "keywords": [
+        "脱水",
+        "尿量变少",
+        "小便变少",
+        "尿色深",
+        "口干",
+        "很少尿"
+      ],
+      "topics": [
+        "dehydration"
+      ]
+    },
+    {
+      "id": "hypertension",
+      "title": "血压随访：带上真实读数和测量条件",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/high-blood-pressure/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-07-19",
+      "content": "高血压往往没有明显症状，不能仅靠感觉判断。就诊时带上实际测量的两项读数、时间、测量地点和既往记录；医生可能需要重复或家庭测量来核实。助手仅保存自测资料，不将一次读数当作诊断，不决定调整药物。如同时突发持续胸痛或胸痛伴出汗、呼吸困难，应立即求助。",
+      "category": "慢病随访",
+      "keywords": [
+        "高血压",
+        "血压",
+        "血压记录",
+        "血压随访",
+        "血压测量"
+      ],
+      "topics": [
+        "hypertension"
+      ]
+    },
+    {
+      "id": "diabetes",
+      "title": "血糖与糖尿病沟通：诊断需要专业检查",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/type-2-diabetes/symptoms/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2025-02-10",
+      "content": "糖尿病相关表现可能包括口渴、排尿变多、疲倦和不明原因体重下降，但也可能没有明显表现。不能根据症状或助手判断确诊，需要由专业人员安排和解释检查。准备真实血糖记录、检查报告和问题清单，咨询如何进一步评估；助手不据自测数字调整药物。",
+      "category": "慢病随访",
+      "keywords": [
+        "糖尿病",
+        "血糖",
+        "血糖记录",
+        "糖尿病检查",
+        "糖尿病随访"
+      ],
+      "topics": [
+        "diabetes"
+      ]
+    },
+    {
+      "id": "palpitations",
+      "title": "心跳不适：记录发作经过与伴随变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/heart-palpitations/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2026-03-17",
+      "content": "记录心跳不适何时发生、持续多久、是否反复及伴随表现。反复、更加频繁或持续较久，应联系专业人员。当前心跳不适伴胸痛、呼吸困难、晕厥或接近晕厥，应立即寻求紧急医疗帮助；即使相关表现已停止，也应尽快联系专业人员评估。助手不判断心律类型。",
+      "category": "健康资料",
+      "keywords": [
+        "心悸",
+        "心慌",
+        "心跳很快",
+        "心跳乱",
+        "心跳明显",
+        "心跳不规律"
+      ],
+      "topics": [
+        "palpitations"
+      ]
+    },
+    {
+      "id": "contact_dermatitis",
+      "title": "接触后皮肤不适：整理接触物与时间线",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/contact-dermatitis/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2023-05-03",
+      "content": "接触某些物质后，皮肤可能出现瘙痒、干裂或水疱等表现。记录开始时间、接触过的清洁或护肤用品及不适部位，有助于专业人员了解经过。持续、反复或严重的皮肤问题需要评估；助手不能仅凭文字确认是否接触性皮炎，也不指定外用药物。",
+      "category": "健康资料",
+      "keywords": [
+        "接触性皮炎",
+        "皮肤瘙痒",
+        "皮肤痒",
+        "接触后起疹",
+        "碰了洗涤剂"
+      ],
+      "topics": [
+        "contact_dermatitis"
+      ]
+    },
+    {
+      "id": "hay_fever",
+      "title": "季节性鼻眼困扰：记录环境与症状变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/hay-fever/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-03-21",
+      "content": "花粉相关困扰可涉及喷嚏、流鼻涕和鼻眼瘙痒。记录出现的季节、活动环境、持续时间和对生活的影响，供医生或药师沟通。症状加重或现有专业建议无改善，应再次求助。助手不凭喷嚏确定过敏原因，也不选择个人药物方案。",
+      "category": "健康资料",
+      "keywords": [
+        "花粉",
+        "花粉过敏",
+        "过敏性鼻炎",
+        "打喷嚏",
+        "鼻子痒",
+        "流鼻涕"
+      ],
+      "topics": [
+        "hay_fever"
+      ]
+    },
+    {
+      "id": "earache",
+      "title": "耳部疼痛：记录听力、流液及持续时间",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/earache/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2025-10-27",
+      "content": "记录一侧还是两侧疼痛、持续多久，以及听力变化、有无流液或发热。超过两三天没有改善、周围肿胀、流液、听力改变或总体不适，应及时联系专业人员。不要把棉签等物品放进耳内，也不要自行移除耳内异物或尝试确诊。",
+      "category": "健康资料",
+      "keywords": [
+        "耳痛",
+        "耳朵疼",
+        "耳朵痛",
+        "耳朵流液",
+        "听力变化"
+      ],
+      "topics": [
+        "earache"
+      ]
+    },
+    {
+      "id": "toothache",
+      "title": "牙齿疼痛：整理症状并联系牙科",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/toothache/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-07-01",
+      "content": "牙痛持续超过两天，或伴发热、咬合疼痛、面颊或下颌肿胀，需要联系牙科专业人员。记录部位、开始时间和影响因素供沟通。若眼周或颈部肿胀，或口颈肿胀导致呼吸、吞咽、说话困难，应立即寻求紧急医疗帮助。助手不确定牙痛原因或推荐处方。",
+      "category": "健康资料",
+      "keywords": [
+        "牙痛",
+        "牙疼",
+        "牙龈肿",
+        "牙齿疼",
+        "咬东西疼"
+      ],
+      "topics": [
+        "toothache"
+      ]
+    },
+    {
+      "id": "red_eye",
+      "title": "眼睛发红：留意疼痛与视力变化",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/red-eye/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2025-10-27",
+      "content": "记录眼红何时开始、是否疼痛、有无分泌物及视力变化；避免揉眼或继续戴隐形眼镜。非常疼痛或戴隐形眼镜同时眼红，需要及时专业评估。眼红伴视力变化、怕光、严重头痛恶心或眼部受伤等，应立即寻求医疗帮助。助手不能识别具体眼病。",
+      "category": "健康资料",
+      "keywords": [
+        "眼红",
+        "眼睛红",
+        "眼睛发红",
+        "眼睛痛",
+        "眼睛疼",
+        "视力变化"
+      ],
+      "topics": [
+        "red_eye"
+      ]
+    },
+    {
+      "id": "sprains",
+      "title": "运动损伤：说明受伤方式与活动能力",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/sprains-and-strains/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-04-23",
+      "content": "记录受伤动作、位置、时间、肿胀变化和能否走路或使用受伤部位。疼痛或肿胀严重加重、不能负重或活动受限，应及时评估。受伤时听到裂响、外形改变、麻木或局部发青发冷，需要立即医疗帮助。助手不能排除骨折，也不能根据文字代替检查。",
+      "category": "健康资料",
+      "keywords": [
+        "扭伤",
+        "拉伤",
+        "崴脚",
+        "脚踝扭",
+        "运动受伤"
+      ],
+      "topics": [
+        "sprains"
+      ]
+    },
+    {
+      "id": "fainting",
+      "title": "短暂晕厥：记录经过并寻求评估",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/fainting/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2026-08-17",
+      "content": "发生过晕厥，应联系专业人员评估，记录发生场景、持续情况和恢复经过。若不能唤醒、没有正常呼吸、未完全恢复、出现说话或动作困难、胸痛或明显心跳异常，应立即联系急救。运动中或躺着时发生晕厥也需要紧急求助；助手不判断原因。",
+      "category": "健康资料",
+      "keywords": [
+        "晕倒",
+        "昏厥",
+        "晕厥",
+        "短暂失去意识"
+      ],
+      "topics": [
+        "fainting"
+      ]
+    },
+    {
+      "id": "nosebleed",
+      "title": "鼻出血：记录持续时间与需要求助的情况",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/conditions/nosebleed/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2023-12-05",
+      "content": "记录鼻出血持续多久、是否反复、有无受伤和实际正在使用的药物。反复出现应联系医生。持续超过十至十五分钟、出血看起来很多、头部受伤后开始，或伴虚弱、头晕、呼吸困难，应立即寻求医疗帮助。助手不判断出血量是否安全或更改药物。",
+      "category": "健康资料",
+      "keywords": [
+        "鼻出血",
+        "流鼻血",
+        "鼻子出血"
+      ],
+      "topics": [
+        "nosebleed"
+      ]
+    },
+    {
+      "id": "child_fever",
+      "title": "儿童发热：保留实际年龄、读数和状态",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/symptoms/fever-in-children/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2024-01-03",
+      "content": "记录儿童实际年龄、测量方法、体温读数、饮水和精神状态。小月龄婴儿发热、持续多日、饮水少或照护者担心，应及时联系专业人员，不能直接套用成人建议。呼吸困难、难以唤醒、首次抽搐或明显肤色改变，需要立即急救。助手不提供儿童退热药剂量。",
+      "category": "特殊人群",
+      "keywords": [
+        "孩子发烧",
+        "小孩发烧",
+        "宝宝发烧",
+        "儿童发热",
+        "婴儿发烧",
+        "孩子体温",
+        "儿童体温",
+        "宝宝体温"
+      ],
+      "topics": [
+        "child_fever"
+      ]
+    },
+    {
+      "id": "pregnancy_preparation",
+      "title": "孕期就诊：整理已有记录与担心的问题",
+      "publisher": "英国国家医疗服务体系 NHS",
+      "url": "https://www.nhs.uk/pregnancy/your-pregnancy-care/your-antenatal-care-and-appointments/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": "2026-04-17",
+      "content": "孕期就诊可以整理末次月经、既往孕产和健康记录，以及自己担心的问题，并带上已有孕期检查资料。担心自身或胎儿健康时，不必等待下次预约才联系孕产专业人员。当地检查项目和时间以医疗机构安排为准；助手不把英国的预约流程当作中国医院要求。",
+      "category": "特殊人群",
+      "keywords": [
+        "产检",
+        "孕期就诊",
+        "孕期检查",
+        "怀孕看医生",
+        "孕期准备",
+        "怀孕就诊"
+      ],
+      "topics": [
+        "pregnancy_preparation"
+      ]
+    },
+    {
+      "id": "blood_test_preparation",
+      "title": "抽血前是否空腹：先核对检查通知",
+      "publisher": "美国国家医学图书馆 MedlinePlus",
+      "url": "https://medlineplus.gov/lab-tests/fasting-for-a-blood-test/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": null,
+      "content": "不是所有血液检查都需要空腹，是否禁食和具体时间应先询问开单人员或核对通知，不要自行决定。需要空腹时，通常允许白水，但特殊要求仍以通知为准。是否照常使用药物、维生素或保健品，应事先向专业人员确认，不能自行停药；若没有遵守准备要求，要如实说明。",
+      "category": "检查准备",
+      "keywords": [
+        "抽血准备",
+        "验血准备",
+        "抽血前",
+        "空腹抽血",
+        "抽血要空腹",
+        "验血前",
+        "禁食"
+      ],
+      "topics": [
+        "blood_test_preparation"
+      ]
+    },
+    {
+      "id": "lab_results",
+      "title": "理解化验单：数值需要放在具体背景里看",
+      "publisher": "美国国家医学图书馆 MedlinePlus",
+      "url": "https://medlineplus.gov/lab-tests/how-to-understand-your-lab-results/",
+      "reviewed_at": "2026-10-12",
+      "source_reviewed_at": null,
+      "content": "不同实验室的单位、方法和参考范围可能不同，应使用自己报告上的范围。超出参考范围不一定代表疾病，位于范围内也不保证没有问题。把报告、症状和既往资料一起交给专业人员解释；助手可以帮你整理要问的问题，但不依据一张报告诊断或给出疾病风险分数。",
+      "category": "检查准备",
+      "keywords": [
+        "化验结果",
+        "化验单",
+        "检查报告",
+        "参考范围",
+        "检验报告",
+        "化验报告",
+        "化验异常"
+      ],
+      "topics": [
+        "lab_results"
+      ]
+    }
+  ]
+}

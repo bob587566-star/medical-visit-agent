@@ -45,7 +45,7 @@ class WorkspaceAcceptance(Acceptance):
         saved = client.request('PATCH', base + '/intake', {**INTAKE, 'age_group': '未填写', 'medications': '', 'allergies': '', 'medical_history': ''})
         require(saved['status'] == 200, 'could not prepare partially filled intake')
         _, assistant = client.message(visit['id'], '你好')
-        require(any('年龄阶段' in q for q in assistant['suggested_questions']), 'focus question missing')
+        require(assistant.get('followup_field') == 'age_group', 'focus question does not match the missing age field')
         response, assistant = client.message(visit['id'], '成人')
         require('知识库没有' not in assistant['content'], 'collection short answer is wrongly treated as unknown medical question')
         candidate = next((c for c in response['json']['visit']['intake_candidates'] if c['field'] == 'age_group'), None)

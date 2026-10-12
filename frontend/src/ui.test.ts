@@ -43,6 +43,72 @@ describe('安全与非空输出', () => {
   })
 })
 
+describe('对话优先与下一轮输入', () => {
+  it('正文位于辅助信息之前，候选、来源和工具记录默认收起', () => {
+    wrapper = mount(MessageBubble, { props: { message: { ...message('先告诉我这两天有什么变化。'), intake_candidates: [{ id: 'c', field: 'onset', value: '两天', evidence: '两天', created_at: '' }], sources: [{ id: 's', title: '就诊准备资料', publisher: '测试', reviewed_at: '', url: 'https://www.who.int/', content: '测试内容' }], trace: [{ tool: 'check', label: '核查提醒', status: 'done' }] } } })
+    const body = wrapper.get('.message-body')
+    expect(body.element.children[1].className).toBe('message-content')
+    expect(wrapper.get('.candidate-details summary').text()).toContain('已整理 1 项')
+    expect(wrapper.get('.source-details summary').text()).toContain('参考 1 条资料')
+    for (const details of wrapper.findAll('details')) expect(details.attributes('open')).toBeUndefined()
+    expect(wrapper.emitted('confirmCandidate')).toBeUndefined()
+  })
+  it('采集提示和旧版固定采集问题不能作为用户消息点击发送，真正的用户建议仍可发送', async () => {
+    wrapper = mount(MessageBubble, { props: { message: { ...message('请说说具体时间。'), followup_field: 'onset', suggested_questions: ['什么时候开始的？'] } } })
+    expect(wrapper.get('.followup-prompt').text()).toContain('什么时候开始的？')
+    expect(wrapper.find('.followup-chip').exists()).toBe(false)
+    const legacyQuestions = ['最想向医生说明的不适是什么？', '不适从什么时候开始，有什么变化？', '就诊者属于哪个年龄阶段？', '你自己感觉不适程度是轻、中还是重？', '目前使用的药物或补充剂是否需要向医生核对？', '有没有需要告诉医生的过敏情况？不知道也可以写不知道。', '有没有与本次就诊相关的既往情况？']
+    for (const question of legacyQuestions) {
+      await wrapper.setProps({ message: { ...message(question), suggested_questions: [question] } })
+      expect(wrapper.find('.followup-chip').exists()).toBe(false)
+      expect(wrapper.find('.followup-prompt').exists()).toBe(true)
+    }
+    expect(wrapper.emitted('ask')).toBeUndefined()
+    await wrapper.setProps({ message: { ...message('可以带上已有资料。'), followup_field: null, suggested_questions: ['已有检查报告应该怎样整理？'] } })
+    await wrapper.get('.followup-chip').trigger('click')
+    expect(wrapper.emitted('ask')).toEqual([['已有检查报告应该怎样整理？']])
+  })
+  it('发送立即显示本轮文字与等待状态，答复不会清空下一条正在编辑的文字', async () => {
+    const record = visit()
+    let resolveMessage!: (response: Response) => void
+    const pending = new Promise<Response>(resolve => { resolveMessage = resolve })
+    const sent = { ...message('【虚构】我有点咳嗽'), id: 'user-one', role: 'user' as const }
+    const reply = { ...message('先聊聊，咳嗽从什么时候开始？'), followup_field: 'onset' as const }
+    const updated = { ...record, messages: [sent, reply] }
+    let refreshed = false
+    vi.mocked(fetch).mockImplementation(async path => {
+      if (path === '/api/bootstrap') return json({ csrf_token: 'csrf', model_available: false, visits: [record], current_visit: record, sources: [] })
+      if (String(path).endsWith('/messages')) return pending
+      return json(refreshed ? updated : record)
+    })
+    wrapper = mount(App); await flushPromises()
+    await wrapper.get('[data-tab="chat"]').trigger('click')
+    await wrapper.get('#question').setValue(sent.content)
+    await wrapper.get('.composer').trigger('submit')
+    expect(wrapper.get('.message-pending').text()).toContain(sent.content)
+    expect(wrapper.get('.working-message').text()).toContain('正在回复')
+    expect(wrapper.find('.welcome').exists()).toBe(false)
+    await wrapper.get('#question').setValue('我还想补充另一件事')
+    refreshed = true
+    resolveMessage(json({ user_message: sent, assistant_message: reply, visit: updated })); await flushPromises()
+    expect(wrapper.find('.message-pending').exists()).toBe(false)
+    expect(wrapper.find('.working-message').exists()).toBe(false)
+    expect(wrapper.get('.message-assistant .message-content').text()).toBe(reply.content)
+    expect((wrapper.get('#question').element as HTMLTextAreaElement).value).toBe('我还想补充另一件事')
+  })
+  it('发送失败保留原问题，并显示可以再次发送的明确错误', async () => {
+    const record = visit()
+    vi.mocked(fetch).mockImplementation(async path => path === '/api/bootstrap' ? json({ csrf_token: 'csrf', model_available: false, visits: [record], current_visit: record, sources: [] }) : String(path).endsWith('/messages') ? json({ detail: '本机暂未完成回复，请重试。' }, 503) : json(record))
+    wrapper = mount(App); await flushPromises()
+    await wrapper.get('[data-tab="chat"]').trigger('click')
+    await wrapper.get('#question').setValue('【虚构】需要带什么资料？')
+    await wrapper.get('.composer').trigger('submit'); await flushPromises()
+    expect((wrapper.get('#question').element as HTMLTextAreaElement).value).toBe('【虚构】需要带什么资料？')
+    expect(wrapper.get('.feedback-error').text()).toContain('本机暂未完成回复')
+    expect(wrapper.find('.working-message').exists()).toBe(false)
+  })
+})
+
 describe('请求与隐私', () => {
   it('修改请求携带同源 Cookie 与 CSRF，并展示后端 detail 错误', async () => {
     setCsrfToken('test-csrf')

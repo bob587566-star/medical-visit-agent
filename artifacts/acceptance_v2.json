@@ -1,5 +1,5 @@
 {
-  "executed_at": "2026-10-11T21:30:50.208290+00:00",
+  "executed_at": "2026-10-12T11:08:43.192616+00:00",
   "base_url": "http://127.0.0.1:8270",
   "passed": 8,
   "failed": 0,
@@ -21,17 +21,17 @@
         "completion": 100,
         "ready_count": 1
       },
-      "duration_ms": 1469.0
+      "duration_ms": 453.0
     },
     {
       "name": "focused_short_answer_uses_collection_context",
       "status": "pass",
       "evidence": {
-        "answer": "已从你的原话整理出待确认信息。请在“待确认信息”中核对后写入表单，确认后我们继续下一项。确认前不会写入表单，也不作为已核实的病情。\n\n目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。\n\n下一步只补充一项：就诊者属于哪个年龄阶段？",
+        "answer": "年龄阶段收到。\n\n目前有没有在用药物或补充剂？没有也可以直接说。",
         "candidate_field": "age_group",
         "stored_only_after_confirmation": true
       },
-      "duration_ms": 140.0
+      "duration_ms": 109.0
     },
     {
       "name": "timeline_plan_summary_export_and_invalidation",
@@ -41,13 +41,13 @@
         "timeline_in_summary_and_export": true,
         "stale_plan_and_summary_cleared": true
       },
-      "duration_ms": 250.0
+      "duration_ms": 172.0
     },
     {
       "name": "source_details_categories_and_private_bookmarks",
       "status": "pass",
       "evidence": {
-        "catalog_total": 37,
+        "catalog_total": 46,
         "categories": [
           "健康资料",
           "就诊准备",
@@ -60,11 +60,11 @@
           "mode": "lexical_fallback",
           "embedding_available": false,
           "model": "bge-m3:latest",
-          "document_count": 37
+          "document_count": 46
         },
         "bookmark_isolation": true
       },
-      "duration_ms": 125.0
+      "duration_ms": 188.0
     },
     {
       "name": "supported_vs_unknown_evidence_and_repeated_answers",
@@ -74,7 +74,7 @@
         "unknown_sources": 0,
         "repeated_nonempty_answers": 3
       },
-      "duration_ms": 157.0
+      "duration_ms": 140.0
     },
     {
       "name": "new_mutations_csrf_and_cross_visitor_authorization",
@@ -85,7 +85,7 @@
         "cross_visitor_denied": 404,
         "rename_persisted": true
       },
-      "duration_ms": 265.0
+      "duration_ms": 219.0
     },
     {
       "name": "invalid_observations_do_not_mutate_record",
@@ -103,14 +103,14 @@
       "evidence": {
         "stored_observations": 5,
         "elapsed_ms": [
+          15.0,
+          47.0,
           31.0,
-          31.0,
-          31.0,
-          16.0,
-          31.0
+          47.0,
+          47.0
         ]
       },
-      "duration_ms": 141.0
+      "duration_ms": 203.0
     }
   ],
   "cleanup": {

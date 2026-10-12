@@ -1,0 +1,133 @@
+{
+  "executed_at": "2026-10-12T11:08:47.748356+00:00",
+  "base_url": "http://127.0.0.1:8270",
+  "passed": 4,
+  "failed": 0,
+  "total": 4,
+  "results": [
+    {
+      "name": "seven_connected_turns_without_form_clicks",
+      "status": "pass",
+      "evidence": {
+        "transcript": [
+          {
+            "user": "头疼想睡觉",
+            "assistant": "你说的是“头疼想睡觉”，我听到了。\n\n这种不舒服大概从什么时候开始的？",
+            "next_field": "onset",
+            "elapsed_ms": 31.0
+          },
+          {
+            "user": "昨晚开始的",
+            "assistant": "明白，时间是“昨晚开始”。\n\n你自己感觉不适程度是轻、中，还是重？",
+            "next_field": "severity",
+            "elapsed_ms": 32.0
+          },
+          {
+            "user": "轻微",
+            "assistant": "明白，你自己感觉“轻微”。\n\n方便说一下，你属于成人、儿童、老年人，还是孕产期？",
+            "next_field": "age_group",
+            "elapsed_ms": 31.0
+          },
+          {
+            "user": "成人",
+            "assistant": "年龄阶段收到。\n\n目前有没有在用药物或补充剂？没有也可以直接说。",
+            "next_field": "medications",
+            "elapsed_ms": 15.0
+          },
+          {
+            "user": "没有用药",
+            "assistant": "这项信息收到。\n\n有没有已知的过敏？不清楚也可以说不清楚。",
+            "next_field": "allergies",
+            "elapsed_ms": 32.0
+          },
+          {
+            "user": "不知道",
+            "assistant": "这项信息收到。\n\n以前有没有相关的病史或就诊经历？",
+            "next_field": "medical_history",
+            "elapsed_ms": 47.0
+          },
+          {
+            "user": "没有既往病史",
+            "assistant": "这项信息收到。\n\n你已经提到的基本情况都接上了。需要时可以让我整理成就诊摘要；写入资料前再逐项核对。",
+            "next_field": null,
+            "elapsed_ms": 31.0
+          }
+        ],
+        "saved_form_progress": 0,
+        "confirmation_required_only_for_saving": true
+      },
+      "duration_ms": 266.0
+    },
+    {
+      "name": "contextual_question_and_unknown_institution",
+      "status": "pass",
+      "evidence": {
+        "contextual_answer": "记录头痛开始时间、位置、是否反复、诱因和伴随变化，有助于与医生沟通。反复、持续或加重的头痛需要评估。\n\n出处：英国国家医疗服务体系 NHS《头痛：记录诱因，识别需要及时就医的变化》。这是一般资料，不能据此确定你的具体情况。",
+        "unknown_answer": "我这里没有这家医院的地址、预约或收费资料。需要到该医院的官方网站或官方电话核实；如果你已经有医院通知，可以贴出其中的安排，我帮你整理。"
+      },
+      "duration_ms": 125.0
+    },
+    {
+      "name": "pause_and_social_replies",
+      "status": "pass",
+      "evidence": {
+        "answers": [
+          {
+            "user": "不想填了",
+            "assistant": "好，先停下这些问题。你可以直接说想聊的内容，也可以让我把已经说过的话整理出来。"
+          },
+          {
+            "user": "我这两天继续咳嗽",
+            "assistant": "你说的是“我这两天继续咳嗽”，我听到了。"
+          },
+          {
+            "user": "谢谢",
+            "assistant": "不客气。需要时可以继续补充，或让我把刚才的话整理成就诊摘要。"
+          },
+          {
+            "user": "你能做什么",
+            "assistant": "我是知禾，一个帮你整理就诊信息的助手。可以接着聊你描述的不适，查阅带来源的健康资料，或整理给医生看的摘要和问题清单。"
+          }
+        ]
+      },
+      "duration_ms": 172.0
+    },
+    {
+      "name": "linked_warning_and_denial_history_person_exclusions",
+      "status": "pass",
+      "evidence": [
+        {
+          "first": "我现在胸痛",
+          "second": "还冒冷汗",
+          "level": "emergency"
+        },
+        {
+          "first": "刚刚开始头痛",
+          "second": "痛得受不了",
+          "level": "emergency"
+        },
+        {
+          "first": "我现在没有胸痛",
+          "second": "还冒冷汗",
+          "level": "unknown"
+        },
+        {
+          "first": "去年曾胸痛",
+          "second": "还冒冷汗",
+          "level": "unknown"
+        },
+        {
+          "first": "我爸爸现在胸痛",
+          "second": "还有我姐姐冒冷汗",
+          "level": "unknown"
+        }
+      ],
+      "duration_ms": 2515.0
+    }
+  ],
+  "cleanup": {
+    "fictional_test_sessions": 8,
+    "cleanup_failures": []
+  },
+  "data_policy": "Only independent fictional visitors; use_model=false; no external clinical requests. This is dialogue and engineering validation, not clinical validation."
+}

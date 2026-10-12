@@ -204,7 +204,8 @@ def test_short_collection_reply_produces_nonempty_answer_not_false_no_evidence()
         result = await Executor(Knowledge(ROOT / "knowledge" / "articles.json"), ModelService()).run(record, "三天前")
         assert result.content
         assert result.intake_candidates[0].field == "onset"
-        assert "待确认" in result.content
+        assert result.followup_field != "onset"  # acknowledge the answer and move on without forcing confirmation
+        assert result.collection.completion == 0  # spoken context is not a silently saved fact
         assert "没有与你的问题对应" not in result.content
         assert any(step.tool == "search_health_knowledge" and step.status == "skipped" for step in result.trace)
     asyncio.run(run())

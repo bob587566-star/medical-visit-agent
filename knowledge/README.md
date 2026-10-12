@@ -4,7 +4,7 @@ articles.json 是根据官方患者教育页面整理的简短中文释义，不
 
 NHS 原文面向英国患者，急救联系方式按中国大陆国家卫健委公开资料单独说明，其他地区使用当地号码。医院要求、科室挂号、医保及诊疗方案不从英国资料推导。资料不包含药物处方或个人剂量建议。
 
-V2 共 37 篇资料，分为就诊准备、健康资料、紧急提醒、慢病随访、特殊人群、检查准备六类。新增 24 个独立主题，已于 2026-10-12 打开下列官方页面核对。它仍是有限范围的患者教育库，不能覆盖全部急症；没有命中规则不能推出安全。病例和示例均为虚构。新增主题必须核对可信来源，不能用大模型无依据扩写入库。
+当前共 46 篇资料，分为就诊准备、健康资料、紧急提醒、慢病随访、特殊人群、检查准备六类。V2 的 37 篇包含新增的 24 个独立主题；2026-10-12 针对独立验收报告补充 9 篇紧急求助和心理危机资料，复用原有晕厥主题。它仍是有限范围的患者教育库，不能覆盖全部急症；没有命中规则不能推出安全。病例和示例均为虚构。新增主题必须核对可信来源，不能用大模型无依据扩写入库。
 
 ## 检索如何工作
 
@@ -60,3 +60,21 @@ V2 共 37 篇资料，分为就诊准备、健康资料、紧急提醒、慢病�
 | 理解化验结果 | [MedlinePlus：How to understand your lab results](https://medlineplus.gov/lab-tests/how-to-understand-your-lab-results/) | 不将页面更新时间作临床审阅日期 |
 
 新增正文为围绕记录、沟通和寻求专业帮助的简短中文释义。没有搬运原文全文，没有药物剂量、个人诊疗方案、医疗机构实时数据或医保规则。
+
+## 红旗补充资料与边界
+
+下列原页面于 2026-10-12 实际打开核对，新增正文仍为简短中文释义，未经临床专家审校。适用人群、紧急升级边界与来源核对说明见 [红旗依据](../docs/redflag-evidence.md)。来源描述的紧急求助等级与产品采取的保守警示需区分，不能因为规则命中而确认某种疾病。
+
+| 资料 ID | 官方原文 | 原页面审阅日期（如显示） |
+| --- | --- | --- |
+| crisis_support | [NIMH：Suicide FAQ](https://www.nimh.nih.gov/health/publications/suicide-faq) | 修订年份 2023，未作完整日期入库 |
+| poisoning | [NHS：Poisoning](https://www.nhs.uk/conditions/poisoning/) | 2025-06-12 |
+| seizure | [NHS：Seizure first aid](https://www.nhs.uk/symptoms/what-to-do-if-someone-has-a-seizure-fit/) | 2023-12-19 |
+| severe_haemoptysis | [NHS：Coughing up blood](https://www.nhs.uk/symptoms/coughing-up-blood/) | 2024-06-13 |
+| severe_bleeding | [NHS：Cuts and grazes](https://www.nhs.uk/conditions/cuts-and-grazes/) | 2026-04-02 |
+| pregnancy_bleeding | [NHS：Vaginal bleeding in pregnancy](https://www.nhs.uk/pregnancy/common-symptoms/vaginal-bleeding/) | 2026-02-17 |
+| infant_warning | [NHS：Fever in children](https://www.nhs.uk/symptoms/fever-in-children/) | 2024-01-03 |
+| head_injury | [NHS：Head injury and concussion](https://www.nhs.uk/conditions/head-injury-and-concussion/) | 2025-05-29 |
+| vomiting_blood | [NHS：Vomiting blood](https://www.nhs.uk/symptoms/vomiting-blood/) | 2025-08-18 |
+
+危机资料保留陪伴、倾听、减少危险物品可及和连接专业支持，不提供危险行为的做法，也不把网页上的境外心理热线号码套用到中国。心理热线需另行核实适用地区；本资料库没有经过该核实的中国心理热线号码。新增 NHS 紧急提醒使用“当地急救服务”，不直接搬用英国号码。

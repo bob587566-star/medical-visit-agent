@@ -15,11 +15,11 @@ export interface Source {
   id: string; title: string; publisher: string; url: string; reviewed_at: string;
   content: string; category?: string; keywords?: string[]; topics?: string[]
 }
-export interface Risk { level: 'emergency' | 'prompt' | 'unknown'; message: string; reasons: string[]; source_ids: string[] }
+export interface Risk { level: 'emergency' | 'prompt' | 'unknown'; kind?: 'medical' | 'self_harm' | 'unknown'; message: string; reasons: string[]; source_ids: string[] }
 export interface Trace { tool: string; label: string; status: string }
 export interface Message {
   id: string; role: 'user' | 'assistant'; content: string; created_at: string;
-  sources: Source[]; trace: Trace[]; risk?: Risk; suggested_questions: string[]; mode?: string; duration_ms?: number; intake_candidates?: IntakeCandidate[]
+  sources: Source[]; trace: Trace[]; risk?: Risk; suggested_questions: string[]; mode?: string; duration_ms?: number; intake_candidates?: IntakeCandidate[]; followup_field?: keyof Intake | null
 }
 export interface Summary { text: string; generated_at: string; source: 'self_report' }
 export interface ChecklistItem { id: string; text: string; done: boolean }
@@ -34,3 +34,12 @@ export interface Bootstrap {
 }
 export interface MessageResult { user_message: Message; assistant_message: Message; visit: Visit }
 export interface SummaryResult { summary: Summary; checklist: ChecklistItem[]; visit: Visit }
+export type TaskGoal = 'prepare_visit' | 'understand_symptom' | 'organize_timeline'
+export type TaskTool = 'check_urgent_signs' | 'search_health_knowledge' | 'collect_visit_details' | 'build_visit_checklist' | 'draft_visit_summary' | 'suggest_intake_updates' | 'build_preparation_plan'
+export interface PlannedStep { id: string; tool: TaskTool; depends_on: string[]; label: string }
+export interface TaskPlan { objective: string; planner_mode: 'local' | 'model' | 'fallback'; steps: PlannedStep[] }
+export interface TaskStep extends PlannedStep { status: 'pending' | 'running' | 'done' | 'failed' | 'skipped'; executed_by: 'executor' | 'local_safety'; output: Record<string, unknown>; source_ids: string[]; error: string | null; started_at: string | null; finished_at: string | null; duration_ms: number }
+export interface EvidenceClause { clause: string; kind: 'source' | 'self_report' | 'safety_rule'; source_id: string | null; reference: string; exact_span: string; start: number; end: number; verified: boolean; notice: string }
+export interface TaskRun { id: string; goal: TaskGoal; status: 'completed' | 'needs_input' | 'emergency' | 'failed'; created_at: string; duration_ms: number; plan: TaskPlan; steps: TaskStep[]; content: string; risk: Risk; sources: Source[]; evidence_ledger: EvidenceClause[]; missing_fields: string[]; next_question: string | null; summary: Summary | null; checklist: ChecklistItem[]; preparation_plan: PreparationPlan | null; planner_notice: string; planner_error: 'unavailable' | 'timeout' | 'network_error' | 'invalid_plan' | null }
+export type TaskStatus = 'queued' | 'running' | 'completed' | 'needs_input' | 'emergency' | 'failed' | 'interrupted' | 'superseded'
+export interface TaskJob { id: string; visit_id: string; goal: TaskGoal; status: TaskStatus; created_at: string; updated_at: string; result: TaskRun | null; error: string | null; applied_at: string | null; source_revision: string; current_risk?: Risk | null; invalidated_reason?: string | null; can_apply?: boolean }

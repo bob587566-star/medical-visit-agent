@@ -80,6 +80,10 @@ class Store:
         with self.lock, self.connect() as conn:
             conn.execute("DELETE FROM visits WHERE owner=?", (owner,))
             conn.execute("DELETE FROM bookmarks WHERE owner=?", (owner,))
+            # Optional task tables are created by TaskStore after Store itself.
+            for table in ('task_audit', 'task_audit_heads'):
+                if conn.execute('SELECT 1 FROM sqlite_master WHERE type=? AND name=?', ('table', table)).fetchone():
+                    conn.execute(f'DELETE FROM {table} WHERE owner=?', (owner,))
 
     def bookmarks(self, owner: str) -> list[str]:
         with self.connect() as conn:
@@ -99,6 +103,9 @@ class Store:
         with self.lock, self.connect() as conn:
             conn.execute("DELETE FROM visits WHERE updated_at < ? OR owner IN (SELECT id FROM sessions WHERE created_at < ?)", (cutoff, cutoff))
             conn.execute("DELETE FROM bookmarks WHERE owner IN (SELECT id FROM sessions WHERE created_at < ?)", (cutoff,))
+            for table in ('task_audit', 'task_audit_heads'):
+                if conn.execute('SELECT 1 FROM sqlite_master WHERE type=? AND name=?', ('table', table)).fetchone():
+                    conn.execute(f'DELETE FROM {table} WHERE owner IN (SELECT id FROM sessions WHERE created_at < ?)', (cutoff,))
             conn.execute("DELETE FROM sessions WHERE created_at < ?", (cutoff,))
 
     def close(self) -> None:

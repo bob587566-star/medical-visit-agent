@@ -1,0 +1,496 @@
+{
+  "executed_at": "2026-10-12T11:17:11.499553+00:00",
+  "base_url": "http://127.0.0.1:8270",
+  "passed": 11,
+  "failed": 0,
+  "total": 11,
+  "results": [
+    {
+      "name": "local_prepare_needs_input_readonly",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "needs_input"
+        ],
+        "elapsed_ms": 16.0,
+        "initial_http_status": 202,
+        "status": "needs_input",
+        "result_status": "needs_input",
+        "goal": "prepare_visit",
+        "planner_mode": "local",
+        "planner_error": null,
+        "can_apply": true,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "search_health_knowledge",
+            "status": "done",
+            "depends_on": [
+              "safety"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "collect_visit_details",
+            "status": "done",
+            "depends_on": [
+              "safety",
+              "sources"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_visit_checklist",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "draft_visit_summary",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_preparation_plan",
+            "status": "done",
+            "depends_on": [
+              "details",
+              "checklist"
+            ],
+            "executed_by": "executor"
+          }
+        ],
+        "evidence_count": 3,
+        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "visit_unchanged_until_apply": true
+      },
+      "duration_ms": 172.0
+    },
+    {
+      "name": "local_prepare_completed_readonly",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "completed"
+        ],
+        "elapsed_ms": 15.0,
+        "initial_http_status": 202,
+        "status": "completed",
+        "result_status": "completed",
+        "goal": "prepare_visit",
+        "planner_mode": "local",
+        "planner_error": null,
+        "can_apply": true,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "search_health_knowledge",
+            "status": "done",
+            "depends_on": [
+              "safety"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "collect_visit_details",
+            "status": "done",
+            "depends_on": [
+              "safety",
+              "sources"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_visit_checklist",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "draft_visit_summary",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_preparation_plan",
+            "status": "done",
+            "depends_on": [
+              "details",
+              "checklist"
+            ],
+            "executed_by": "executor"
+          }
+        ],
+        "evidence_count": 10,
+        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "visit_unchanged_until_apply": true
+      },
+      "duration_ms": 125.0
+    },
+    {
+      "name": "local_understand_with_exact_source_evidence",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "completed"
+        ],
+        "elapsed_ms": 15.0,
+        "initial_http_status": 202,
+        "status": "completed",
+        "result_status": "completed",
+        "goal": "understand_symptom",
+        "planner_mode": "local",
+        "planner_error": null,
+        "can_apply": false,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "collect_visit_details",
+            "status": "done",
+            "depends_on": [
+              "safety"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "search_health_knowledge",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          }
+        ],
+        "evidence_count": 2,
+        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "visit_unchanged_until_apply": true
+      },
+      "duration_ms": 172.0
+    },
+    {
+      "name": "local_timeline_uses_original_observation",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "completed"
+        ],
+        "elapsed_ms": 16.0,
+        "initial_http_status": 202,
+        "status": "completed",
+        "result_status": "completed",
+        "goal": "organize_timeline",
+        "planner_mode": "local",
+        "planner_error": null,
+        "can_apply": true,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "collect_visit_details",
+            "status": "done",
+            "depends_on": [
+              "safety"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "draft_visit_summary",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          }
+        ],
+        "evidence_count": 9,
+        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "visit_unchanged_until_apply": true
+      },
+      "duration_ms": 187.0
+    },
+    {
+      "name": "explicit_apply_and_duplicate_rejection",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "completed"
+        ],
+        "elapsed_ms": 16.0,
+        "initial_http_status": 202,
+        "status": "completed",
+        "result_status": "completed",
+        "goal": "prepare_visit",
+        "planner_mode": "local",
+        "planner_error": null,
+        "can_apply": true,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "search_health_knowledge",
+            "status": "done",
+            "depends_on": [
+              "safety"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "collect_visit_details",
+            "status": "done",
+            "depends_on": [
+              "safety",
+              "sources"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_visit_checklist",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "draft_visit_summary",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_preparation_plan",
+            "status": "done",
+            "depends_on": [
+              "details",
+              "checklist"
+            ],
+            "executed_by": "executor"
+          }
+        ],
+        "evidence_count": 10,
+        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "apply_http": 200,
+        "duplicate_apply_http": 409,
+        "facts_unchanged": true
+      },
+      "duration_ms": 172.0
+    },
+    {
+      "name": "csrf_and_cross_visitor_isolation",
+      "status": "pass",
+      "evidence": {
+        "csrf_rejection_http": 403,
+        "cross_visitor_attempts": [
+          {
+            "method": "GET",
+            "endpoint": "task_read",
+            "status": 404
+          },
+          {
+            "method": "GET",
+            "endpoint": "task_read",
+            "status": 404
+          },
+          {
+            "method": "POST",
+            "endpoint": "tasks",
+            "status": 404
+          },
+          {
+            "method": "POST",
+            "endpoint": "apply",
+            "status": 404
+          }
+        ],
+        "owner_data_unchanged": true
+      },
+      "duration_ms": 219.0
+    },
+    {
+      "name": "updated_record_supersedes_historical_task",
+      "status": "pass",
+      "evidence": {
+        "status": "superseded",
+        "can_apply": false,
+        "apply_http": 409,
+        "historical_result_unchanged": true
+      },
+      "duration_ms": 172.0
+    },
+    {
+      "name": "new_red_alert_invalidates_card_and_apply",
+      "status": "pass",
+      "evidence": {
+        "detail_and_list_status": "emergency",
+        "can_apply": false,
+        "apply_http": 409,
+        "historical_result_status": "completed",
+        "historical_result_unchanged": true
+      },
+      "duration_ms": 250.0
+    },
+    {
+      "name": "urgent_task_local_safety_short_circuit",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "emergency"
+        ],
+        "elapsed_ms": 16.0,
+        "initial_http_status": 202,
+        "status": "emergency",
+        "result_status": "emergency",
+        "goal": "prepare_visit",
+        "planner_mode": "local",
+        "planner_error": null,
+        "can_apply": false,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "local_safety"
+          }
+        ],
+        "evidence_count": 1,
+        "knowledge_version": ""
+      },
+      "duration_ms": 125.0
+    },
+    {
+      "name": "audit_is_integrity_checked_metadata",
+      "status": "pass",
+      "evidence": {
+        "verified": true,
+        "event_count": 3,
+        "raw_clinical_input_in_events": false,
+        "notice": "Local HMAC integrity check, not external immutable auditing."
+      },
+      "duration_ms": 125.0
+    },
+    {
+      "name": "explicit_external_planner_actual_mode",
+      "status": "pass",
+      "evidence": {
+        "observed_states": [
+          "queued",
+          "running",
+          "completed"
+        ],
+        "elapsed_ms": 1078.0,
+        "initial_http_status": 202,
+        "status": "completed",
+        "result_status": "completed",
+        "goal": "prepare_visit",
+        "planner_mode": "model",
+        "planner_error": null,
+        "can_apply": true,
+        "tools": [
+          {
+            "tool": "check_urgent_signs",
+            "status": "done",
+            "depends_on": [],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "collect_visit_details",
+            "status": "done",
+            "depends_on": [
+              "safety"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_visit_checklist",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "draft_visit_summary",
+            "status": "done",
+            "depends_on": [
+              "details"
+            ],
+            "executed_by": "executor"
+          },
+          {
+            "tool": "build_preparation_plan",
+            "status": "done",
+            "depends_on": [
+              "details",
+              "checklist"
+            ],
+            "executed_by": "executor"
+          }
+        ],
+        "evidence_count": 8,
+        "knowledge_version": "eb7a3b714fa23a35334c608bcc00c910ccb427ee7a90e580e7c275fe249400ab",
+        "requested": true,
+        "attempted": true,
+        "model_available": true,
+        "model_planner_succeeded": true,
+        "notice": "Only goal enum, filled field names, observation count and public source IDs are supplied to the external planner; clinical field values, chat history and identity are not included."
+      },
+      "duration_ms": 1187.0
+    }
+  ],
+  "external_planner": {
+    "requested": true,
+    "attempted": true,
+    "model_available": true,
+    "planner_mode": "model",
+    "planner_error": null,
+    "status": "completed",
+    "model_planner_succeeded": true,
+    "notice": "Only goal enum, filled field names, observation count and public source IDs are supplied to the external planner; clinical field values, chat history and identity are not included."
+  },
+  "cleanup": {
+    "fictional_test_sessions": 12,
+    "cleanup_failures": []
+  },
+  "data_policy": "Independent fictional visitors only; own sessions cleared through authenticated DELETE /api/data. Only --external-planner enables one metadata-only planner attempt. No credentials, cookies or CSRF values are written to reports."
+}

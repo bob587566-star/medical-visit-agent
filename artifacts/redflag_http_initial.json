@@ -1,0 +1,1583 @@
+{
+  "executed_at": "2026-10-12T11:01:58.358372+00:00",
+  "base_url": "http://127.0.0.1:8270",
+  "passed": 50,
+  "failed": 4,
+  "total": 54,
+  "finite_sample": {
+    "emergency_probes": 36,
+    "emergency_detected": 32,
+    "context_boundary_probes": 13,
+    "context_expected_level_matched": 13,
+    "entries": {
+      "chat": 31,
+      "form": 9,
+      "form_notes": 9
+    },
+    "notice": "Counts apply only to the listed fictional inputs. They do not estimate clinical sensitivity or prove that every red flag is covered."
+  },
+  "results": [
+    {
+      "name": "health_and_curated_sources",
+      "status": "pass",
+      "evidence": {
+        "health": 200,
+        "ready": 200,
+        "source_ids": [
+          "visit_preparation",
+          "symptom_record",
+          "medication_list",
+          "questions_for_doctor",
+          "cough",
+          "fever",
+          "diarrhoea",
+          "headache",
+          "emergency_chest",
+          "emergency_breathing",
+          "emergency_stroke",
+          "emergency_allergy",
+          "emergency_call",
+          "sore_throat",
+          "back_pain",
+          "dizziness",
+          "fatigue",
+          "insomnia",
+          "abdominal_pain",
+          "constipation",
+          "urinary_symptoms",
+          "dehydration",
+          "hypertension",
+          "diabetes",
+          "palpitations",
+          "contact_dermatitis",
+          "hay_fever",
+          "earache",
+          "toothache",
+          "red_eye",
+          "sprains",
+          "fainting",
+          "nosebleed",
+          "child_fever",
+          "pregnancy_preparation",
+          "blood_test_preparation",
+          "lab_results",
+          "crisis_support",
+          "poisoning",
+          "seizure",
+          "severe_haemoptysis",
+          "severe_bleeding",
+          "pregnancy_bleeding",
+          "infant_warning",
+          "head_injury",
+          "vomiting_blood"
+        ]
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "reported_self_harm_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "self_harm",
+        "entry": "chat",
+        "input": "我不想活了，已经想好怎么做了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "self_harm",
+        "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "crisis_support"
+        ],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 109.0
+    },
+    {
+      "name": "reported_self_harm_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "self_harm",
+        "entry": "form",
+        "input": "我不想活了，已经想好怎么做了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "self_harm",
+        "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "crisis_support"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 47.0
+    },
+    {
+      "name": "reported_self_harm_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "self_harm",
+        "entry": "form_notes",
+        "input": "我不想活了，已经想好怎么做了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "self_harm",
+        "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "crisis_support"
+        ],
+        "elapsed_ms": 0.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "reported_overdose_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "overdose",
+        "entry": "chat",
+        "input": "我一次吃了20片安眠药",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "poisoning"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 79.0
+    },
+    {
+      "name": "reported_overdose_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "overdose",
+        "entry": "form",
+        "input": "我一次吃了20片安眠药",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "poisoning"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "reported_overdose_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "overdose",
+        "entry": "form_notes",
+        "input": "我一次吃了20片安眠药",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "poisoning"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 47.0
+    },
+    {
+      "name": "reported_fainting_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "fainting",
+        "entry": "chat",
+        "input": "刚才眼前一黑晕倒了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "emergency_call"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 47.0
+    },
+    {
+      "name": "reported_fainting_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "fainting",
+        "entry": "form",
+        "input": "刚才眼前一黑晕倒了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "emergency_call"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 94.0
+    },
+    {
+      "name": "reported_fainting_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "fainting",
+        "entry": "form_notes",
+        "input": "刚才眼前一黑晕倒了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "emergency_call"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "reported_seizure_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "seizure",
+        "entry": "chat",
+        "input": "刚才全身抽搐了两分钟",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "seizure"
+        ],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "reported_seizure_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "seizure",
+        "entry": "form",
+        "input": "刚才全身抽搐了两分钟",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "seizure"
+        ],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "reported_seizure_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "seizure",
+        "entry": "form_notes",
+        "input": "刚才全身抽搐了两分钟",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "seizure"
+        ],
+        "elapsed_ms": 0.0
+      },
+      "duration_ms": 47.0
+    },
+    {
+      "name": "reported_haemoptysis_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "haemoptysis",
+        "entry": "chat",
+        "input": "咳出来全是血",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_haemoptysis"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 94.0
+    },
+    {
+      "name": "reported_haemoptysis_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "haemoptysis",
+        "entry": "form",
+        "input": "咳出来全是血",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_haemoptysis"
+        ],
+        "elapsed_ms": 0.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "reported_haemoptysis_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "haemoptysis",
+        "entry": "form_notes",
+        "input": "咳出来全是血",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_haemoptysis"
+        ],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 47.0
+    },
+    {
+      "name": "reported_bleeding_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "bleeding",
+        "entry": "chat",
+        "input": "伤口血流不止",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_bleeding"
+        ],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "reported_bleeding_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "bleeding",
+        "entry": "form",
+        "input": "伤口血流不止",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_bleeding"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 63.0
+    },
+    {
+      "name": "reported_bleeding_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "bleeding",
+        "entry": "form_notes",
+        "input": "伤口血流不止",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_bleeding"
+        ],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "reported_pregnancy_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "pregnancy",
+        "entry": "chat",
+        "input": "怀孕32周，阴道出血还肚子疼",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "pregnancy_bleeding"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 79.0
+    },
+    {
+      "name": "reported_pregnancy_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "pregnancy",
+        "entry": "form",
+        "input": "怀孕32周，阴道出血还肚子疼",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "pregnancy_bleeding"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "reported_pregnancy_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "pregnancy",
+        "entry": "form_notes",
+        "input": "怀孕32周，阴道出血还肚子疼",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "pregnancy_bleeding"
+        ],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 93.0
+    },
+    {
+      "name": "reported_infant_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "infant",
+        "entry": "chat",
+        "input": "两个月宝宝39度5，昏睡不吃奶",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "infant_warning"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 79.0
+    },
+    {
+      "name": "reported_infant_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "infant",
+        "entry": "form",
+        "input": "两个月宝宝39度5，昏睡不吃奶",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "infant_warning"
+        ],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 46.0
+    },
+    {
+      "name": "reported_infant_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "infant",
+        "entry": "form_notes",
+        "input": "两个月宝宝39度5，昏睡不吃奶",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "infant_warning"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 79.0
+    },
+    {
+      "name": "reported_head_injury_chat",
+      "status": "pass",
+      "evidence": {
+        "scenario": "head_injury",
+        "entry": "chat",
+        "input": "摔到头，吐了两次，越来越困",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "head_injury"
+        ],
+        "elapsed_ms": 47.0
+      },
+      "duration_ms": 63.0
+    },
+    {
+      "name": "reported_head_injury_form",
+      "status": "pass",
+      "evidence": {
+        "scenario": "head_injury",
+        "entry": "form",
+        "input": "摔到头，吐了两次，越来越困",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "head_injury"
+        ],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 93.0
+    },
+    {
+      "name": "reported_head_injury_form_notes",
+      "status": "pass",
+      "evidence": {
+        "scenario": "head_injury",
+        "entry": "form_notes",
+        "input": "摔到头，吐了两次，越来越困",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "head_injury"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 79.0
+    },
+    {
+      "name": "holdout_self_harm_plan",
+      "status": "pass",
+      "evidence": {
+        "scenario": "self_harm_plan",
+        "entry": "chat",
+        "input": "活着太难受了，我准备伤害自己",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "self_harm",
+        "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "crisis_support"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "holdout_swallowed_pills",
+      "status": "fail",
+      "error": "AssertionError: expected emergency, got unknown",
+      "duration_ms": 2125.0
+    },
+    {
+      "name": "holdout_not_responding",
+      "status": "pass",
+      "evidence": {
+        "scenario": "not_responding",
+        "entry": "chat",
+        "input": "我妈突然倒地，怎么喊都没有反应",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "emergency_call"
+        ],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "holdout_seizure_family",
+      "status": "pass",
+      "evidence": {
+        "scenario": "seizure_family",
+        "entry": "chat",
+        "input": "我家人刚才手脚抽搐，人还没有醒过来",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "emergency_call",
+          "seizure"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 63.0
+    },
+    {
+      "name": "holdout_blood_coughing",
+      "status": "fail",
+      "error": "AssertionError: expected emergency, got unknown",
+      "duration_ms": 47.0
+    },
+    {
+      "name": "holdout_bleeding_pressure",
+      "status": "fail",
+      "error": "AssertionError: expected emergency, got unknown",
+      "duration_ms": 93.0
+    },
+    {
+      "name": "holdout_pregnancy_colloquial",
+      "status": "pass",
+      "evidence": {
+        "scenario": "pregnancy_colloquial",
+        "entry": "chat",
+        "input": "我怀孕八个月了，下面流血，肚子一直痛",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "pregnancy_bleeding"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 63.0
+    },
+    {
+      "name": "holdout_infant_colloquial",
+      "status": "fail",
+      "error": "AssertionError: expected emergency, got prompt",
+      "duration_ms": 62.0
+    },
+    {
+      "name": "holdout_head_injury_colloquial",
+      "status": "pass",
+      "evidence": {
+        "scenario": "head_injury_colloquial",
+        "entry": "chat",
+        "input": "刚撞到脑袋，后来接连吐了两次，眼睛都快睁不开了",
+        "expected": "emergency",
+        "actual": "emergency",
+        "kind": "medical",
+        "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "head_injury"
+        ],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_ordinary_sleep",
+      "status": "pass",
+      "evidence": {
+        "scenario": "ordinary_sleep",
+        "entry": "chat",
+        "input": "我想早点睡觉，明天还要上班",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 94.0
+    },
+    {
+      "name": "context_denied_self_harm",
+      "status": "pass",
+      "evidence": {
+        "scenario": "denied_self_harm",
+        "entry": "chat",
+        "input": "我没有自伤或自杀的想法，只是最近睡得不好",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 110.0
+    },
+    {
+      "name": "context_denied_faint",
+      "status": "pass",
+      "evidence": {
+        "scenario": "denied_faint",
+        "entry": "chat",
+        "input": "我没有晕倒，只是站起来有一点头晕",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 47.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_denied_seizure",
+      "status": "pass",
+      "evidence": {
+        "scenario": "denied_seizure",
+        "entry": "chat",
+        "input": "我没有全身抽搐，只是跑步之后腿抽筋",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_denied_bleeding",
+      "status": "pass",
+      "evidence": {
+        "scenario": "denied_bleeding",
+        "entry": "chat",
+        "input": "伤口没有出血，血已经止住了",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 47.0
+      },
+      "duration_ms": 94.0
+    },
+    {
+      "name": "context_historical_faint",
+      "status": "pass",
+      "evidence": {
+        "scenario": "historical_faint",
+        "entry": "chat",
+        "input": "十年前晕倒过，当时已经就医，现在一切正常",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 47.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_historical_crisis",
+      "status": "pass",
+      "evidence": {
+        "scenario": "historical_crisis",
+        "entry": "chat",
+        "input": "前年有过自伤的念头，当时接受了帮助，现在没有这个想法",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 15.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "context_education_crisis",
+      "status": "pass",
+      "evidence": {
+        "scenario": "education_crisis",
+        "entry": "chat",
+        "input": "我想了解心理危机科普：发现别人有自杀念头如何求助？",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 63.0
+    },
+    {
+      "name": "context_education_pregnancy",
+      "status": "pass",
+      "evidence": {
+        "scenario": "education_pregnancy",
+        "entry": "chat",
+        "input": "科普问题：怀孕期间阴道出血为什么需要找医生？",
+        "expected": "unknown",
+        "actual": "unknown",
+        "kind": "unknown",
+        "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_faint_recovered",
+      "status": "pass",
+      "evidence": {
+        "scenario": "faint_recovered",
+        "entry": "chat",
+        "input": "刚才晕倒了，现在完全恢复，没有胸痛也没有呼吸困难",
+        "expected": "prompt",
+        "actual": "prompt",
+        "kind": "medical",
+        "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "emergency_call"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_seizure_usual_recovered",
+      "status": "pass",
+      "evidence": {
+        "scenario": "seizure_usual_recovered",
+        "entry": "chat",
+        "input": "我有癫痫，刚才像平时一样抽搐30秒，现在完全清醒，按医生的急救计划处理了",
+        "expected": "prompt",
+        "actual": "prompt",
+        "kind": "medical",
+        "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "seizure"
+        ],
+        "elapsed_ms": 32.0
+      },
+      "duration_ms": 94.0
+    },
+    {
+      "name": "context_infant_fever_alert",
+      "status": "pass",
+      "evidence": {
+        "scenario": "infant_fever_alert",
+        "entry": "chat",
+        "input": "2个月宝宝发烧38度，精神不错，吃奶正常",
+        "expected": "prompt",
+        "actual": "prompt",
+        "kind": "medical",
+        "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "infant_warning"
+        ],
+        "elapsed_ms": 16.0
+      },
+      "duration_ms": 78.0
+    },
+    {
+      "name": "context_small_blood_streak",
+      "status": "pass",
+      "evidence": {
+        "scenario": "small_blood_streak",
+        "entry": "chat",
+        "input": "咳嗽，痰里一点咳血的血丝，没有其他不舒服",
+        "expected": "prompt",
+        "actual": "prompt",
+        "kind": "medical",
+        "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+        "source_ids": [
+          "severe_haemoptysis"
+        ],
+        "elapsed_ms": 31.0
+      },
+      "duration_ms": 62.0
+    },
+    {
+      "name": "candidate_chief_and_onset_original_words",
+      "status": "pass",
+      "evidence": {
+        "input": "我从三天前开始嗓子疼",
+        "candidates": [
+          {
+            "id": "964004795035414c8d57b059d906c2aa",
+            "field": "chief_complaint",
+            "value": "我从三天前开始嗓子疼",
+            "evidence": "我从三天前开始嗓子疼",
+            "created_at": "2026-10-12T11:01:57+00:00"
+          },
+          {
+            "id": "288af9372d6449ed9600e766212020f3",
+            "field": "onset",
+            "value": "三天前",
+            "evidence": "三天前",
+            "created_at": "2026-10-12T11:01:57+00:00"
+          }
+        ],
+        "saved_progress": 0,
+        "reply": "你说的是“我从三天前开始嗓子疼”，我听到了。\n\n你自己感觉不适程度是轻、中，还是重？"
+      },
+      "duration_ms": 63.0
+    },
+    {
+      "name": "candidate_current_medication_original_words",
+      "status": "pass",
+      "evidence": {
+        "input": "正在吃降压药氨氯地平",
+        "candidates": [
+          {
+            "id": "c27dfc0cae574bd2b713fdd3d47a366e",
+            "field": "medications",
+            "value": "正在吃降压药氨氯地平",
+            "evidence": "正在吃降压药氨氯地平",
+            "created_at": "2026-10-12T11:01:57+00:00"
+          }
+        ],
+        "saved_progress": 0,
+        "reply": "这项信息收到。\n\n你现在最想说的是哪里不舒服？"
+      },
+      "duration_ms": 94.0
+    },
+    {
+      "name": "computer_use_is_not_medication",
+      "status": "pass",
+      "evidence": {
+        "input": "现在用电脑",
+        "candidates": [],
+        "saved_progress": 0,
+        "reply": "我在听。你可以说说现在最困扰你的感受，也可以直接问一个具体问题。\n\n你现在最想说的是哪里不舒服？"
+      },
+      "duration_ms": 46.0
+    },
+    {
+      "name": "eating_fruit_is_not_medication",
+      "status": "pass",
+      "evidence": {
+        "input": "正在吃苹果",
+        "candidates": [],
+        "saved_progress": 0,
+        "reply": "我在听。你可以说说现在最困扰你的感受，也可以直接问一个具体问题。\n\n你现在最想说的是哪里不舒服？"
+      },
+      "duration_ms": 79.0
+    }
+  ],
+  "probes": [
+    {
+      "scenario": "self_harm",
+      "entry": "chat",
+      "input": "我不想活了，已经想好怎么做了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "self_harm",
+      "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "crisis_support"
+      ],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "self_harm",
+      "entry": "form",
+      "input": "我不想活了，已经想好怎么做了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "self_harm",
+      "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "crisis_support"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "self_harm",
+      "entry": "form_notes",
+      "input": "我不想活了，已经想好怎么做了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "self_harm",
+      "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "crisis_support"
+      ],
+      "elapsed_ms": 0.0
+    },
+    {
+      "scenario": "overdose",
+      "entry": "chat",
+      "input": "我一次吃了20片安眠药",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "poisoning"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "overdose",
+      "entry": "form",
+      "input": "我一次吃了20片安眠药",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "poisoning"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "overdose",
+      "entry": "form_notes",
+      "input": "我一次吃了20片安眠药",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "poisoning"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "fainting",
+      "entry": "chat",
+      "input": "刚才眼前一黑晕倒了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "emergency_call"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "fainting",
+      "entry": "form",
+      "input": "刚才眼前一黑晕倒了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "emergency_call"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "fainting",
+      "entry": "form_notes",
+      "input": "刚才眼前一黑晕倒了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "emergency_call"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "seizure",
+      "entry": "chat",
+      "input": "刚才全身抽搐了两分钟",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "seizure"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "seizure",
+      "entry": "form",
+      "input": "刚才全身抽搐了两分钟",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "seizure"
+      ],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "seizure",
+      "entry": "form_notes",
+      "input": "刚才全身抽搐了两分钟",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "seizure"
+      ],
+      "elapsed_ms": 0.0
+    },
+    {
+      "scenario": "haemoptysis",
+      "entry": "chat",
+      "input": "咳出来全是血",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_haemoptysis"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "haemoptysis",
+      "entry": "form",
+      "input": "咳出来全是血",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_haemoptysis"
+      ],
+      "elapsed_ms": 0.0
+    },
+    {
+      "scenario": "haemoptysis",
+      "entry": "form_notes",
+      "input": "咳出来全是血",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_haemoptysis"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "bleeding",
+      "entry": "chat",
+      "input": "伤口血流不止",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_bleeding"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "bleeding",
+      "entry": "form",
+      "input": "伤口血流不止",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_bleeding"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "bleeding",
+      "entry": "form_notes",
+      "input": "伤口血流不止",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_bleeding"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "pregnancy",
+      "entry": "chat",
+      "input": "怀孕32周，阴道出血还肚子疼",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "pregnancy_bleeding"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "pregnancy",
+      "entry": "form",
+      "input": "怀孕32周，阴道出血还肚子疼",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "pregnancy_bleeding"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "pregnancy",
+      "entry": "form_notes",
+      "input": "怀孕32周，阴道出血还肚子疼",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "pregnancy_bleeding"
+      ],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "infant",
+      "entry": "chat",
+      "input": "两个月宝宝39度5，昏睡不吃奶",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "infant_warning"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "infant",
+      "entry": "form",
+      "input": "两个月宝宝39度5，昏睡不吃奶",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "infant_warning"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "infant",
+      "entry": "form_notes",
+      "input": "两个月宝宝39度5，昏睡不吃奶",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "infant_warning"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "head_injury",
+      "entry": "chat",
+      "input": "摔到头，吐了两次，越来越困",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "head_injury"
+      ],
+      "elapsed_ms": 47.0
+    },
+    {
+      "scenario": "head_injury",
+      "entry": "form",
+      "input": "摔到头，吐了两次，越来越困",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "head_injury"
+      ],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "head_injury",
+      "entry": "form_notes",
+      "input": "摔到头，吐了两次，越来越困",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "head_injury"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "self_harm_plan",
+      "entry": "chat",
+      "input": "活着太难受了，我准备伤害自己",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "self_harm",
+      "risk_message": "听起来你正承受很大的痛苦，谢谢你把这些告诉我。现在先和一位你信任的人联系，请对方陪着你，尽量不要独处；在安全的前提下，与可能伤害自己的物品拉开距离，请身边的人帮助保管。如果你已经伤害了自己、服用了过量药物，或担心马上会行动、无法保证自己的安全，请立即联系当地急救或请人陪你去急诊；中国大陆可拨打 120。请不要等待本助手回复。你现在能联系到谁来陪你？这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "crisis_support"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "swallowed_pills",
+      "entry": "chat",
+      "input": "刚才把一瓶安眠药都吃了",
+      "expected": "emergency",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 2047.0
+    },
+    {
+      "scenario": "not_responding",
+      "entry": "chat",
+      "input": "我妈突然倒地，怎么喊都没有反应",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "emergency_call"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "seizure_family",
+      "entry": "chat",
+      "input": "我家人刚才手脚抽搐，人还没有醒过来",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "emergency_call",
+        "seizure"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "blood_coughing",
+      "entry": "chat",
+      "input": "咳出的不是一点血丝，是一大口一大口的血",
+      "expected": "emergency",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "bleeding_pressure",
+      "entry": "chat",
+      "input": "伤口用毛巾压住还是一直出血",
+      "expected": "emergency",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "pregnancy_colloquial",
+      "entry": "chat",
+      "input": "我怀孕八个月了，下面流血，肚子一直痛",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "pregnancy_bleeding"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "infant_colloquial",
+      "entry": "chat",
+      "input": "宝宝才两个月，烧到39.5度，怎么叫都不醒，也不吃奶",
+      "expected": "emergency",
+      "actual": "prompt",
+      "kind": "medical",
+      "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "infant_warning"
+      ],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "head_injury_colloquial",
+      "entry": "chat",
+      "input": "刚撞到脑袋，后来接连吐了两次，眼睛都快睁不开了",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "head_injury"
+      ],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "ordinary_sleep",
+      "entry": "chat",
+      "input": "我想早点睡觉，明天还要上班",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "denied_self_harm",
+      "entry": "chat",
+      "input": "我没有自伤或自杀的想法，只是最近睡得不好",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "denied_faint",
+      "entry": "chat",
+      "input": "我没有晕倒，只是站起来有一点头晕",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 47.0
+    },
+    {
+      "scenario": "denied_seizure",
+      "entry": "chat",
+      "input": "我没有全身抽搐，只是跑步之后腿抽筋",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "denied_bleeding",
+      "entry": "chat",
+      "input": "伤口没有出血，血已经止住了",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 47.0
+    },
+    {
+      "scenario": "historical_faint",
+      "entry": "chat",
+      "input": "十年前晕倒过，当时已经就医，现在一切正常",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 47.0
+    },
+    {
+      "scenario": "historical_crisis",
+      "entry": "chat",
+      "input": "前年有过自伤的念头，当时接受了帮助，现在没有这个想法",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 15.0
+    },
+    {
+      "scenario": "education_crisis",
+      "entry": "chat",
+      "input": "我想了解心理危机科普：发现别人有自杀念头如何求助？",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "education_pregnancy",
+      "entry": "chat",
+      "input": "科普问题：怀孕期间阴道出血为什么需要找医生？",
+      "expected": "unknown",
+      "actual": "unknown",
+      "kind": "unknown",
+      "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "faint_recovered",
+      "entry": "chat",
+      "input": "刚才晕倒了，现在完全恢复，没有胸痛也没有呼吸困难",
+      "expected": "prompt",
+      "actual": "prompt",
+      "kind": "medical",
+      "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "emergency_call"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "seizure_usual_recovered",
+      "entry": "chat",
+      "input": "我有癫痫，刚才像平时一样抽搐30秒，现在完全清醒，按医生的急救计划处理了",
+      "expected": "prompt",
+      "actual": "prompt",
+      "kind": "medical",
+      "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "seizure"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
+      "scenario": "infant_fever_alert",
+      "entry": "chat",
+      "input": "2个月宝宝发烧38度，精神不错，吃奶正常",
+      "expected": "prompt",
+      "actual": "prompt",
+      "kind": "medical",
+      "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "infant_warning"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "small_blood_streak",
+      "entry": "chat",
+      "input": "咳嗽，痰里一点咳血的血丝，没有其他不舒服",
+      "expected": "prompt",
+      "actual": "prompt",
+      "kind": "medical",
+      "risk_message": "请及时联系专业医务人员或就诊，说明这些实际发生的情况；症状加重或出现难唤醒、呼吸困难等表现时立即联系当地急救。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_haemoptysis"
+      ],
+      "elapsed_ms": 31.0
+    }
+  ],
+  "cleanup": {
+    "fictional_test_sessions": 54,
+    "cleanup_failures": []
+  },
+  "data_policy": "Independent fictional visitors only; use_model=false. Each visitor is cleared through authenticated DELETE /api/data. No pre-existing visitor records are accessed or removed."
+}

@@ -13,6 +13,7 @@ logs/
 frontend/node_modules/
 frontend/dist/
 *.sqlite*
+*.tasks.key
 artifacts/*.png
 artifacts/*.log
 artifacts/.pytest-retrieval-*/
