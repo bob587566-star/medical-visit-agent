@@ -103,7 +103,10 @@ def check(project: str) -> int:
     prometheus_check = (
         'file=/run/secrets/metrics_token; readable=false; writable=false; '
         'if test -r "$file"; then readable=true; fi; '
-        'if test -w "$file"; then writable=true; fi; '
+        # BusyBox test -w checks mode bits and may ignore a read-only mount.
+        # Opening for append without writing bytes probes actual filesystem
+        # access; it preserves the token contents even if the mount is wrong.
+        'if ( : >> "$file" ) 2>/dev/null; then writable=true; fi; '
         'printf "uid=%s gid=%s owner=%s readable=%s writable=%s\\n" '
         '"$(id -u)" "$(id -g)" "$(stat -c "%u:%g:%a" "$file")" "$readable" "$writable"; '
         'test "$(id -u)" = 65534 && test "$(id -g)" = 65534 && '
