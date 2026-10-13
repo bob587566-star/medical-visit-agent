@@ -95,6 +95,7 @@ Linux/macOS 可创建 .venv，安装 backend/requirements.txt，在 frontend 执
 ## 验证
 
 ```powershell
+New-Item -ItemType Directory -Force .pytest-tmp | Out-Null
 .\.venv\Scripts\python.exe -m pytest backend/tests tests -q --basetemp=.pytest-tmp\manual-run
 .\.venv\Scripts\python.exe tests/acceptance.py
 .\.venv\Scripts\python.exe tests/acceptance_v2.py

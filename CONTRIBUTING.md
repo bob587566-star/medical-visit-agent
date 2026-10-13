@@ -12,6 +12,7 @@ git diff --check
 后端测试使用独立临时库，不操作本机已有记录：
 
 ```powershell
+New-Item -ItemType Directory -Force .pytest-tmp | Out-Null
 .\.venv\Scripts\python.exe -m pytest backend/tests tests -q --basetemp=.pytest-tmp\contribution
 cd frontend
 npm test

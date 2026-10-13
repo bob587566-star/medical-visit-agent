@@ -32,6 +32,7 @@ jobs:
           import os, subprocess, sys
           from pathlib import Path
           from backend.model import read_project_env
+          Path('.pytest-tmp').mkdir(exist_ok=True)
           config = read_project_env(Path('data/runtime-check.env'))
           env = {**os.environ, 'MEDICAL_TEST_DATABASE_URL': config['DATABASE_URL'], 'MEDICAL_TEST_REDIS_URL': config['REDIS_URL']}
           raise SystemExit(subprocess.call([sys.executable, '-m', 'pytest', 'backend/tests/test_postgres_storage.py', 'backend/tests/test_persistent_worker.py', '-q', '--basetemp=.pytest-tmp/ci-shared-runtime'], env=env))
@@ -51,6 +52,7 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install -r backend/requirements.txt -c backend/requirements.lock.txt
       - run: python scripts/check_repository_secrets.py --history
+      - run: python -c "from pathlib import Path; Path('.pytest-tmp').mkdir(exist_ok=True)"
       - run: python -m pytest backend/tests tests -q --basetemp=.pytest-tmp/ci
       - run: python tests/model_boundary.py
       - name: Dependency audit
@@ -149,7 +151,9 @@ jobs:
           python scripts/configure_runtime_check.py
           python scripts/configure_runtime_containers.py
       - name: Start non-root API, worker and monitoring
-        run: docker compose -p zhihe-container-ci -f compose.production.yaml --profile application up -d --wait --wait-timeout 120 api worker prometheus
+        run: |
+          docker compose -p zhihe-container-ci -f compose.production.yaml --profile application up -d --wait --wait-timeout 120 api prometheus
+          docker compose -p zhihe-container-ci -f compose.production.yaml --profile application up -d --no-deps worker
       - name: Verify private secret mounts and authenticated monitoring
         run: python deploy/check_application_runtime.py --project zhihe-container-ci
       - name: Remove this runner's isolated containers and fixture volumes
