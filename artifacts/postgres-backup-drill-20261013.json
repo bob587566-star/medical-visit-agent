@@ -1,0 +1,26 @@
+{
+  "scope": "isolated fixture PG/API/worker; one fictional visitor; external AI disabled",
+  "source_counts": {
+    "sessions": 6,
+    "visits": 1,
+    "tasks": 1,
+    "bookmarks": 0
+  },
+  "source_schema_version": 3,
+  "authenticated_archive": true,
+  "restoration": {
+    "restored": true,
+    "new_database": "zhihe_restore_cf80171d23c74700",
+    "counts_match": true,
+    "counts": {
+      "bookmarks": 0,
+      "sessions": 6,
+      "tasks": 1,
+      "visits": 1
+    },
+    "encrypted_records_authenticated": true,
+    "task_audit_verified": true,
+    "notice": "New isolated fixture DB and keys retained for inspection. No production DB was overwritten; this does not establish remote backups/PITR."
+  },
+  "source_fictional_visit_deleted": true
+}

@@ -1,0 +1,12 @@
+{
+  "encrypted_backup_verified": true,
+  "new_target_restore_verified": true,
+  "counts": {
+    "visits": 2,
+    "tasks": 0,
+    "bookmarks": 0
+  },
+  "encrypted_visits": 2,
+  "live_database_not_overwritten": true,
+  "scope": "post-security SQLite upgrade restore drill; no contents exported to artifact"
+}

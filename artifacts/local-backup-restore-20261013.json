@@ -1,0 +1,11 @@
+{
+  "backup_verified": true,
+  "restore_new_target": true,
+  "record_counts": {
+    "visits": 2,
+    "tasks": 0,
+    "bookmarks": 0
+  },
+  "original_db_not_overwritten": true,
+  "backup_encrypted": true
+}

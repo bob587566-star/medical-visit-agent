@@ -2,7 +2,7 @@
 from fastapi.testclient import TestClient
 import pytest
 
-from backend.main import create_app
+from backend.tests.demo_factory import create_demo_app as create_app
 from backend.model import ModelService
 
 

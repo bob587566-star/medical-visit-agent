@@ -5,6 +5,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 from pathlib import Path
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -23,27 +24,41 @@ def canonical(value: dict) -> str:
 
 
 class TaskStore:
-    def __init__(self, store: Store):
+    def __init__(self, store: Store, *, key_path: Path | None = None, task_key: str | bytes | None = None):
         self.store = store
-        key_path = Path(store.path).with_suffix('.tasks.key')
+        configured = task_key if task_key is not None else os.environ.get('MEDICAL_TASK_KEY')
+        configured_path = key_path or (Path(os.environ['MEDICAL_TASK_KEY_FILE'])
+                                      if os.environ.get('MEDICAL_TASK_KEY_FILE') else None)
+        if configured and configured_path:
+            raise TaskIntegrityError('请只配置一种任务密钥来源。')
+        self.key_path = None if configured else (configured_path or Path(store.path).with_suffix('.tasks.key'))
+        self.key_source = 'environment' if configured else ('external_file' if configured_path else 'local_file')
         with store.lock, store.connect() as conn:
             conn.execute('CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, owner TEXT NOT NULL REFERENCES sessions(id), visit_id TEXT NOT NULL REFERENCES visits(id) ON DELETE CASCADE, payload TEXT NOT NULL, updated_at TEXT NOT NULL)')
             conn.execute('CREATE INDEX IF NOT EXISTS tasks_owner_visit ON tasks(owner,visit_id)')
             conn.execute('CREATE TABLE IF NOT EXISTS task_audit (owner TEXT NOT NULL REFERENCES sessions(id), seq INTEGER NOT NULL, event TEXT NOT NULL, mac TEXT NOT NULL, PRIMARY KEY(owner,seq))')
             conn.execute('CREATE TABLE IF NOT EXISTS task_audit_heads (owner TEXT PRIMARY KEY REFERENCES sessions(id), seq INTEGER NOT NULL, mac TEXT NOT NULL)')
             has_records = bool(conn.execute('SELECT 1 FROM tasks LIMIT 1').fetchone() or conn.execute('SELECT 1 FROM task_audit_heads LIMIT 1').fetchone())
-        if not key_path.exists():
+        if self.key_path is not None and not self.key_path.exists():
             if has_records:
                 raise TaskIntegrityError('任务解密密钥缺失，未覆盖已有任务。请恢复原密钥。')
+            if configured_path:
+                raise TaskIntegrityError('已配置的任务密钥文件不存在。')
             try:
-                with key_path.open('xb') as file:
+                self.key_path.parent.mkdir(parents=True, exist_ok=True)
+                with self.key_path.open('xb') as file:
                     file.write(Fernet.generate_key())
-                key_path.chmod(0o600)
+                    file.flush()
+                    os.fsync(file.fileno())
+                self.key_path.chmod(0o600)
             except FileExistsError:
                 pass
-        key = key_path.read_bytes()
-        self.cipher = Fernet(key)
-        self.audit_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=b'zhihe-task-audit-v1').derive(base64.urlsafe_b64decode(key))
+        try:
+            key = (configured.encode('ascii') if isinstance(configured, str) else configured) if configured else self.key_path.read_bytes().strip()
+            self.cipher = Fernet(key)
+            self.audit_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=b'zhihe-task-audit-v1').derive(base64.urlsafe_b64decode(key))
+        except (OSError, ValueError, TypeError, UnicodeError) as error:
+            raise TaskIntegrityError('任务密钥无法校验。') from error
 
     def _seal(self, owner: str, task: dict) -> str:
         return self.cipher.encrypt(canonical({'owner': owner, 'task': task}).encode()).decode()
@@ -83,9 +98,15 @@ class TaskStore:
     def apply(self, owner: str, visit, task: dict) -> bool:
         """Commit the confirmed draft, task marker and audit event together."""
         with self.store.lock, self.store.connect() as conn:
+            if self.store.enforce_privacy:
+                conn.execute('BEGIN IMMEDIATE')
+                self.store.check_write_consent(conn, owner)
             if not conn.execute('SELECT 1 FROM tasks WHERE id=? AND owner=? AND visit_id=?', (task['id'], owner, visit.id)).fetchone():
                 return False
-            changed = conn.execute('UPDATE visits SET payload=?,updated_at=? WHERE id=? AND owner=?', (visit.model_dump_json(), visit.updated_at, visit.id, owner)).rowcount
+            changed = (self.store.update_loaded_visit(conn, owner, visit)
+                       if hasattr(self.store, 'update_loaded_visit') else
+                       conn.execute('UPDATE visits SET payload=?,updated_at=? WHERE id=? AND owner=?',
+                                    (self.store.encrypt_visit(owner, visit), visit.updated_at, visit.id, owner)).rowcount)
             if not changed:
                 return False
             conn.execute('UPDATE tasks SET payload=?,updated_at=? WHERE id=? AND owner=?', (self._seal(owner, task), task['updated_at'], task['id'], owner))

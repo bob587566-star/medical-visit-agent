@@ -1,0 +1,22 @@
+{
+  "scenario": "chat",
+  "scope": "finite loopback probe; fictional visitors; use_model=false",
+  "virtual_visitors": 5,
+  "turns_per_visitor": 3,
+  "visitor_concurrency": 5,
+  "requests_measured": 30,
+  "status_counts": {
+    "200": 25,
+    "201": 5
+  },
+  "elapsed_seconds": 1.001,
+  "requests_per_second": 29.97,
+  "latency_ms": {
+    "p50": 129.09,
+    "p95": 148.63,
+    "max": 176.4
+  },
+  "failures": [],
+  "fictional_visits_deleted": 5,
+  "notice": "Only this small scenario was measured. These numbers do not establish maximum capacity, external model throughput, a clinical guarantee, or high availability."
+}

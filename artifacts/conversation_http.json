@@ -1,5 +1,5 @@
 {
-  "executed_at": "2026-10-12T13:26:27.341762+00:00",
+  "executed_at": "2026-10-13T11:08:43.393888+00:00",
   "base_url": "http://127.0.0.1:8270",
   "passed": 4,
   "failed": 0,
@@ -14,49 +14,49 @@
             "user": "头疼想睡觉",
             "assistant": "你说的是“头疼想睡觉”，我听到了。\n\n这种不舒服大概从什么时候开始的？",
             "next_field": "onset",
-            "elapsed_ms": 46.0
+            "elapsed_ms": 47.0
           },
           {
             "user": "昨晚开始的",
             "assistant": "明白，时间是“昨晚开始”。\n\n你自己感觉不适程度是轻、中，还是重？",
             "next_field": "severity",
-            "elapsed_ms": 16.0
+            "elapsed_ms": 47.0
           },
           {
             "user": "轻微",
             "assistant": "明白，你自己感觉“轻微”。\n\n方便说一下，你属于成人、儿童、老年人，还是孕产期？",
             "next_field": "age_group",
-            "elapsed_ms": 16.0
+            "elapsed_ms": 46.0
           },
           {
             "user": "成人",
             "assistant": "年龄阶段收到。\n\n目前有没有在用药物或补充剂？没有也可以直接说。",
             "next_field": "medications",
-            "elapsed_ms": 31.0
+            "elapsed_ms": 32.0
           },
           {
             "user": "没有用药",
             "assistant": "这项信息收到。\n\n有没有已知的过敏？不清楚也可以说不清楚。",
             "next_field": "allergies",
-            "elapsed_ms": 0.0
+            "elapsed_ms": 47.0
           },
           {
             "user": "不知道",
             "assistant": "这项信息收到。\n\n以前有没有相关的病史或就诊经历？",
             "next_field": "medical_history",
-            "elapsed_ms": 47.0
+            "elapsed_ms": 62.0
           },
           {
             "user": "没有既往病史",
             "assistant": "这项信息收到。\n\n你已经提到的基本情况都接上了。需要时可以让我整理成就诊摘要；写入资料前再逐项核对。",
             "next_field": null,
-            "elapsed_ms": 15.0
+            "elapsed_ms": 31.0
           }
         ],
         "saved_form_progress": 0,
         "confirmation_required_only_for_saving": true
       },
-      "duration_ms": 250.0
+      "duration_ms": 469.0
     },
     {
       "name": "contextual_question_and_unknown_institution",
@@ -65,7 +65,7 @@
         "contextual_answer": "记录头痛开始时间、位置、是否反复、诱因和伴随变化，有助于与医生沟通。反复、持续或加重的头痛需要评估。\n\n出处：英国国家医疗服务体系 NHS《头痛：记录诱因，识别需要及时就医的变化》。这是一般资料，不能据此确定你的具体情况。",
         "unknown_answer": "我这里没有这家医院的地址、预约或收费资料。需要到该医院的官方网站或官方电话核实；如果你已经有医院通知，可以贴出其中的安排，我帮你整理。"
       },
-      "duration_ms": 125.0
+      "duration_ms": 2234.0
     },
     {
       "name": "pause_and_social_replies",
@@ -90,7 +90,7 @@
           }
         ]
       },
-      "duration_ms": 156.0
+      "duration_ms": 297.0
     },
     {
       "name": "linked_warning_and_denial_history_person_exclusions",
@@ -122,7 +122,7 @@
           "level": "unknown"
         }
       ],
-      "duration_ms": 547.0
+      "duration_ms": 1000.0
     }
   ],
   "cleanup": {

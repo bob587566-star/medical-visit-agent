@@ -10,3 +10,10 @@ frontend/dist/
 data/
 logs/
 artifacts/
+private-backups/
+.pytest-tmp/
+.ops-audit-venv/
+frontend/test-results/
+*.key
+*.data.keys.json
+*.encrypted-backup

@@ -1,6 +1,6 @@
 # 就诊准备 Agent 独立验收
 
-实际执行时间（UTC）：2026-10-12T13:26:21.398699+00:00
+实际执行时间（UTC）：2026-10-13T11:08:33.338333+00:00
 
 目标：http://127.0.0.1:8270
 
@@ -47,7 +47,7 @@
 | five_concurrent_same_visit_no_lost_messages | pass | 实际HTTP响应及内容详见JSON报告 |
 | delete_and_clear_respect_visitor_boundary | pass | 实际HTTP响应及内容详见JSON报告 |
 
-测试记录清理：{"fictional_test_sessions": 44, "cleanup_failures": []}
+测试记录清理：{"fictional_test_sessions": 43, "cleanup_failures": []}
 
 验证范围：
 - HTTP checks do not establish frontend DOM safety; browser or static review is required.

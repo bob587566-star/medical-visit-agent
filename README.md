@@ -21,7 +21,7 @@
 
 ## 技术与执行方式
 
-前端使用 Vue 3、TypeScript、Vite；后端使用 Python、FastAPI、Pydantic、SQLite、HTTPX 异步客户端与 cryptography。
+前端使用 Vue 3、TypeScript、Vite；后端使用 Python、FastAPI、Pydantic、HTTPX 与 cryptography。默认本机使用 SQLite；另提供 PostgreSQL 连接池、Redis 共享限流与持久任务队列、独立 worker 的部署配置。
 
 Agent 调用实际工具：check_urgent_signs、suggest_intake_updates、search_health_knowledge、collect_visit_details、build_visit_checklist、draft_visit_summary、build_preparation_plan。工具输出逐步校验。日常对话由本机流程路由；目标任务可选 DeepSeek 规划工具依赖，最多八步，必须通过工具白名单、唯一性、依赖图和安全步骤前置校验。模型不能提供工具参数、执行代码或写数据库，规划无效或不可用时明确回退为本机计划。
 
@@ -54,7 +54,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop.ps1
 ```
 
-安装脚本不会覆盖已有 .env；无需密钥也可使用本机整理、资料查询和导出。需要模型时在本机 .env 填写 DEEPSEEK_API_KEY 和实际可用的 DEEPSEEK_MODEL，重启后在页面主动开启。密钥不返回网页，也不进入 Git 或 Docker 镜像。已运行的本机 Ollama 安装 bge-m3:latest 后，检索器自动检查服务和模型；成功时显示 hybrid_ollama。脚本兼容 Windows PowerShell 5 中文编码，启动关闭访问日志，避免搜索词进入 URL 日志。
+安装脚本不会覆盖已有 .env；无需模型密钥也可使用本机整理、资料查询和导出。需要模型时在本机 .env 填写 DEEPSEEK_API_KEY 和实际可用的 DEEPSEEK_MODEL，重启后先单独选择外部处理同意，再主动开启问答或任务的模型开关。密钥不返回网页，也不进入 Git 或 Docker 镜像。已运行的本机 Ollama 安装 bge-m3:latest 后，检索器自动检查服务和模型；成功时显示 hybrid_ollama。脚本兼容 Windows PowerShell 5 中文编码，启动关闭访问日志，避免搜索词进入 URL 日志。
 
 Linux/macOS 可创建 .venv，安装 backend/requirements.txt，在 frontend 执行 npm ci 和 npm run build，再运行 .venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8270 --no-access-log。
 
@@ -70,9 +70,13 @@ Linux/macOS 可创建 .venv，安装 backend/requirements.txt，在 frontend 执
 
 ## 记录与隐私
 
-记录保存在本机 data/visits.sqlite3。访视记录和会话元数据未加密；新增任务结果 payload 使用 Fernet 加密，并绑定访客、任务和记录 ID。任务审计仅记录操作元数据，以本机 HMAC 链和链头检查内容修改及截断；这是本机篡改检测，不能称为外部不可篡改审计。密钥保存在本机被 Git 忽略的数据目录，不是 KMS，也不构成整库加密。
+开始记录前需单独同意健康自述留存，可选 1、7 或 30 天；外部 AI 处理另行选择，默认关闭。告知版本、范围、留存期、同意与撤回事件以密文保存。未同意时不建立健康记录，公开资料库仍可浏览。撤回删除当前身份的记录、聊天、任务和收藏，并停止保存；可下载本人的 JSON 资料。
 
-随机 HttpOnly / SameSite Cookie 隔离访客，所有修改接口验证 CSRF 与请求来源；跨访客查询返回 404。访客会话及记录按配置清理，默认 7 天；清理在服务启动和收到请求时执行。浏览器清除 Cookie 后无法再使用该访客记录。
+支持昵称账号与至少 15 字符的密码、一次性恢复码、登录／退出及密码确认注销。注册绑定当前访客的已有记录；登录其他账号不会合并访客资料。密码使用随机盐 scrypt；恢复码只展示一次，服务端只存摘要；恢复时换密码、换恢复码并撤销旧登录会话。清除 Cookie 后可用账号重新登录，未注册访客仍无法证明原记录归属。手机号、微信实名认证及医师执业认证尚未接入，不能把这些账号称为真实患者或医生身份。
+
+表单、聊天、摘要、观察、账号昵称、CSRF、同意记录和持久任务输入采用用途／归属／记录 ID 绑定的认证加密；任务结果另用 Fernet，审计使用 HMAC 链。原未加密 SQLite 可在离线备份后迁移；加密登记、密钥或密文损坏时拒绝降级。ID、时间及必要索引仍是元数据，不能称为整库加密。密钥可通过部署系统挂载文件或环境配置；本机默认文件不是 KMS，同机管理员仍可能同时读取数据库和密钥。SQLite 数据密钥提供离线轮换工具，现有密钥不会被静默覆盖。
+
+所有修改接口验证 CSRF 与来源，跨身份记录查询返回 404。留存清理在启动和请求时执行；账号身份锚点与健康资料留存分开，匿名 30 天选择不会被旧 7 天全局清理误删。备份、下载或服务商已有副本不因页面删除自动消失，应按部署方的保留与销毁制度处理。
 
 填写页面不收集姓名、电话、证件号或地址，请只用虚构资料演示，避免在自由文本中输入身份信息。主动启用对话外部模型后，仅发送经过限制的词语和时间／程度片段；不发送身份、访客标识、整张表单或完整对话。否定症状与旧病史不会被直接简化成肯定的当前症状。
 
@@ -112,4 +116,6 @@ docker compose up -d --build
 
 容器入口为 **http://127.0.0.1:8271/**，独立数据卷 visit-data，不会占用本机 8270 或其他客服项目。容器以普通用户运行、根文件系统只读、移除 Linux capabilities；健康检查使用 /readyz。当前交付以本机运行验收为准，Docker 实际构建运行状态见验收记录。
 
-当前是单机、单应用进程的演示实现；没有将本项目实际部署到 Kubernetes，也没有完成临床审核或医疗合规认证。云端使用需要按实际服务范围补身份登录、HTTPS、数据保护、备份恢复和专业审核，不应直接装入真实患者数据。
+本机 8270 仍使用原 SQLite 数据。隔离的 PostgreSQL／Redis API 与独立 worker 入口为 8272，使用新的虚构资料库，不自动导入原记录。运行方式、加密备份恢复、观测与边界见 [安全与部署](docs/security-and-operations.md)。工程测试不代表医疗资质、备案、等保、真实患者合规、临床有效性或高可用已完成；没有部署到 Kubernetes。
+
+公开服务信息有运营主体、隐私说明、模型供应商备案、本应用登记与适用算法备案展示位；没有真实信息时显示未配置，不造备案号。实际备案／登记、数据处理协议与等保定级需按业务及主管部门要求办理，见 [合规核对](docs/compliance-deployment.md)。

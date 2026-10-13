@@ -8,6 +8,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
+    @field_validator('*', mode='before')
+    @classmethod
+    def valid_unicode(cls, value):
+        if isinstance(value, str):
+            try:
+                value.encode('utf-8')
+            except UnicodeError:
+                raise ValueError('文字编码无效，请重新输入。') from None
+        return value
+
 
 class Intake(StrictModel):
     chief_complaint: str = Field(default="", max_length=2000)

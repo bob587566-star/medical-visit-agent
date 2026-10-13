@@ -1,0 +1,13 @@
+{
+  "current_status": "blocked_by_windows_docker_socket",
+  "docker_error_component": "Secrets Engine engine.sock",
+  "native_service_url": "http://127.0.0.1:8270/",
+  "original_records_preserved": true,
+  "original_records_encrypted": true,
+  "image_build_previously_passed": true,
+  "persistent_cli_acceptance_previously_passed": true,
+  "docker_application_previously_started": true,
+  "current_docker_retest_passed": false,
+  "data_reset_performed": false,
+  "notice": "Windows refused both communication-directory move and rename after verified Docker processes exited. Original volumes, images and key files were not deleted. Historical passes do not establish current container availability."
+}

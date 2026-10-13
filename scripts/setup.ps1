@@ -7,7 +7,7 @@ if (-not (Test-Path -LiteralPath $pythonPath)) {
     & $basePython.Source -m venv (Join-Path $projectRoot '.venv')
     if ($LASTEXITCODE -ne 0) { throw '创建 Python 环境失败。' }
 }
-& $pythonPath -m pip install -r (Join-Path $projectRoot 'backend\requirements.txt')
+& $pythonPath -m pip install -r (Join-Path $projectRoot 'backend\requirements.txt') -c (Join-Path $projectRoot 'backend\requirements.lock.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Python 依赖安装失败。' }
 $npmCommand = Get-Command npm.cmd -ErrorAction Stop
 Push-Location (Join-Path $projectRoot 'frontend')

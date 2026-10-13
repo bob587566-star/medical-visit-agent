@@ -9,6 +9,7 @@ import httpx
 from .knowledge import Knowledge, matches
 from .schemas import ExtractedDetails, Source
 from .safety import _affirmed, current_clauses
+from .egress import check_egress
 
 
 def read_project_env(path: Path) -> dict[str, str]:
@@ -67,6 +68,7 @@ class ModelService:
         if not self.available or not payload:
             return None
         try:
+            check_egress()
             response = await self.client.post(
                 "https://api.deepseek.com/chat/completions",
                 headers={"Authorization": "Bearer " + self.api_key, "Content-Type": "application/json"},

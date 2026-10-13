@@ -1,0 +1,21 @@
+{
+  "scenario": "health",
+  "scope": "finite loopback probe; fictional visitors; use_model=false",
+  "virtual_visitors": 12,
+  "turns_per_visitor": 5,
+  "visitor_concurrency": 8,
+  "requests_measured": 60,
+  "status_counts": {
+    "200": 60
+  },
+  "elapsed_seconds": 0.365,
+  "requests_per_second": 164.4,
+  "latency_ms": {
+    "p50": 26.75,
+    "p95": 94.24,
+    "max": 139.13
+  },
+  "failures": [],
+  "fictional_visits_deleted": 0,
+  "notice": "Only this small scenario was measured. These numbers do not establish maximum capacity, external model throughput, a clinical guarantee, or high availability."
+}

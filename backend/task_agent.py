@@ -7,6 +7,7 @@ clinical conclusions, or database writes. Every run uses a private snapshot.
 from __future__ import annotations
 
 import asyncio
+from .egress import check_egress
 import json
 import re
 import time
@@ -224,6 +225,7 @@ class TaskEngine:
             "json格式示例：" + json.dumps({'steps': [step.model_dump(include={'id', 'tool', 'depends_on'}) for step in _local_plan(goal).steps]}, ensure_ascii=False)
         )
         try:
+            check_egress()
             response = await asyncio.wait_for(model.client.post(
                 PLANNER_ENDPOINT,
                 headers={"Authorization": "Bearer " + model.api_key, "Content-Type": "application/json"},

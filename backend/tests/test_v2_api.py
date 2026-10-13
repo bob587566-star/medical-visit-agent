@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import httpx
 from fastapi.testclient import TestClient
 
-from backend.main import create_app
+from backend.tests.demo_factory import create_demo_app as create_app
 from backend.model import ModelService
 from backend.tests.test_api import WaitingModel
 
@@ -114,7 +114,9 @@ def test_old_saved_visit_payload_defaults_to_v2(tmp_path):
             visit.pop(name)
         import json
         with app.state.store.connect() as conn:
-            conn.execute("UPDATE visits SET payload=? WHERE id=?", (json.dumps(visit), visit["id"]))
+            owner = conn.execute('SELECT owner FROM visits WHERE id=?', (visit['id'],)).fetchone()[0]
+            payload = app.state.store.seal_value('visit', owner, visit['id'], visit)
+            conn.execute("UPDATE visits SET payload=? WHERE id=?", (payload, visit["id"]))
         loaded = client.get(f"/api/visits/{visit['id']}")
         assert loaded.status_code == 200
         assert loaded.json()["observations"] == []

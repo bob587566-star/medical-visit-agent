@@ -247,7 +247,8 @@ class Executor:
 
 
 def export_text(visit: Visit) -> str:
-    lines = [visit.title, "导出时间：" + now(), ""]
+    lines = [visit.title, "导出时间：" + now(),
+             "内容标识：包含本人自述与 AI 辅助整理内容，请本人核对；不构成诊断或处方。", ""]
     if visit.summary:
         lines.append(visit.summary.text)
     else:

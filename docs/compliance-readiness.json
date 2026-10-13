@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "知禾公开信息与部署准备配置草案",
+  "description": "文档草案，未接入运行时。校验配置形状，不确认法律适用性、凭证真伪或上线资格。内部评估内容不得整份暴露给浏览器。",
+  "x-draft-only": true,
+  "x-reviewed-on": "2026-10-13",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "deployment_scope", "product_scope", "operator", "models", "algorithm_record", "application_registration", "privacy", "mlps", "release_review"],
+  "properties": {
+    "schema_version": {"const": "draft-1"},
+    "deployment_scope": {"enum": ["local_fictional_demo", "private_pilot", "public_service"], "default": "local_fictional_demo"},
+    "product_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "provides_clinical_consultation", "provides_prescriptions", "classification_review"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1, "maxLength": 500},
+        "provides_clinical_consultation": {"const": false, "description": "本项目当前产品范围不接受诊疗；改变此范围需要重新设计并评审。"},
+        "provides_prescriptions": {"const": false},
+        "classification_review": {"$ref": "#/$defs/assessment"}
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "contact_url", "privacy_contact_url"],
+      "properties": {
+        "name": {"type": ["string", "null"], "maxLength": 200},
+        "contact_url": {"$ref": "#/$defs/nullableHttpsUrl"},
+        "privacy_contact_url": {"$ref": "#/$defs/nullableHttpsUrl"}
+      }
+    },
+    "models": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "provider", "purpose", "location", "service_record", "data_flow_review"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1, "maxLength": 200},
+          "provider": {"type": "string", "minLength": 1, "maxLength": 200},
+          "purpose": {"enum": ["retrieval", "local_safety_review", "conversation", "task_planning"]},
+          "location": {"enum": ["local", "cn_confirmed", "outside_cn_confirmed", "unknown"]},
+          "service_record": {"$ref": "#/$defs/record"},
+          "data_flow_review": {"$ref": "#/$defs/assessment"}
+        }
+      }
+    },
+    "algorithm_record": {"$ref": "#/$defs/record"},
+    "application_registration": {"$ref": "#/$defs/record"},
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["notice_version", "notice_url", "retention_days", "sensitive_data_consent", "external_model_consent", "rights_url", "withdrawal_process", "export_process", "deletion_process", "impact_assessment", "encryption_review", "children_review"],
+      "properties": {
+        "notice_version": {"type": ["string", "null"], "maxLength": 100},
+        "notice_url": {"$ref": "#/$defs/nullableHttpsUrl"},
+        "retention_days": {"type": "integer", "minimum": 1, "maximum": 3650, "description": "实际配置值；范围仅是草案形状约束，不是法定保管天数。"},
+        "sensitive_data_consent": {"$ref": "#/$defs/assessment"},
+        "external_model_consent": {"$ref": "#/$defs/assessment"},
+        "rights_url": {"$ref": "#/$defs/nullableHttpsUrl"},
+        "withdrawal_process": {"$ref": "#/$defs/assessment"},
+        "export_process": {"$ref": "#/$defs/assessment"},
+        "deletion_process": {"$ref": "#/$defs/assessment"},
+        "impact_assessment": {"$ref": "#/$defs/assessment"},
+        "encryption_review": {"$ref": "#/$defs/assessment"},
+        "children_review": {"$ref": "#/$defs/assessment"}
+      }
+    },
+    "mlps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assessment", "level", "record_status", "assessment_status"],
+      "properties": {
+        "assessment": {"$ref": "#/$defs/assessment"},
+        "level": {"type": ["integer", "null"], "minimum": 1, "maximum": 5, "description": "未定级保持null，不按医疗数据自动设2。"},
+        "record_status": {"$ref": "#/$defs/status"},
+        "assessment_status": {"$ref": "#/$defs/status"}
+      }
+    },
+    "release_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewed_by", "reviewed_at", "evidence_reference"],
+      "properties": {
+        "status": {"enum": ["pending", "rejected", "approved"], "default": "pending", "description": "运营主体的内部发布评审，不是监管许可。不得由测试通过自动设approved。"},
+        "reviewed_by": {"type": ["string", "null"], "maxLength": 200},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"},
+        "evidence_reference": {"type": ["string", "null"], "maxLength": 500, "description": "内部证据索引，禁止随public bootstrap返回。"}
+      }
+    }
+  },
+  "$defs": {
+    "status": {"enum": ["unconfigured", "pending", "verified", "not_applicable"], "default": "unconfigured"},
+    "nullableHttpsUrl": {"anyOf": [{"type": "null"}, {"type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2000}]},
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "basis", "evidence_reference", "reviewed_at"],
+      "properties": {
+        "status": {"$ref": "#/$defs/status"},
+        "basis": {"type": ["string", "null"], "maxLength": 1500},
+        "evidence_reference": {"type": ["string", "null"], "maxLength": 500},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [{"if": {"properties": {"status": {"enum": ["verified", "not_applicable"]}}, "required": ["status"]}, "then": {"properties": {"basis": {"type": "string", "minLength": 1}, "evidence_reference": {"type": "string", "minLength": 1}, "reviewed_at": {"type": "string", "format": "date-time"}}}}]
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "number", "public_url", "subject", "assessment"],
+      "properties": {
+        "status": {"$ref": "#/$defs/status"},
+        "number": {"type": ["string", "null"], "maxLength": 200},
+        "public_url": {"$ref": "#/$defs/nullableHttpsUrl"},
+        "subject": {"type": ["string", "null"], "maxLength": 200, "description": "编号归属主体；服务商与本应用分开记录。"},
+        "assessment": {"$ref": "#/$defs/assessment"}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "verified"}}, "required": ["status"]}, "then": {"properties": {"number": {"type": "string", "minLength": 1}, "public_url": {"type": "string", "format": "uri", "pattern": "^https://"}, "subject": {"type": "string", "minLength": 1}, "assessment": {"properties": {"status": {"const": "verified"}}}}}},
+        {"if": {"properties": {"status": {"enum": ["unconfigured", "pending", "not_applicable"]}}, "required": ["status"]}, "then": {"properties": {"number": {"type": "null"}, "public_url": {"type": "null"}}}},
+        {"if": {"properties": {"status": {"const": "not_applicable"}}, "required": ["status"]}, "then": {"properties": {"assessment": {"properties": {"status": {"const": "not_applicable"}}}}}}
+      ]
+    }
+  }
+}

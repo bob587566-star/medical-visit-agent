@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { ApiError, request, setCsrfToken } from './api'
-import { copyIntake, emptyIntake, modelChoice, replyText, requiresHumanSupport, shortDate, visitHasIntake } from './helpers'
-import { intakeFields, intakeLabels, type Bootstrap, type ChecklistItem, type Intake, type IntakeCandidate, type MessageResult, type ObservationInput, type PreparationPlan, type Source, type SummaryResult, type Visit, type Workspace } from './types'
+import { copyIntake, emptyIntake, modelChoice, replyText, requiresHumanSupport, safeSourceUrl, shortDate, visitHasIntake } from './helpers'
+import { intakeFields, intakeLabels, type Account, type Bootstrap, type ChecklistItem, type ComplianceInfo, type Intake, type IntakeCandidate, type MessageResult, type ObservationInput, type PreparationPlan, type PrivacyNotice, type Source, type SummaryResult, type Visit, type Workspace } from './types'
 import LeafMark from './components/LeafMark.vue'
 import MessageBubble from './components/MessageBubble.vue'
 import OverviewPanel from './components/OverviewPanel.vue'
@@ -11,6 +11,7 @@ import LibraryPanel from './components/LibraryPanel.vue'
 import PlanPanel from './components/PlanPanel.vue'
 import TaskAgentPanel from './components/TaskAgentPanel.vue'
 import SafetyAlert from './components/SafetyAlert.vue'
+import PrivacyAccountPanel from './components/PrivacyAccountPanel.vue'
 import './chat.css'
 
 type Tab = 'overview' | 'prepare' | 'chat' | 'timeline' | 'library' | 'summary'
@@ -28,6 +29,13 @@ const dirty = ref(false)
 const revision = ref(0)
 const busy = ref('bootstrap')
 const initialized = ref(false)
+const account = ref<Account | null>(null)
+const privacy = ref<Partial<PrivacyNotice> | null>(null)
+const compliance = ref<ComplianceInfo | null>(null)
+const privacyPanelOpen = ref(false)
+const consentGate = computed(() => privacy.value?.consent_required === true && (privacy.value.accepted !== true || privacy.value.scopes?.local_storage !== true))
+const externalAiAllowed = computed(() => !privacy.value?.scopes || privacy.value.scopes.external_ai === true)
+const permittedModelAvailable = computed(() => modelAvailable.value && externalAiAllowed.value)
 const error = ref('')
 const notice = ref('')
 const messageInput = ref('')
@@ -102,20 +110,38 @@ async function bootstrap(): Promise<void> {
     const data = await request<Bootstrap>('/api/bootstrap')
     if (!data.csrf_token) throw new ApiError('服务未提供会话校验信息，请重新连接。')
     setCsrfToken(data.csrf_token)
+    account.value = data.account || null
+    privacy.value = data.privacy && typeof data.privacy === 'object' ? data.privacy : null
+    compliance.value = data.compliance || null
     modelAvailable.value = data.model_available === true
     if (data.privacy && typeof data.privacy === 'object' && 'model_notice' in data.privacy && typeof data.privacy.model_notice === 'string') modelNotice.value = `默认关闭。${data.privacy.model_notice}`
     useModel.value = false
     visits.value = Array.isArray(data.visits) ? data.visits : []
     knowledgeSources.value = Array.isArray(data.sources) ? data.sources : []
+    initialized.value = true
+    if (consentGate.value) { resetPersonalView(); return }
     const visit = data.current_visit || await request<Visit>('/api/visits', 'POST', {})
-    applyVisit(visit, true); initialized.value = true; void loadWorkspace()
+    applyVisit(visit, !dirty.value); void loadWorkspace()
   } catch (caught) { error.value = caught instanceof Error ? caught.message : '连接失败，请重试。' }
   finally { busy.value = '' }
 }
+function resetPersonalView(): void {
+  workspaceSequence++; workspaceData.value = null; workspaceError.value = ''; workspaceLoading.value = false
+  visits.value = []; currentVisit.value = null; dirty.value = false; Object.assign(draft, emptyIntake())
+  messageInput.value = ''; pendingMessage.value = ''; useModel.value = false; modal.value = null; taskPanelOpen.value = false
+}
+async function privacyChanged(identityChanged = false): Promise<void> {
+  if (identityChanged) resetPersonalView()
+  privacyPanelOpen.value = false
+  await bootstrap()
+}
+function complianceHref(value: string | null | undefined): string | null { return value?.startsWith('https://') ? safeSourceUrl(value) : null }
 async function createVisit(): Promise<void> {
+  if (consentGate.value || privacyPanelOpen.value) return
   await run('create', async () => { await persistDraft(); applyVisit(await request<Visit>('/api/visits', 'POST', {}), true); messageInput.value = ''; tab.value = 'prepare'; modal.value = null; notice.value = '新的就诊记录已创建。' })
 }
 async function selectVisit(id: string): Promise<void> {
+  if (consentGate.value || privacyPanelOpen.value) return
   if (id === currentVisit.value?.id) { modal.value = null; return }
   await run('select', async () => { await persistDraft(); applyVisit(await request<Visit>(`/api/visits/${encodeURIComponent(id)}`), true); messageInput.value = ''; modal.value = null })
 }
@@ -136,7 +162,7 @@ async function sendMessage(question?: string): Promise<void> {
     await scrollConversation('pending')
     await persistDraft()
     const id = currentVisit.value!.id
-    const result = await request<MessageResult>(`/api/visits/${encodeURIComponent(id)}/messages`, 'POST', { content, use_model: modelChoice(useModel.value, modelAvailable.value) })
+    const result = await request<MessageResult>(`/api/visits/${encodeURIComponent(id)}/messages`, 'POST', { content, use_model: modelChoice(useModel.value, permittedModelAvailable.value) })
     if (!result.visit) throw new ApiError('服务返回的记录不完整。请重新打开当前记录。')
     await refreshVisit(result.visit)
     pendingMessage.value = ''
@@ -153,7 +179,7 @@ async function generateSummary(): Promise<void> {
   await run('summary', async () => {
     await persistDraft()
     if (humanSupport.value) throw new ApiError(supportNotice.value)
-    const result = await request<SummaryResult>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/summary`, 'POST', { use_model: modelChoice(useModel.value, modelAvailable.value) })
+    const result = await request<SummaryResult>(`/api/visits/${encodeURIComponent(currentVisit.value!.id)}/summary`, 'POST', { use_model: modelChoice(useModel.value, permittedModelAvailable.value) })
     if (!result.visit) throw new ApiError('摘要生成结果不完整，请稍后重试。')
     await refreshVisit(result.visit)
     if (!currentVisit.value?.summary?.text?.trim()) throw new ApiError('本次没有收到有效摘要，请检查填写信息后重试。')
@@ -177,9 +203,9 @@ async function copySummary(): Promise<void> {
   error.value = ''; notice.value = ''
   try {
     if (!summary.value) throw new Error('请先生成摘要。')
-    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(summary.value)
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText('AI 辅助整理，请核对后使用；不构成诊断或处方。\n\n' + summary.value)
     else {
-      const text = document.createElement('textarea'); text.value = summary.value; text.setAttribute('readonly', ''); text.style.position = 'fixed'; text.style.opacity = '0'; document.body.append(text); text.select()
+      const text = document.createElement('textarea'); text.value = 'AI 辅助整理，请核对后使用；不构成诊断或处方。\n\n' + summary.value; text.setAttribute('readonly', ''); text.style.position = 'fixed'; text.style.opacity = '0'; document.body.append(text); text.select()
       const success = document.execCommand('copy'); text.remove(); if (!success) throw new Error('浏览器未允许复制。你可以选中摘要文字后手动复制。')
     }
     notice.value = '摘要已复制。'
@@ -216,6 +242,7 @@ async function confirmDelete(): Promise<void> {
   })
 }
 async function clearData(): Promise<void> {
+  if (consentGate.value || privacyPanelOpen.value) return
   await run('clear', async () => {
     await request<void>('/api/data', 'DELETE')
     visits.value = []; currentVisit.value = null; dirty.value = false; Object.assign(draft, emptyIntake()); messageInput.value = ''; useModel.value = false; modal.value = null
@@ -223,7 +250,7 @@ async function clearData(): Promise<void> {
   })
 }
 async function loadWorkspace(): Promise<void> {
-  if (!initialized.value) return
+  if (!initialized.value || consentGate.value) return
   const sequence = ++workspaceSequence
   workspaceLoading.value = true; workspaceError.value = ''
   try {
@@ -301,38 +328,38 @@ onMounted(bootstrap)
   <div class="app-shell">
     <aside class="sidebar" aria-label="就诊记录与设置">
       <a class="brand" href="#main" aria-label="知禾，就诊准备"><span class="brand-symbol"><LeafMark /></span><span><strong>知禾</strong><small>就诊准备</small></span></a>
-      <button class="new-visit" :disabled="!!busy || !initialized" @click="createVisit"><span aria-hidden="true">＋</span> 新的就诊准备</button>
+      <button class="new-visit" :disabled="!!busy || !initialized || consentGate || privacyPanelOpen" @click="createVisit"><span aria-hidden="true">＋</span> 新的就诊准备</button>
       <nav class="sidebar-main-nav" aria-label="工作台主导航"><button v-for="item in navigation" :key="item.id" :class="{ selected: tab === item.id }" :aria-current="tab === item.id ? 'page' : undefined" @click="tab = item.id"><span aria-hidden="true">{{ item.icon }}</span>{{ item.label }}<i v-if="tab === item.id" aria-hidden="true"></i></button></nav><div class="sidebar-section-title"><span>我的就诊记录</span><span>{{ visits.length }}</span></div>
       <nav class="visit-list" aria-label="本人就诊记录">
         <div v-for="visit in visits" :key="visit.id" :class="['visit-item', { active: visit.id === currentVisit?.id }]">
           <button class="visit-select" :disabled="!!busy" :aria-current="visit.id === currentVisit?.id ? 'page' : undefined" @click="selectVisit(visit.id)"><span class="record-icon" aria-hidden="true">▤</span><span><strong>{{ visit.title || '新的就诊准备' }}</strong><small>{{ shortDate(visit.updated_at || visit.created_at) }} · {{ visit.summary ? '已有摘要' : visitHasIntake(visit) ? '信息已填写' : '待整理' }}</small></span></button>
           <button class="delete-record" :disabled="!!busy" :aria-label="`删除记录：${visit.title || '新的就诊准备'}`" @click="modal = { kind: 'delete', visitId: visit.id }">×</button>
         </div>
-        <p v-if="!visits.length" class="sidebar-empty">连接后会为你建立一份空白记录。</p>
+        <p v-if="!visits.length" class="sidebar-empty">{{ consentGate ? '选择保存后，可建立本人记录。' : '尚无本人记录。' }}</p>
       </nav>
       <div class="sidebar-bottom">
-        <div class="privacy-mini"><span class="shield-symbol" aria-hidden="true">◇</span><div><strong>属于你的私密准备</strong><p>通过本浏览器的访客会话保存。<br />请勿填写姓名、证件号或联系方式。</p></div></div>
-        <button class="clear-data" :disabled="!!busy || !initialized" @click="modal = { kind: 'clear' }"><span aria-hidden="true">⌫</span> 清空本人全部资料</button>
-        <span class="sidebar-note">每次就诊，都多一分从容。</span>
+        <div class="privacy-mini"><span class="shield-symbol" aria-hidden="true">◇</span><div><strong>属于你的私密准备</strong><p>{{ account ? '已绑定昵称账号，可使用密码找回。' : '当前为访客，可在设置中建立账号。' }}<br />请只用虚构资料演示。</p></div></div>
+        <button class="clear-data" :disabled="!!busy || !initialized || consentGate || privacyPanelOpen" @click="modal = { kind: 'clear' }"><span aria-hidden="true">⌫</span> 清空本人全部资料</button>
+        <button class="privacy-settings-link" :disabled="!!busy" @click="privacyPanelOpen = true">隐私与账号设置</button><span class="sidebar-note">每次就诊，都多一分从容。</span>
       </div>
     </aside>
 
     <div class="workspace">
-      <header class="topbar"><span class="topbar-path">我的健康空间 <span aria-hidden="true">/</span> <strong>就诊准备</strong></span><a class="mobile-brand" href="#main"><LeafMark /><strong>知禾</strong></a><div class="topbar-actions"><span class="local-status"><span aria-hidden="true"></span>{{ initialized ? '本机服务已连接' : '等待连接' }}</span><button class="mobile-records" :disabled="!!busy || !initialized" @click="modal = { kind: 'records' }">我的记录</button><span class="visitor-badge" aria-label="匿名访客">访</span></div></header>
+      <header class="topbar"><span class="topbar-path">我的健康空间 <span aria-hidden="true">/</span> <strong>就诊准备</strong></span><a class="mobile-brand" href="#main"><LeafMark /><strong>知禾</strong></a><div class="topbar-actions"><span class="local-status"><span aria-hidden="true"></span>{{ initialized ? '本机服务已连接' : '等待连接' }}</span><button class="mobile-records" :disabled="!!busy || !initialized" @click="modal = { kind: 'records' }">我的记录</button><button class="visitor-badge privacy-open-button" :aria-label="account ? '打开隐私与账号：' + account.username : '打开隐私与账号：匿名访客'" :disabled="!!busy" @click="privacyPanelOpen = true">{{ account ? account.username.slice(0, 1).toUpperCase() : '访' }}</button></div></header>
 
       <main id="main" :class="['main-content', { 'chat-active': tab === 'chat' }]">
         <section class="page-heading"><div><div class="eyebrow"><span aria-hidden="true"></span> 把健康沟通，准备得更好</div><h1>{{ tab === 'chat' ? '先聊聊，你想了解什么？' : '就诊之前，先把思绪理清。' }}</h1><p>整理信息，帮助与医生沟通；不提供诊断或用药建议。</p></div><div class="heading-art" aria-hidden="true"><div class="art-orbit"></div><LeafMark /><span class="art-spark">✦</span><span class="art-dot"></span></div></section>
 
         <div v-if="error" class="feedback feedback-error" role="alert"><span aria-hidden="true">!</span><p>{{ error }}</p><button v-if="!initialized" :disabled="!!busy" @click="bootstrap">重新连接</button><button v-else aria-label="关闭错误提示" @click="error = ''">×</button></div>
         <div v-if="notice" class="feedback feedback-success" role="status"><span aria-hidden="true">✓</span><p>{{ notice }}</p><button aria-label="关闭提示" @click="notice = ''">×</button></div>
-        <SafetyAlert v-if="risk && risk.level !== 'unknown' && risk.message" :risk="risk" />
+        <PrivacyAccountPanel v-if="initialized && (privacyPanelOpen || consentGate)" :account="account" :privacy="privacy" :required="consentGate" :busy="!!busy" :dirty="dirty" @changed="privacyChanged" @close="privacyPanelOpen = false" /><SafetyAlert v-if="risk && risk.level !== 'unknown' && risk.message" :risk="risk" />
 
-        <div class="work-grid">
+        <div v-if="(!privacyPanelOpen && !consentGate) || tab === 'library'" class="work-grid">
           <section class="main-panel" :aria-busy="!!busy">
             <div class="panel-top"><nav class="desktop-tabs" aria-label="工作区"><button v-for="item in navigation" :key="item.id" :data-tab="item.id" :class="{ selected: tab === item.id }" :aria-current="tab === item.id ? 'page' : undefined" @click="tab = item.id"><span aria-hidden="true">{{ item.icon }}</span>{{ item.label }}</button></nav></div>
 
             <div v-if="!taskPanelOpen && (tab === 'overview' || tab === 'chat')" class="task-agent-entry"><span>选定目标，查看计划与实际工具执行</span><button :disabled="!!busy || !currentVisit" @click="taskPanelOpen = true"><span aria-hidden="true">◇</span> 运行准备任务</button></div>
-            <TaskAgentPanel v-if="taskPanelOpen && currentVisit" :visit-id="currentVisit.id" :model-available="modelAvailable" :dirty="dirty" :busy="!!busy" :current-risk="risk" @close="taskPanelOpen = false" @save-draft="saveIntake" @applied="appliedTask" @navigate="navigateTask" /><OverviewPanel v-else-if="tab === 'overview'" :visit="currentVisit" :workspace="workspaceData" :error="workspaceError" :loading="workspaceLoading" :sources="knowledgeSources" :completion="completion" :busy="!!busy" @navigate="tab = $event" @select="selectVisit" @category="openCategory" @refresh="loadWorkspace" @rename="openRename" /><TimelinePanel v-else-if="tab === 'timeline'" :observations="currentVisit?.observations || []" :busy="!!busy" :available="!!currentVisit" @create="createObservation" @delete="deleteObservation" /><LibraryPanel v-else-if="tab === 'library'" :initial-category="libraryCategory" :available="initialized" @changed="loadWorkspace" /><div v-else-if="tab === 'prepare'" class="prepare-panel">
+            <TaskAgentPanel v-if="taskPanelOpen && currentVisit" :visit-id="currentVisit.id" :model-available="permittedModelAvailable" :dirty="dirty" :busy="!!busy" :current-risk="risk" @close="taskPanelOpen = false" @save-draft="saveIntake" @applied="appliedTask" @navigate="navigateTask" /><OverviewPanel v-else-if="tab === 'overview'" :visit="currentVisit" :workspace="workspaceData" :error="workspaceError" :loading="workspaceLoading" :sources="knowledgeSources" :completion="completion" :busy="!!busy" @navigate="tab = $event" @select="selectVisit" @category="openCategory" @refresh="loadWorkspace" @rename="openRename" /><TimelinePanel v-else-if="tab === 'timeline'" :observations="currentVisit?.observations || []" :busy="!!busy" :available="!!currentVisit" @create="createObservation" @delete="deleteObservation" /><LibraryPanel v-else-if="tab === 'library'" :initial-category="libraryCategory" :available="initialized" :allow-saving="!consentGate && (privacy?.accepted !== false)" @changed="loadWorkspace" /><div v-else-if="tab === 'prepare'" class="prepare-panel">
               <div class="section-heading"><div><span class="step-caption">STEP 01 · 把感受写下来</span><h2>先从你知道的信息开始</h2><p>不确定的地方可以留空，医生会帮助你进一步确认。</p></div><button class="example-button" :disabled="!!busy || !currentVisit" @click="fillExample">填入虚构示例</button></div>
               <form class="intake-form" @submit.prevent="saveIntake">
                 <label class="field field-full"><span>主要不适 / 就诊原因</span><textarea v-model="draft.chief_complaint" rows="3" maxlength="2000" placeholder="例如：哪里不舒服？最希望医生帮你解决什么？" :disabled="!currentVisit || draftLocked" @input="markDraft"></textarea><small>用自己的话描述即可，不必先判断是什么疾病。</small></label>
@@ -359,20 +386,20 @@ onMounted(bootstrap)
               <p class="composer-note">避免填写姓名、电话、证件号或地址。回答仅用于健康教育与就诊准备。</p>
             </div>
 
-            <div v-else class="summary-panel"><p v-if="humanSupport" class="summary-support-note" role="status">{{ supportNotice }}</p><div class="section-heading"><div><span class="step-caption">STEP 03 · 带着清楚的信息出发</span><h2>给医生看的自述摘要</h2><p>忠实整理你的填写和自述，请核对后使用。</p></div><span class="self-report-tag">本人自述</span></div><div v-if="summary" class="summary-document"><div class="document-heading"><LeafMark /><span>知禾 · 就诊准备记录</span><small v-if="currentVisit?.summary?.generated_at">{{ shortDate(currentVisit.summary.generated_at) }}</small></div><div class="summary-text">{{ summary }}</div><div class="document-footer">来源：本人填写与自述 · 未填写信息不作推测<br />本摘要不构成诊断、处方或医疗建议。</div></div><div v-else class="summary-empty"><div class="empty-document" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div><h3>让医生更快了解你的情况</h3><p>把已填写的信息和对话中的自述整理成一页摘要。<br />不确定或未填写的内容会明确标记。</p><button class="primary-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary">{{ busy === 'summary' ? '正在生成…' : '生成就诊摘要' }} <span aria-hidden="true">✧</span></button></div><div class="summary-actions"><button v-if="summary" class="primary-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary">{{ busy === 'summary' ? '正在整理…' : '重新生成摘要' }}</button><button class="secondary-button" :disabled="!!busy || !summary" @click="copySummary">复制摘要</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="downloadText">下载 TXT</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="printSummary">打印</button></div><p class="summary-help">修改就诊信息后，可重新生成摘要。没有摘要时，下载或打印会包含当前已填写资料。</p><PlanPanel :plan="currentVisit?.plan || null" :busy="!!busy" :available="!!currentVisit && !humanSupport" @generate="generatePlan" /></div>
+            <div v-else class="summary-panel"><p v-if="humanSupport" class="summary-support-note" role="status">{{ supportNotice }}</p><div class="section-heading"><div><span class="step-caption">STEP 03 · 带着清楚的信息出发</span><h2>给医生看的自述摘要</h2><p>忠实整理你的填写和自述，请核对后使用。</p></div><span class="self-report-tag">本人自述</span></div><div v-if="summary" class="summary-document"><div class="document-heading"><LeafMark /><span>知禾 · 就诊准备记录</span><small v-if="currentVisit?.summary?.generated_at">{{ shortDate(currentVisit.summary.generated_at) }}</small></div><div class="summary-text">{{ summary }}</div><div class="document-footer">AI 辅助整理 · 来源：本人填写与自述 · 未填写信息不作推测<br />本摘要不构成诊断、处方或医疗建议。</div></div><div v-else class="summary-empty"><div class="empty-document" aria-hidden="true"><span></span><span></span><span></span><i>✦</i></div><h3>让医生更快了解你的情况</h3><p>把已填写的信息和对话中的自述整理成一页摘要。<br />不确定或未填写的内容会明确标记。</p><button class="primary-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary">{{ busy === 'summary' ? '正在生成…' : '生成就诊摘要' }} <span aria-hidden="true">✧</span></button></div><div class="summary-actions"><button v-if="summary" class="primary-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary">{{ busy === 'summary' ? '正在整理…' : '重新生成摘要' }}</button><button class="secondary-button" :disabled="!!busy || !summary" @click="copySummary">复制摘要</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="downloadText">下载 TXT</button><button class="secondary-button" :disabled="!!busy || !currentVisit" @click="printSummary">打印</button></div><p class="summary-help">修改就诊信息后，可重新生成摘要。没有摘要时，下载或打印会包含当前已填写资料。</p><PlanPanel :plan="currentVisit?.plan || null" :busy="!!busy" :available="!!currentVisit && !humanSupport" @generate="generatePlan" /></div>
             <div v-if="busy && busy !== 'send'" class="operation-status" role="status"><span class="spinner" aria-hidden="true"></span>{{ busyLabel }}</div>
           </section>
 
           <aside class="preparation-column" aria-label="就诊准备概览">
             <section class="preparation-card"><div class="card-heading"><span class="card-title-icon" aria-hidden="true">▤</span><h2>这次就诊的准备</h2><span class="card-live-dot" aria-hidden="true"></span></div><p class="current-record-title">{{ currentTitle }}</p><div class="completion-row"><span>核心信息填写进度</span><strong>{{ completion }}<small> / 7</small></strong></div><div class="completion-track" role="progressbar" :aria-valuenow="completion" :aria-valuemin="0" :aria-valuemax="7" aria-label="就诊信息填写进度"><span :style="{ width: `${completion / 7 * 100}%` }"></span></div><div class="information-preview"><div><span>主要不适</span><p>{{ draft.chief_complaint || '等待你的描述' }}</p></div><div><span>开始时间</span><p>{{ draft.onset || '尚未填写' }}</p></div></div><button class="card-text-button" :disabled="!!busy || !currentVisit" @click="tab = 'prepare'">{{ dirty ? '继续编辑 · 有未保存修改' : '补充就诊信息' }} <span aria-hidden="true">→</span></button><div class="card-divider"></div><div class="checklist-heading"><h3>随身准备清单</h3><span>{{ checklist.length ? `${checklistDone}/${checklist.length}` : '待生成' }}</span></div><ul v-if="checklist.length" class="checklist"><li v-for="item in checklist" :key="item.id"><label :class="{ checked: item.done }"><input type="checkbox" :checked="item.done" :disabled="!!busy" @change="changeChecklist($event, item)" /><span>{{ item.text }}</span></label></li></ul><div v-else class="checklist-empty"><span aria-hidden="true">☑</span><p>生成摘要后，专属准备清单<br />会出现在这里。</p></div><button class="generate-button" :disabled="!!busy || !currentVisit || humanSupport" @click="generateSummary"><span aria-hidden="true">✧</span> {{ busy === 'summary' ? '正在整理摘要…' : summary ? '更新就诊摘要' : '一键生成就诊摘要' }} <span aria-hidden="true">→</span></button><small class="card-caption">{{ humanSupport ? supportNotice : '整理你的自述，保留未知与待确认的信息。' }}</small></section>
 
-            <section class="model-card"><div class="model-heading"><div><span aria-hidden="true">◇</span><strong>外部模型辅助</strong></div><button class="toggle-switch" type="button" role="switch" :aria-checked="useModel" aria-label="允许将脱敏的有限症状片段发送给 DeepSeek" :disabled="!modelAvailable || !!busy" @click="useModel = !useModel"><span></span></button></div><p v-if="modelAvailable">{{ modelNotice }}</p><p v-else>本机资料整理可直接使用。DeepSeek 尚未配置，外部模型开关已禁用。</p><span class="privacy-state">{{ useModel && modelAvailable ? '已允许本次记录的外部辅助' : '当前：本机处理' }}</span></section>
+            <section class="model-card"><div class="model-heading"><div><span aria-hidden="true">◇</span><strong>外部模型辅助</strong></div><button class="toggle-switch" type="button" role="switch" :aria-checked="useModel" aria-label="允许将脱敏的有限症状片段发送给 DeepSeek" :disabled="!permittedModelAvailable || !!busy || consentGate" @click="useModel = !useModel"><span></span></button></div><p v-if="modelAvailable && !externalAiAllowed">你尚未单独同意外部模型处理。可在隐私与账号设置中阅读说明并选择；未同意仍可使用本机整理。</p><p v-else-if="modelAvailable">{{ modelNotice }}</p><p v-else>本机资料整理可直接使用。DeepSeek 尚未配置，外部模型开关已禁用。</p><span class="privacy-state">{{ useModel && modelAvailable ? '已允许本次记录的外部辅助' : '当前：本机处理' }}</span></section>
 
             <section class="gentle-reminder"><span class="reminder-icon" aria-hidden="true">✳</span><div><h3>把安全放在前面</h3><p>如有严重呼吸困难、胸痛伴冷汗、突发单侧无力或意识异常，请立即联系当地急救，别等待在线答复。</p><p>未触发提醒也不代表安全。本工具不能排除紧急情况或疾病。</p><button :disabled="!!busy || !currentVisit" @click="focusComposer">了解就诊准备 <span aria-hidden="true">↗</span></button></div></section>
             <p class="right-footnote">信息有序，心里有底。<span aria-hidden="true">✦</span></p>
           </aside>
         </div>
-        <footer class="main-footer"><span>知禾 · 让每一次健康沟通更清楚</span><span>健康教育与就诊准备工具</span></footer>
+        <footer class="main-footer"><span>知禾 · 让每一次健康沟通更清楚</span><span>健康教育与就诊准备工具</span></footer><section v-if="compliance" class="compliance-footer" aria-label="公开服务信息"><p>运营主体：{{ compliance.operator?.name || '未配置' }} · 公开服务状态：{{ compliance.public_service_status === 'unconfigured' ? '待配置与审核' : '以运营主体公布的信息为准' }}</p><p v-for="record in compliance.records || []" :key="record.type"><span>{{ record.label }}：{{ record.number || '未配置' }}<template v-if="record.model_name"> · 模型名称：{{ record.model_name }}（按配置）</template></span><a v-if="record.number && complianceHref(record.url)" :href="complianceHref(record.url)!" target="_blank" rel="noopener noreferrer">查看公示</a></p><p>配置编号不代表本项目已取得医疗资格或完成合规审验。</p><a v-if="complianceHref(compliance.operator?.privacy_url)" :href="complianceHref(compliance.operator?.privacy_url)!" target="_blank" rel="noopener noreferrer">隐私说明</a><button :disabled="!!busy" @click="privacyPanelOpen = true">隐私与账号设置</button></section>
       </main>
     </div>
 

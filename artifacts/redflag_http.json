@@ -1,5 +1,5 @@
 {
-  "executed_at": "2026-10-12T13:26:33.202321+00:00",
+  "executed_at": "2026-10-13T11:08:53.648060+00:00",
   "base_url": "http://127.0.0.1:8270",
   "passed": 54,
   "failed": 0,
@@ -72,7 +72,7 @@
           "vomiting_blood"
         ]
       },
-      "duration_ms": 78.0
+      "duration_ms": 140.0
     },
     {
       "name": "reported_self_harm_chat",
@@ -88,9 +88,9 @@
         "source_ids": [
           "crisis_support"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 63.0
+      "duration_ms": 172.0
     },
     {
       "name": "reported_self_harm_form",
@@ -106,9 +106,9 @@
         "source_ids": [
           "crisis_support"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 32.0
       },
-      "duration_ms": 62.0
+      "duration_ms": 157.0
     },
     {
       "name": "reported_self_harm_form_notes",
@@ -124,9 +124,9 @@
         "source_ids": [
           "crisis_support"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 63.0
+      "duration_ms": 156.0
     },
     {
       "name": "reported_overdose_chat",
@@ -142,9 +142,9 @@
         "source_ids": [
           "poisoning"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 46.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 140.0
     },
     {
       "name": "reported_overdose_form",
@@ -160,9 +160,9 @@
         "source_ids": [
           "poisoning"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 31.0
+      "duration_ms": 141.0
     },
     {
       "name": "reported_overdose_form_notes",
@@ -178,9 +178,9 @@
         "source_ids": [
           "poisoning"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 32.0
       },
-      "duration_ms": 63.0
+      "duration_ms": 141.0
     },
     {
       "name": "reported_fainting_chat",
@@ -196,9 +196,9 @@
         "source_ids": [
           "emergency_call"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 31.0
+      "duration_ms": 140.0
     },
     {
       "name": "reported_fainting_form",
@@ -214,9 +214,9 @@
         "source_ids": [
           "emergency_call"
         ],
-        "elapsed_ms": 0.0
+        "elapsed_ms": 15.0
       },
-      "duration_ms": 62.0
+      "duration_ms": 125.0
     },
     {
       "name": "reported_fainting_form_notes",
@@ -232,9 +232,9 @@
         "source_ids": [
           "emergency_call"
         ],
-        "elapsed_ms": 31.0
+        "elapsed_ms": 32.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 110.0
     },
     {
       "name": "reported_seizure_chat",
@@ -250,9 +250,9 @@
         "source_ids": [
           "seizure"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 140.0
     },
     {
       "name": "reported_seizure_form",
@@ -270,7 +270,7 @@
         ],
         "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 157.0
     },
     {
       "name": "reported_seizure_form_notes",
@@ -286,9 +286,9 @@
         "source_ids": [
           "seizure"
         ],
-        "elapsed_ms": 0.0
+        "elapsed_ms": 32.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 125.0
     },
     {
       "name": "reported_haemoptysis_chat",
@@ -304,9 +304,9 @@
         "source_ids": [
           "severe_haemoptysis"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 63.0
+      "duration_ms": 156.0
     },
     {
       "name": "reported_haemoptysis_form",
@@ -322,9 +322,9 @@
         "source_ids": [
           "severe_haemoptysis"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 125.0
     },
     {
       "name": "reported_haemoptysis_form_notes",
@@ -340,9 +340,9 @@
         "source_ids": [
           "severe_haemoptysis"
         ],
-        "elapsed_ms": 31.0
+        "elapsed_ms": 32.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 172.0
     },
     {
       "name": "reported_bleeding_chat",
@@ -358,9 +358,9 @@
         "source_ids": [
           "severe_bleeding"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 172.0
     },
     {
       "name": "reported_bleeding_form",
@@ -376,9 +376,9 @@
         "source_ids": [
           "severe_bleeding"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 156.0
     },
     {
       "name": "reported_bleeding_form_notes",
@@ -394,9 +394,9 @@
         "source_ids": [
           "severe_bleeding"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 16.0
       },
-      "duration_ms": 46.0
+      "duration_ms": 125.0
     },
     {
       "name": "reported_pregnancy_chat",
@@ -412,9 +412,9 @@
         "source_ids": [
           "pregnancy_bleeding"
         ],
-        "elapsed_ms": 31.0
+        "elapsed_ms": 16.0
       },
-      "duration_ms": 94.0
+      "duration_ms": 156.0
     },
     {
       "name": "reported_pregnancy_form",
@@ -430,9 +430,9 @@
         "source_ids": [
           "pregnancy_bleeding"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 156.0
     },
     {
       "name": "reported_pregnancy_form_notes",
@@ -448,9 +448,9 @@
         "source_ids": [
           "pregnancy_bleeding"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 125.0
     },
     {
       "name": "reported_infant_chat",
@@ -466,9 +466,9 @@
         "source_ids": [
           "infant_warning"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 79.0
+      "duration_ms": 125.0
     },
     {
       "name": "reported_infant_form",
@@ -484,9 +484,9 @@
         "source_ids": [
           "infant_warning"
         ],
-        "elapsed_ms": 0.0
+        "elapsed_ms": 16.0
       },
-      "duration_ms": 46.0
+      "duration_ms": 157.0
     },
     {
       "name": "reported_infant_form_notes",
@@ -504,7 +504,7 @@
         ],
         "elapsed_ms": 15.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 140.0
     },
     {
       "name": "reported_head_injury_chat",
@@ -522,7 +522,7 @@
         ],
         "elapsed_ms": 31.0
       },
-      "duration_ms": 63.0
+      "duration_ms": 156.0
     },
     {
       "name": "reported_head_injury_form",
@@ -538,9 +538,9 @@
         "source_ids": [
           "head_injury"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 188.0
     },
     {
       "name": "reported_head_injury_form_notes",
@@ -556,9 +556,9 @@
         "source_ids": [
           "head_injury"
         ],
-        "elapsed_ms": 31.0
+        "elapsed_ms": 15.0
       },
-      "duration_ms": 62.0
+      "duration_ms": 156.0
     },
     {
       "name": "holdout_self_harm_plan",
@@ -574,9 +574,9 @@
         "source_ids": [
           "crisis_support"
         ],
-        "elapsed_ms": 47.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 172.0
     },
     {
       "name": "holdout_swallowed_pills",
@@ -592,9 +592,9 @@
         "source_ids": [
           "poisoning"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 109.0
     },
     {
       "name": "holdout_not_responding",
@@ -610,9 +610,9 @@
         "source_ids": [
           "emergency_call"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 204.0
     },
     {
       "name": "holdout_seizure_family",
@@ -631,7 +631,7 @@
         ],
         "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 140.0
     },
     {
       "name": "holdout_blood_coughing",
@@ -647,9 +647,9 @@
         "source_ids": [
           "severe_haemoptysis"
         ],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 94.0
+      "duration_ms": 156.0
     },
     {
       "name": "holdout_bleeding_pressure",
@@ -665,9 +665,9 @@
         "source_ids": [
           "severe_bleeding"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 157.0
     },
     {
       "name": "holdout_pregnancy_colloquial",
@@ -683,9 +683,9 @@
         "source_ids": [
           "pregnancy_bleeding"
         ],
-        "elapsed_ms": 31.0
+        "elapsed_ms": 15.0
       },
-      "duration_ms": 94.0
+      "duration_ms": 140.0
     },
     {
       "name": "holdout_infant_colloquial",
@@ -704,7 +704,7 @@
         ],
         "elapsed_ms": 16.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 141.0
     },
     {
       "name": "holdout_head_injury_colloquial",
@@ -720,9 +720,9 @@
         "source_ids": [
           "head_injury"
         ],
-        "elapsed_ms": 0.0
+        "elapsed_ms": 15.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 156.0
     },
     {
       "name": "context_ordinary_sleep",
@@ -736,9 +736,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 47.0
+        "elapsed_ms": 16.0
       },
-      "duration_ms": 93.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_denied_self_harm",
@@ -752,9 +752,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 47.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 110.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_denied_faint",
@@ -768,9 +768,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_denied_seizure",
@@ -784,9 +784,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_denied_bleeding",
@@ -800,9 +800,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 31.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_historical_faint",
@@ -818,7 +818,7 @@
         "source_ids": [],
         "elapsed_ms": 16.0
       },
-      "duration_ms": 47.0
+      "duration_ms": 156.0
     },
     {
       "name": "context_historical_crisis",
@@ -834,7 +834,7 @@
         "source_ids": [],
         "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 156.0
     },
     {
       "name": "context_education_crisis",
@@ -848,9 +848,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 32.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 94.0
+      "duration_ms": 203.0
     },
     {
       "name": "context_education_pregnancy",
@@ -864,9 +864,9 @@
         "kind": "unknown",
         "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
         "source_ids": [],
-        "elapsed_ms": 15.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 93.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_faint_recovered",
@@ -882,9 +882,9 @@
         "source_ids": [
           "emergency_call"
         ],
-        "elapsed_ms": 47.0
+        "elapsed_ms": 31.0
       },
-      "duration_ms": 63.0
+      "duration_ms": 125.0
     },
     {
       "name": "context_seizure_usual_recovered",
@@ -902,7 +902,7 @@
         ],
         "elapsed_ms": 31.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 125.0
     },
     {
       "name": "context_infant_fever_alert",
@@ -920,7 +920,7 @@
         ],
         "elapsed_ms": 47.0
       },
-      "duration_ms": 94.0
+      "duration_ms": 172.0
     },
     {
       "name": "context_small_blood_streak",
@@ -936,9 +936,9 @@
         "source_ids": [
           "severe_haemoptysis"
         ],
-        "elapsed_ms": 16.0
+        "elapsed_ms": 47.0
       },
-      "duration_ms": 78.0
+      "duration_ms": 156.0
     },
     {
       "name": "candidate_chief_and_onset_original_words",
@@ -947,24 +947,24 @@
         "input": "我从三天前开始嗓子疼",
         "candidates": [
           {
-            "id": "a4c8a652ed3045229ef5fc9b4bd93822",
+            "id": "ab5e20b950bd482da98582c15a6e51fa",
             "field": "chief_complaint",
             "value": "我从三天前开始嗓子疼",
             "evidence": "我从三天前开始嗓子疼",
-            "created_at": "2026-10-12T13:26:32+00:00"
+            "created_at": "2026-10-13T11:08:52+00:00"
           },
           {
-            "id": "0afbb99d36da4157932a50d43055704e",
+            "id": "307f82451246445fae6f450bc7d349e2",
             "field": "onset",
             "value": "三天前",
             "evidence": "三天前",
-            "created_at": "2026-10-12T13:26:32+00:00"
+            "created_at": "2026-10-13T11:08:52+00:00"
           }
         ],
         "saved_progress": 0,
         "reply": "你说的是“我从三天前开始嗓子疼”，我听到了。\n\n你自己感觉不适程度是轻、中，还是重？"
       },
-      "duration_ms": 94.0
+      "duration_ms": 156.0
     },
     {
       "name": "candidate_current_medication_original_words",
@@ -973,17 +973,17 @@
         "input": "正在吃降压药氨氯地平",
         "candidates": [
           {
-            "id": "81c01ff239bf4d058857b0cf6bf3cd66",
+            "id": "47e3ae1c6fff483390694effa52df9ae",
             "field": "medications",
             "value": "正在吃降压药氨氯地平",
             "evidence": "正在吃降压药氨氯地平",
-            "created_at": "2026-10-12T13:26:32+00:00"
+            "created_at": "2026-10-13T11:08:52+00:00"
           }
         ],
         "saved_progress": 0,
         "reply": "这项信息收到。\n\n你现在最想说的是哪里不舒服？"
       },
-      "duration_ms": 78.0
+      "duration_ms": 141.0
     },
     {
       "name": "computer_use_is_not_medication",
@@ -994,7 +994,7 @@
         "saved_progress": 0,
         "reply": "我在听。你可以说说现在最困扰你的感受，也可以直接问一个具体问题。\n\n你现在最想说的是哪里不舒服？"
       },
-      "duration_ms": 62.0
+      "duration_ms": 109.0
     },
     {
       "name": "eating_fruit_is_not_medication",
@@ -1005,7 +1005,7 @@
         "saved_progress": 0,
         "reply": "我在听。你可以说说现在最困扰你的感受，也可以直接问一个具体问题。\n\n你现在最想说的是哪里不舒服？"
       },
-      "duration_ms": 94.0
+      "duration_ms": 110.0
     }
   ],
   "probes": [
@@ -1020,7 +1020,7 @@
       "source_ids": [
         "crisis_support"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "self_harm",
@@ -1033,7 +1033,7 @@
       "source_ids": [
         "crisis_support"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 32.0
     },
     {
       "scenario": "self_harm",
@@ -1046,7 +1046,7 @@
       "source_ids": [
         "crisis_support"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "overdose",
@@ -1059,7 +1059,7 @@
       "source_ids": [
         "poisoning"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 46.0
     },
     {
       "scenario": "overdose",
@@ -1072,7 +1072,7 @@
       "source_ids": [
         "poisoning"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "overdose",
@@ -1085,7 +1085,7 @@
       "source_ids": [
         "poisoning"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 32.0
     },
     {
       "scenario": "fainting",
@@ -1098,7 +1098,7 @@
       "source_ids": [
         "emergency_call"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "fainting",
@@ -1111,7 +1111,7 @@
       "source_ids": [
         "emergency_call"
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 15.0
     },
     {
       "scenario": "fainting",
@@ -1124,7 +1124,7 @@
       "source_ids": [
         "emergency_call"
       ],
-      "elapsed_ms": 31.0
+      "elapsed_ms": 32.0
     },
     {
       "scenario": "seizure",
@@ -1137,7 +1137,7 @@
       "source_ids": [
         "seizure"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "seizure",
@@ -1163,37 +1163,11 @@
       "source_ids": [
         "seizure"
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 32.0
     },
     {
       "scenario": "haemoptysis",
       "entry": "chat",
-      "input": "咳出来全是血",
-      "expected": "emergency",
-      "actual": "emergency",
-      "kind": "medical",
-      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
-      "source_ids": [
-        "severe_haemoptysis"
-      ],
-      "elapsed_ms": 16.0
-    },
-    {
-      "scenario": "haemoptysis",
-      "entry": "form",
-      "input": "咳出来全是血",
-      "expected": "emergency",
-      "actual": "emergency",
-      "kind": "medical",
-      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
-      "source_ids": [
-        "severe_haemoptysis"
-      ],
-      "elapsed_ms": 16.0
-    },
-    {
-      "scenario": "haemoptysis",
-      "entry": "form_notes",
       "input": "咳出来全是血",
       "expected": "emergency",
       "actual": "emergency",
@@ -1205,6 +1179,32 @@
       "elapsed_ms": 31.0
     },
     {
+      "scenario": "haemoptysis",
+      "entry": "form",
+      "input": "咳出来全是血",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_haemoptysis"
+      ],
+      "elapsed_ms": 31.0
+    },
+    {
+      "scenario": "haemoptysis",
+      "entry": "form_notes",
+      "input": "咳出来全是血",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "severe_haemoptysis"
+      ],
+      "elapsed_ms": 32.0
+    },
+    {
       "scenario": "bleeding",
       "entry": "chat",
       "input": "伤口血流不止",
@@ -1215,7 +1215,7 @@
       "source_ids": [
         "severe_bleeding"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "bleeding",
@@ -1228,7 +1228,7 @@
       "source_ids": [
         "severe_bleeding"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "bleeding",
@@ -1241,11 +1241,24 @@
       "source_ids": [
         "severe_bleeding"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 16.0
     },
     {
       "scenario": "pregnancy",
       "entry": "chat",
+      "input": "怀孕32周，阴道出血还肚子疼",
+      "expected": "emergency",
+      "actual": "emergency",
+      "kind": "medical",
+      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
+      "source_ids": [
+        "pregnancy_bleeding"
+      ],
+      "elapsed_ms": 16.0
+    },
+    {
+      "scenario": "pregnancy",
+      "entry": "form",
       "input": "怀孕32周，阴道出血还肚子疼",
       "expected": "emergency",
       "actual": "emergency",
@@ -1258,19 +1271,6 @@
     },
     {
       "scenario": "pregnancy",
-      "entry": "form",
-      "input": "怀孕32周，阴道出血还肚子疼",
-      "expected": "emergency",
-      "actual": "emergency",
-      "kind": "medical",
-      "risk_message": "你描述的情况命中了需要立即处理的警示征象。请立即联系当地急救；中国大陆可拨打 120，并请身边的人协助。不要等待本助手或模型的回复。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
-      "source_ids": [
-        "pregnancy_bleeding"
-      ],
-      "elapsed_ms": 15.0
-    },
-    {
-      "scenario": "pregnancy",
       "entry": "form_notes",
       "input": "怀孕32周，阴道出血还肚子疼",
       "expected": "emergency",
@@ -1280,7 +1280,7 @@
       "source_ids": [
         "pregnancy_bleeding"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "infant",
@@ -1293,7 +1293,7 @@
       "source_ids": [
         "infant_warning"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "infant",
@@ -1306,7 +1306,7 @@
       "source_ids": [
         "infant_warning"
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 16.0
     },
     {
       "scenario": "infant",
@@ -1345,7 +1345,7 @@
       "source_ids": [
         "head_injury"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "head_injury",
@@ -1358,7 +1358,7 @@
       "source_ids": [
         "head_injury"
       ],
-      "elapsed_ms": 31.0
+      "elapsed_ms": 15.0
     },
     {
       "scenario": "self_harm_plan",
@@ -1371,7 +1371,7 @@
       "source_ids": [
         "crisis_support"
       ],
-      "elapsed_ms": 47.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "swallowed_pills",
@@ -1384,7 +1384,7 @@
       "source_ids": [
         "poisoning"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "not_responding",
@@ -1397,7 +1397,7 @@
       "source_ids": [
         "emergency_call"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "seizure_family",
@@ -1424,7 +1424,7 @@
       "source_ids": [
         "severe_haemoptysis"
       ],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "bleeding_pressure",
@@ -1437,7 +1437,7 @@
       "source_ids": [
         "severe_bleeding"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "pregnancy_colloquial",
@@ -1450,7 +1450,7 @@
       "source_ids": [
         "pregnancy_bleeding"
       ],
-      "elapsed_ms": 31.0
+      "elapsed_ms": 15.0
     },
     {
       "scenario": "infant_colloquial",
@@ -1477,7 +1477,7 @@
       "source_ids": [
         "head_injury"
       ],
-      "elapsed_ms": 0.0
+      "elapsed_ms": 15.0
     },
     {
       "scenario": "ordinary_sleep",
@@ -1488,7 +1488,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 47.0
+      "elapsed_ms": 16.0
     },
     {
       "scenario": "denied_self_harm",
@@ -1499,7 +1499,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 47.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "denied_faint",
@@ -1510,7 +1510,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "denied_seizure",
@@ -1521,7 +1521,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "denied_bleeding",
@@ -1532,7 +1532,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 31.0
+      "elapsed_ms": 47.0
     },
     {
       "scenario": "historical_faint",
@@ -1565,7 +1565,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 32.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "education_pregnancy",
@@ -1576,7 +1576,7 @@
       "kind": "unknown",
       "risk_message": "目前信息不足以判断紧急程度。这些提示不能覆盖所有紧急情况；未命中规则不代表安全，也不能排除疾病。",
       "source_ids": [],
-      "elapsed_ms": 15.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "faint_recovered",
@@ -1589,7 +1589,7 @@
       "source_ids": [
         "emergency_call"
       ],
-      "elapsed_ms": 47.0
+      "elapsed_ms": 31.0
     },
     {
       "scenario": "seizure_usual_recovered",
@@ -1628,7 +1628,7 @@
       "source_ids": [
         "severe_haemoptysis"
       ],
-      "elapsed_ms": 16.0
+      "elapsed_ms": 47.0
     }
   ],
   "cleanup": {

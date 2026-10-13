@@ -72,6 +72,14 @@ class Client:
         require(isinstance(response["json"], dict), "bootstrap must return an object")
         self.csrf = response["json"].get("csrf_token")
         require(isinstance(self.csrf, str) and bool(self.csrf), "csrf_token must be nonempty")
+        privacy = response['json'].get('privacy', {})
+        if privacy.get('consent_required') and not privacy.get('accepted'):
+            consent = self.request('POST', '/api/privacy/consent', {
+                'notice_version': privacy['notice_version'], 'local_storage': True,
+                'external_ai': False, 'retention_days': 7,
+            })
+            require(consent['status'] == 200, 'fictional acceptance data requires explicit storage consent')
+            response = self.request('GET', '/api/bootstrap')
         return response
 
     def create(self, title="虚构验收记录"):

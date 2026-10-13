@@ -1,14 +1,14 @@
-FROM node:22-alpine AS frontend
+FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS frontend
 WORKDIR /ui
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 WORKDIR /app
-COPY backend/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt && useradd --create-home appuser && mkdir /app/data && chown appuser:appuser /app/data
+COPY backend/requirements.txt backend/requirements.lock.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt -c /tmp/requirements.lock.txt && useradd --create-home appuser && mkdir /app/data && chown appuser:appuser /app/data
 COPY backend/ /app/backend/
 COPY knowledge/ /app/knowledge/
 COPY --from=frontend /ui/dist/ /app/frontend/dist/

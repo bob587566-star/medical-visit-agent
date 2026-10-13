@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 import secrets
 import time
 from collections import defaultdict, deque
@@ -12,6 +13,8 @@ from urllib.parse import quote
 from uuid import uuid4
 
 import httpx
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError as SQLIntegrityError
+from sqlite3 import IntegrityError as SQLiteIntegrityError
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -29,26 +32,60 @@ from .task_storage import TaskStore
 from .tasks_api import register_task_routes
 from .safety_review import LocalSafetyReview
 from .risk_policy import requires_human_support, risk_order
+from .accounts import Accounts, register_account_routes
+from .privacy import Privacy, public_compliance, register_privacy_routes
+from .data_crypto import DataIntegrityError, DataConsentError
+from .postgres_storage import DataConflictError
+from .production_runtime import RedisRuntime, RedisRateLimiter, RuntimeUnavailable
+from .egress import authorized_egress, model_request_hook
 
 ROOT = Path(__file__).resolve().parents[1]
 COOKIE = "zhihe_visitor"
 
 
-def create_app(db_path: Path | None = None, model_service: ModelService | None = None) -> FastAPI:
+def create_app(db_path: Path | None = None, model_service: ModelService | None = None, *, consent_required: bool = True) -> FastAPI:
     config = read_project_env(ROOT / ".env")
     config.update({key: os.environ[key] for key in (
         "DEEPSEEK_API_KEY", "DEEPSEEK_MODEL", "MODEL_TIMEOUT_SECONDS", "DATA_RETENTION_DAYS",
         "VISIT_DATA_PATH", "COOKIE_SECURE", "LOCAL_SAFETY_ENABLED", "LOCAL_SAFETY_MODEL",
+        "DATABASE_URL", "REDIS_URL", "WORKER_MODE", "MEDICAL_DATA_KEY_FILE", "MEDICAL_DATA_KEY",
+        "MEDICAL_TASK_KEY_FILE", "MEDICAL_TASK_KEY", "PUBLIC_OPERATOR", "PUBLIC_CONTACT_URL",
+        "PUBLIC_PRIVACY_URL", "PROVIDER_MODEL_FILING_NUMBER", "PROVIDER_MODEL_FILING_URL",
+        "APPLICATION_REGISTRATION_NUMBER", "APPLICATION_REGISTRATION_URL", "ALGORITHM_FILING_NUMBER",
+        "ALGORITHM_FILING_URL", "METRICS_TOKEN",
+        "APP_ALLOWED_HOSTS", "VISITOR_COOKIE_NAME",
     ) if key in os.environ})
     retention = max(1, min(30, int(config.get("DATA_RETENTION_DAYS", "7"))))
     timeout = max(1, min(30, float(config.get("MODEL_TIMEOUT_SECONDS", "12"))))
     database = db_path or Path(config.get("VISIT_DATA_PATH", str(ROOT / "data" / "visits.sqlite3")))
+    cookie_name = config.get('VISITOR_COOKIE_NAME') or (COOKIE + '_postgres' if db_path is None and config.get('DATABASE_URL') else COOKIE)
+    if not re.fullmatch(r'[a-zA-Z0-9_]{8,64}', cookie_name):
+        raise ValueError('会话Cookie名称须为8至64位字母、数字或下划线。')
 
     @asynccontextmanager
     async def lifespan(application: FastAPI):
-        application.state.store = Store(database)
+        key_path = Path(config['MEDICAL_DATA_KEY_FILE']) if config.get('MEDICAL_DATA_KEY_FILE') else None
+        task_key_path = Path(config['MEDICAL_TASK_KEY_FILE']) if config.get('MEDICAL_TASK_KEY_FILE') else None
+        if db_path is None and config.get('DATABASE_URL'):
+            from .postgres_storage import PostgreSQLStore
+            application.state.store = PostgreSQLStore(config['DATABASE_URL'], data_dir=ROOT / 'data' / 'postgres',
+                                                       key_path=key_path, data_key=config.get('MEDICAL_DATA_KEY'))
+        else:
+            application.state.store = Store(database, key_path=key_path, data_key=config.get('MEDICAL_DATA_KEY'))
+        application.state.accounts = Accounts(application.state.store)
+        application.state.privacy = Privacy(application.state.store, required=consent_required)
+        application.state.store.enforce_privacy = consent_required
+        application.state.queue_runtime = None
+        application.state.rate_runtime = None
+        if db_path is None and config.get('REDIS_URL'):
+            if not config.get('DATABASE_URL'):
+                raise RuntimeError('持久队列配置须同时使用 PostgreSQL；未回退为单机队列。')
+            application.state.queue_runtime = RedisRuntime.from_url(config['REDIS_URL'])
+            await application.state.queue_runtime.initialize_queue()
+            application.state.rate_runtime = RedisRateLimiter.from_url(config['REDIS_URL'])
         application.state.knowledge = Knowledge(ROOT / "knowledge" / "articles.json")
-        async with httpx.AsyncClient(timeout=httpx.Timeout(timeout), trust_env=False) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(timeout), trust_env=False,
+                                     event_hooks={'request': [model_request_hook]}) as client:
             application.state.model = model_service or ModelService(
                 config.get("DEEPSEEK_API_KEY", ""), config.get("DEEPSEEK_MODEL", "deepseek-chat"), client
             )
@@ -63,8 +100,13 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             application.state.executor = Executor(application.state.knowledge, application.state.model,
                                                   application.state.retriever, application.state.safety_review)
             application.state.task_engine = TaskEngine(application.state.executor, application.state.model)
-            application.state.task_store = TaskStore(application.state.store)
-            application.state.task_store.interrupt_unfinished()
+            application.state.task_store = TaskStore(application.state.store, key_path=task_key_path,
+                                                       task_key=config.get('MEDICAL_TASK_KEY'))
+            if application.state.queue_runtime:
+                from .tasks_api import persistent_repository
+                persistent_repository(application)
+            if not application.state.queue_runtime:
+                application.state.task_store.interrupt_unfinished()
             application.state.task_slots = asyncio.Semaphore(2)
             application.state.task_workers = {}
             cleanup()
@@ -83,10 +125,18 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                     except (asyncio.CancelledError, Exception):
                         pass
         application.state.store.close()
+        if application.state.queue_runtime:
+            await application.state.queue_runtime.close()
+        if application.state.rate_runtime:
+            application.state.rate_runtime.close()
 
-    app = FastAPI(title="知禾 · 健康沟通工作台", version="2.0.0", lifespan=lifespan,
+    app = FastAPI(title="知禾 · 健康沟通工作台", version="3.0.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]"])
+    hosts = [host.strip() for host in config.get('APP_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver,[::1]').split(',') if host.strip()]
+    if not hosts or '*' in hosts:
+        raise ValueError('必须显式配置服务主机名，不能使用无限制Host白名单。')
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
+    app.state.cookie_name = cookie_name
     app.state.commit_lock = asyncio.Lock()
     buckets: dict[str, deque] = defaultdict(deque)
     last_cleanup = 0.0
@@ -95,7 +145,24 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         nonlocal last_cleanup
         cutoff = (datetime.now(timezone.utc) - timedelta(days=retention)).isoformat(timespec="seconds")
         app.state.store.expire(cutoff)
+        app.state.accounts.cleanup()
+        app.state.privacy.expire()
         last_cleanup = time.monotonic()
+
+    def secure_response(request, response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; font-src 'self' data:; connect-src 'self'; "
+            "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        )
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+        if request.url.path.startswith('/api/'):
+            response.headers['Cache-Control'] = 'no-store'
+        response.headers['X-Request-ID'] = uuid4().hex
+        return response
 
     @app.middleware("http")
     async def request_boundary(request: Request, call_next):
@@ -105,28 +172,19 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             async for chunk in request.stream():
                 length += len(chunk)
                 if length > 65536:
-                    return JSONResponse({"detail": "提交内容过大，请缩短后重试。"}, status_code=413)
+                    return secure_response(request, JSONResponse({"detail": "提交内容过大，请缩短后重试。"}, status_code=413))
                 chunks.append(chunk)
             request._body = b"".join(chunks)
         if hasattr(app.state, "store") and time.monotonic() - last_cleanup > 60:
-            cleanup()
+            try:
+                cleanup()
+            except (DataIntegrityError, SQLAlchemyError):
+                return secure_response(request, JSONResponse({'detail': '记录维护暂不可用，请稍后重试。'}, status_code=503))
             stale = [key for key, values in buckets.items() if not values or values[-1] < time.monotonic() - 60]
             for key in stale:
                 del buckets[key]
         response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data:; font-src 'self' data:; connect-src 'self'; "
-            "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-        )
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        if request.url.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store"
-        response.headers["X-Request-ID"] = uuid4().hex
-        return response
+        return secure_response(request, response)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
@@ -134,15 +192,41 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         fields = [".".join(str(p) for p in error["loc"] if p != "body") for error in exc.errors()]
         return JSONResponse({"detail": "输入格式或长度不正确，请检查后重试。", "fields": fields}, status_code=422)
 
+    @app.exception_handler(DataIntegrityError)
+    async def data_integrity_error(request, exc):
+        return JSONResponse({'detail': '加密记录完整性校验失败，未使用损坏资料。'}, status_code=503)
+
+    @app.exception_handler(DataConflictError)
+    async def data_conflict_error(request, exc):
+        return JSONResponse({'detail': '资料已被另一请求更新，请刷新后重试。'}, status_code=409)
+
+    @app.exception_handler(DataConsentError)
+    async def consent_changed_error(request, exc):
+        return JSONResponse({'detail': '留存同意已变化，未保存健康资料。请重新确认隐私选择。'}, status_code=403)
+
+    @app.exception_handler(RuntimeUnavailable)
+    async def runtime_unavailable(request, exc):
+        return JSONResponse({'detail': '共享队列或限流服务暂不可用，请稍后重试。'}, status_code=503)
+
+    @app.exception_handler(SQLiteIntegrityError)
+    @app.exception_handler(SQLIntegrityError)
+    async def database_constraint_error(request, exc):
+        return JSONResponse({'detail': '数据状态已变化，操作未完成，请刷新后重试。'}, status_code=409)
+
+    @app.exception_handler(SQLAlchemyError)
+    async def database_runtime_error(request, exc):
+        return JSONResponse({'detail': '记录存储暂不可用，未返回数据库内部详情。'}, status_code=503)
+
     def identity(request: Request) -> tuple[str, str]:
-        session = app.state.store.session(request.cookies.get(COOKIE))
+        session = app.state.accounts.resolve(request.cookies.get(cookie_name))
         if not session:
             raise HTTPException(401, "访客会话已失效，请刷新页面重新进入。")
         return session
 
     def mutation(request: Request, session=Depends(identity)) -> str:
         owner, token = session
-        if not secrets.compare_digest(request.headers.get("X-CSRF-Token", ""), token):
+        supplied = request.headers.get('X-CSRF-Token', '')
+        if not supplied.isascii() or len(supplied) > 256 or not secrets.compare_digest(supplied, token):
             raise HTTPException(403, "请求校验失败，请刷新页面后重试。")
         origin = request.headers.get("Origin")
         allowed = {str(request.base_url).rstrip("/"), "http://127.0.0.1:5174", "http://localhost:5174"}
@@ -154,6 +238,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         visit = app.state.store.get(owner, visit_id)
         if visit is None:
             raise HTTPException(404, "未找到这条就诊准备记录。")
+        app.state.privacy.require(owner)
         from .planning import collection_for
         visit.collection = collection_for(visit.intake, visit.risk)
         return visit
@@ -169,7 +254,13 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         visit.collection = collection_for(visit.intake, visit.risk)
         return visit
 
-    def rate_limit(owner: str):
+    async def rate_limit(owner: str):
+        if app.state.rate_runtime:
+            decision = await asyncio.to_thread(app.state.rate_runtime.check_rate, owner, limit=120)
+            if not decision.allowed:
+                seconds = max(1, (decision.retry_after_ms + 999) // 1000)
+                raise HTTPException(429, '请求过于频繁，请稍后重试。', headers={'Retry-After': str(seconds)})
+            return
         values = buckets[owner]
         moment = time.monotonic()
         while values and values[0] < moment - 60:
@@ -192,28 +283,34 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                 conn.execute("SELECT 1").fetchone()
         except Exception:
             return JSONResponse({"status": "not_ready", "detail": "本机记录存储暂不可用。"}, status_code=503)
+        if app.state.queue_runtime:
+            try:
+                await app.state.queue_runtime.client.ping()
+            except Exception:
+                return JSONResponse({'status': 'not_ready', 'detail': '持久任务队列暂不可用。'}, status_code=503)
         return {"status": "ready", "knowledge_count": len(items)}
 
     @app.get("/api/bootstrap")
     async def bootstrap(request: Request, response: Response):
-        session = app.state.store.session(request.cookies.get(COOKIE))
+        session = app.state.accounts.resolve(request.cookies.get(cookie_name))
         if not session:
             cookie, owner, token = app.state.store.new_session()
-            response.set_cookie(COOKIE, cookie, max_age=retention * 86400, httponly=True,
+            response.set_cookie(cookie_name, cookie, max_age=30 * 86400, httponly=True,
                                 samesite="strict", secure=config.get("COOKIE_SECURE", "false").lower() == "true")
         else:
             owner, token = session
-        visits = app.state.store.list_visits(owner)
+            if app.state.accounts.public(owner) is None:
+                response.set_cookie(cookie_name, request.cookies[cookie_name], max_age=30 * 86400, httponly=True,
+                                    samesite='strict', secure=config.get('COOKIE_SECURE', 'false').lower() == 'true')
+        privacy = app.state.privacy.status(owner)
+        visits = app.state.store.list_visits(owner) if privacy['accepted'] or not consent_required else []
         visits = [refresh_collection(visit) for visit in visits]
         return {"csrf_token": token, "model_available": app.state.model.available,
-                "privacy": {
-                    "local_default": True, "retention_days": retention,
-                    "notice": "默认在本机整理。记录以本机数据库保存，可删除；请使用虚构演示资料。",
-                    "model_notice": "主动开启后，仅向 DeepSeek 发送有限的症状词、时间和程度片段，不发送身份、表单或完整对话。",
-                }, "sources": app.state.knowledge.all(), "visits": visits,
+                "privacy": privacy, 'account': app.state.accounts.public(owner),
+                'compliance': public_compliance(config), "sources": app.state.knowledge.all(), "visits": visits,
                 "current_visit": visits[0] if visits else None,
                 "retrieval": retrieval_status(), "bookmark_ids": app.state.store.bookmarks(owner),
-                "version": "2.0.0", "safety_review": app.state.safety_review.status()}
+                "version": "3.0.0", "safety_review": app.state.safety_review.status()}
 
     @app.get("/api/knowledge")
     async def knowledge():
@@ -221,14 +318,15 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
 
     @app.get("/api/workspace")
     async def workspace(session=Depends(identity)):
-        visits = [refresh_collection(visit) for visit in app.state.store.list_visits(session[0])]
+        privacy = app.state.privacy.status(session[0])
+        visits = [refresh_collection(visit) for visit in app.state.store.list_visits(session[0])] if privacy['accepted'] or not consent_required else []
         return {"visits_count": len(visits), "messages_count": sum(len(v.messages) for v in visits),
                 "observations_count": sum(len(v.observations) for v in visits),
                 "ready_count": sum(v.collection.stage == "ready" for v in visits),
                 "knowledge_count": len(app.state.knowledge.all()),
                 "bookmarks_count": len(app.state.store.bookmarks(session[0])),
                 "recent_visits": visits[:5], "retrieval": retrieval_status(),
-                "privacy": {"retention_days": retention, "local_default": True}}
+                "privacy": privacy}
 
     @app.get("/api/library")
     async def library(q: str = Query(default="", max_length=500), category: str = Query(default="", max_length=100),
@@ -262,6 +360,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
 
     @app.put("/api/library/bookmarks/{source_id}")
     async def bookmark(source_id: str, body: BookmarkUpdate, owner=Depends(mutation)):
+        app.state.privacy.require(owner)
         if not any(s.id == source_id for s in app.state.knowledge.all()):
             raise HTTPException(404, "未找到这条健康资料。")
         return {"bookmark_ids": app.state.store.bookmark(owner, source_id, body.saved)}
@@ -269,6 +368,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
     @app.post("/api/visits", response_model=Visit, status_code=201)
     async def create(body: CreateVisit, owner=Depends(mutation)):
         async with app.state.commit_lock:
+            app.state.privacy.require(owner)
             if len(app.state.store.list_visits(owner)) >= 100:
                 raise HTTPException(409, "记录已达 100 条，请先删除不需要的记录。")
             stamp = now()
@@ -306,8 +406,11 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             raise HTTPException(409, "本条记录已达到对话上限，请新建记录。")
         # Emergency rules run inside Executor before any model I/O; do not queue that check.
         if not requires_human_support(check_conversation_urgent(body.content, visit)):
-            rate_limit(owner)
-        result = await app.state.executor.run(visit, body.content, body.use_model)
+            if body.use_model:
+                app.state.privacy.require(owner, 'external_ai')
+            await rate_limit(owner)
+        with authorized_egress(app.state.privacy, owner, visit_id):
+            result = await app.state.executor.run(visit, body.content, body.use_model)
         if not result.content.strip():
             raise HTTPException(503, "整理结果为空，请重试或联系专业医务人员。")
         stamp = now()
@@ -320,6 +423,8 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                             followup_field=result.followup_field)
         async with app.state.commit_lock:
             latest = owned(owner, visit_id)  # A deleted visit is never recreated by a slow model response.
+            if body.use_model and not requires_human_support(result.risk) and not requires_human_support(latest.risk):
+                app.state.privacy.require(owner, 'external_ai')
             if len(latest.messages) >= 200:
                 raise HTTPException(409, "本条记录已达到对话上限，请新建记录。")
             changed = (latest.intake != visit.intake or latest.messages != visit.messages
@@ -363,10 +468,15 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         visit = owned(owner, visit_id)
         if requires_human_support(visit.risk) or requires_human_support(check_conversation_urgent('', visit)):
             raise HTTPException(409, '当前记录需要先关注安全与支持，已暂停生成就诊摘要。')
-        rate_limit(owner)
-        result = await app.state.executor.run(visit, use_model=body.use_model, purpose="summary")
+        if body.use_model:
+            app.state.privacy.require(owner, 'external_ai')
+        await rate_limit(owner)
+        with authorized_egress(app.state.privacy, owner, visit_id):
+            result = await app.state.executor.run(visit, use_model=body.use_model, purpose="summary")
         async with app.state.commit_lock:
             latest = owned(owner, visit_id)
+            if body.use_model:
+                app.state.privacy.require(owner, 'external_ai')
             if requires_human_support(latest.risk) or requires_human_support(check_conversation_urgent('', latest)) or requires_human_support(result.risk):
                 raise HTTPException(409, '当前记录需要先关注安全与支持，已暂停生成就诊摘要。')
             if (latest.intake != visit.intake or latest.messages != visit.messages
@@ -493,7 +603,11 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             app.state.store.clear(owner)
         return Response(status_code=204)
 
+    register_account_routes(app, identity, mutation, cookie_name, config.get('COOKIE_SECURE', 'false').lower() == 'true')
+    register_privacy_routes(app, identity, mutation)
     register_task_routes(app, owned, identity, mutation, rate_limit, refresh_collection)
+    from .observability import attach_observability
+    app.state.metrics = attach_observability(app, metrics_token=config.get('METRICS_TOKEN') or None)
 
     @app.api_route("/api/{path:path}", methods=["GET", "POST", "PATCH", "PUT", "DELETE"])
     async def unknown_api(path: str):

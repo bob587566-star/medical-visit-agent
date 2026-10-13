@@ -5,7 +5,7 @@ import json
 import httpx
 import pytest
 
-from backend.main import create_app
+from backend.tests.demo_factory import create_demo_app as create_app
 from backend.safety_review import LocalSafetyReview
 
 

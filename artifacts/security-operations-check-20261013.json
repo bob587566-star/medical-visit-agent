@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-13",
+  "native_service": "http://127.0.0.1:8270/",
+  "readiness": {
+    "status": "ready",
+    "knowledge_count": 46
+  },
+  "backend": {
+    "passed": 691,
+    "skipped": 14,
+    "failed": 0,
+    "scope": "latest native suite; shared PostgreSQL/Redis tests skipped because dedicated runtime is unavailable"
+  },
+  "frontend": {
+    "passed": 45,
+    "failed": 0,
+    "build_passed": true
+  },
+  "browser": {
+    "passed": 13,
+    "failed": 0,
+    "real_edge": true,
+    "widths": [
+      1440,
+      390,
+      320
+    ]
+  },
+  "http": [
+    {
+      "file": "acceptance_report.json",
+      "passed": 36,
+      "failed": 0,
+      "total": 36
+    },
+    {
+      "file": "acceptance_v2.json",
+      "passed": 8,
+      "failed": 0,
+      "total": 8
+    },
+    {
+      "file": "conversation_http.json",
+      "passed": 4,
+      "failed": 0,
+      "total": 4
+    },
+    {
+      "file": "redflag_http.json",
+      "passed": 54,
+      "failed": 0,
+      "total": 54
+    },
+    {
+      "file": "review_rewording_http.json",
+      "passed": 123,
+      "failed": 0,
+      "total": 123
+    },
+    {
+      "file": "task_http.json",
+      "passed": 10,
+      "failed": 0,
+      "total": 10
+    }
+  ],
+  "http_total": 235,
+  "model_boundary": {
+    "passed": 18,
+    "total": 18,
+    "external_requests": false
+  },
+  "original_records": {
+    "preserved": 2,
+    "encrypted": 2
+  },
+  "docker_current_status": "blocked_windows_secrets_engine_socket",
+  "formal_compliance_completed": false,
+  "public_real_patient_deployment": false
+}
