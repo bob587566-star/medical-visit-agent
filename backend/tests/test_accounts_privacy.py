@@ -261,4 +261,3 @@ def test_account_profile_consent_and_auth_csrf_not_stored_as_plaintext(tmp_path)
                 assert 'local_storage' not in payload
             password = conn.execute('SELECT password_hash FROM accounts').fetchone()[0]
             assert password.startswith('scrypt-v1:') and PASSWORD not in password
-
