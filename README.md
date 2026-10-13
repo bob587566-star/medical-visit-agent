@@ -6,7 +6,7 @@
 
 **技术栈：** Vue 3 · TypeScript · FastAPI · Pydantic · RAG · DeepSeek 工具规划 · PostgreSQL · Redis · Docker。
 
-[快速启动](#本机启动) · [功能](#六个功能区域) · [技术实现](#技术与执行方式) · [隐私保护](#记录与隐私) · [部署说明](docs/security-and-operations.md) · [自动测试](https://github.com/bob587566-star/medical-visit-agent/actions)
+[快速启动](#本机启动) · [功能](#六个功能区域) · [技术实现](#技术与执行方式) · [隐私保护](#记录与隐私) · [部署说明](docs/security-and-operations.md) · [Vercel 部署](docs/vercel-deployment.md) · [自动测试](https://github.com/bob587566-star/medical-visit-agent/actions)
 
 本项目用于学习、演示与工程验证，尚未经临床专家审校。不能诊断、开处方或决定药物剂量，有限的警示规则不能排除疾病或覆盖全部急症。验收均使用虚构病例。
 

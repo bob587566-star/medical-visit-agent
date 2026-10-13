@@ -5,7 +5,7 @@ import { replyText, requiresHumanSupport } from '../helpers'
 import LeafMark from './LeafMark.vue'
 import SourceCard from './SourceCard.vue'
 import CandidateCard from './CandidateCard.vue'
-const props = defineProps<{ message: Message; disabled?: boolean; pendingCandidateIds?: string[] }>()
+const props = defineProps<{ message: Message; disabled?: boolean; pendingCandidateIds?: string[]; cloud?: boolean }>()
 defineEmits<{ ask: [question: string]; confirmCandidate: [candidate: IntakeCandidate] }>()
 const pendingCount = computed(() => (props.message.intake_candidates || []).filter(candidate => props.pendingCandidateIds === undefined || props.pendingCandidateIds.includes(candidate.id)).length)
 const humanSupport = computed(() => requiresHumanSupport(props.message.risk))
@@ -22,15 +22,15 @@ const followupPrompts = computed(() => {
 const modeLabel = computed(() => {
   const mode = props.message.mode
   if (['model', 'deepseek', 'model_assisted'].includes(mode || '')) return 'DeepSeek 辅助'
-  if (mode === 'local_fallback') return '已回退本机整理'
+  if (mode === 'local_fallback') return props.cloud ? '已回退服务内规则整理' : '已回退本机整理'
   if (mode === 'local_emergency') return '紧急提醒优先'
   if (mode === 'local_support') return '陪伴支持优先'
-  return '本机资料整理'
+  return props.cloud ? '云端规则与资料整理' : '本机资料整理'
 })
 function statusLabel(status: string): string {
   if (['completed', 'success', 'done'].includes(status)) return '完成'
   if (status === 'skipped') return '跳过'
-  if (status === 'fallback') return '本机回退'
+  if (status === 'fallback') return props.cloud ? '服务内回退' : '本机回退'
   if (['failed', 'error'].includes(status)) return '未完成'
   return status || '状态待确认'
 }

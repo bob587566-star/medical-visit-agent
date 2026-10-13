@@ -199,14 +199,15 @@ async def reconcile_outbox(app) -> int:
     return dispatched
 
 
-async def process_delivery(app, delivery) -> bool:
+async def process_delivery(app, delivery, *, lease_token: str | None = None) -> bool:
     """At-least-once delivery with an encrypted snapshot and fenced DB commit."""
-    runtime, repository = app.state.queue_runtime, persistent_repository(app)
-    token = await runtime.claim(delivery.task_id, lease_seconds=120)
+    runtime = app.state.queue_runtime
+    token = lease_token or await runtime.claim(delivery.task_id, lease_seconds=120)
     if not token:
         return False
     required = getattr(getattr(app.state, 'privacy', None), 'required', False)
     try:
+        repository = persistent_repository(app)
         claimed = repository.claim(delivery.task_id, token, consent_required=required)
         if not claimed:
             await runtime.acknowledge(delivery.message_id)
@@ -356,34 +357,53 @@ def register_task_routes(app, owned, identity, mutation, rate_limit, refresh_col
                 repository = persistent_repository(app)
                 required = getattr(getattr(app.state, 'privacy', None), 'required', False)
                 repository.admit(owner, job, visit.model_copy(deep=True), body.use_model, consent_required=required)
-                try:
-                    await runtime.enqueue_task(job.id)
-                    repository.dispatched(job.id)
-                except RuntimeUnavailable:
-                    raise HTTPException(503, '任务已保存，但持久队列暂不可用。请查看任务列表，服务恢复后继续执行；不要重复提交。') from None
-                return {'task': job}
-            existing = app.state.task_store.list(owner, visit_id)
-            if any(task['status'] in {'queued', 'running'} for task in existing):
-                raise HTTPException(409, '这条记录已有任务正在运行，请等待结果。')
-            if len(existing) >= 50:
-                raise HTTPException(409, '这条记录的任务已达上限，请新建记录。')
-            if len(app.state.task_workers) >= 8:
-                raise HTTPException(429, '当前准备任务较多，请稍后重试。')
-            stamp = now()
-            job = TaskJob(id=uuid4().hex, visit_id=visit_id, goal=body.goal, created_at=stamp, updated_at=stamp, source_revision=revision(visit))
-            app.state.task_store.put(owner, job.model_dump(mode='json'), 'task_queued')
-            task = asyncio.create_task(worker(owner, job.model_copy(deep=True), visit.model_copy(deep=True), body.use_model))
-            app.state.task_workers[job.id] = task
-            task.add_done_callback(lambda finished, identifier=job.id: app.state.task_workers.pop(identifier, None))
+                if not getattr(app.state, 'vercel', False):
+                    try:
+                        await runtime.enqueue_task(job.id)
+                        repository.dispatched(job.id)
+                    except RuntimeUnavailable:
+                        raise HTTPException(503, '任务已保存，但持久队列暂不可用。请查看任务列表，服务恢复后继续执行；不要重复提交。') from None
+                    return {'task': job}
+            else:
+                if getattr(app.state, 'vercel', False):
+                    raise RuntimeUnavailable('Serverless tasks require the persistent runtime.')
+                existing = app.state.task_store.list(owner, visit_id)
+                if any(task['status'] in {'queued', 'running'} for task in existing):
+                    raise HTTPException(409, '这条记录已有任务正在运行，请等待结果。')
+                if len(existing) >= 50:
+                    raise HTTPException(409, '这条记录的任务已达上限，请新建记录。')
+                if len(app.state.task_workers) >= 8:
+                    raise HTTPException(429, '当前准备任务较多，请稍后重试。')
+                stamp = now()
+                job = TaskJob(id=uuid4().hex, visit_id=visit_id, goal=body.goal, created_at=stamp, updated_at=stamp, source_revision=revision(visit))
+                app.state.task_store.put(owner, job.model_dump(mode='json'), 'task_queued')
+                task = asyncio.create_task(worker(owner, job.model_copy(deep=True), visit.model_copy(deep=True), body.use_model))
+                app.state.task_workers[job.id] = task
+                task.add_done_callback(lambda finished, identifier=job.id: app.state.task_workers.pop(identifier, None))
+        if getattr(app.state, 'vercel', False):
+            from .serverless_tasks import run_owned_task
+            try:
+                await run_owned_task(app, owner, visit_id, job.id)
+            except RuntimeUnavailable:
+                raise HTTPException(503, '任务已保存，但持久队列暂不可用。请查看任务列表，服务恢复后继续执行；不要重复提交。') from None
+            job = read_job(owner, visit_id, job.id)
         return {'task': job}
 
     @app.get('/api/visits/{visit_id}/tasks')
     async def list_tasks(visit_id: str, session=Depends(identity)):
         visit = owned(session[0], visit_id)
+        if getattr(app.state, 'vercel', False):
+            from .serverless_tasks import run_owned_visit_tasks
+            await run_owned_visit_tasks(app, session[0], visit_id)
+            visit = owned(session[0], visit_id)
         return {'items': [assess_job(visit, TaskJob.model_validate(raw)) for raw in app.state.task_store.list(session[0], visit_id)]}
 
     @app.get('/api/visits/{visit_id}/tasks/{task_id}', response_model=TaskJob)
     async def task_detail(visit_id: str, task_id: str, session=Depends(identity)):
+        if getattr(app.state, 'vercel', False):
+            from .serverless_tasks import run_owned_task
+            read_job(session[0], visit_id, task_id)
+            await run_owned_task(app, session[0], visit_id, task_id)
         return read_job(session[0], visit_id, task_id)
 
     @app.post('/api/visits/{visit_id}/tasks/{task_id}/apply')

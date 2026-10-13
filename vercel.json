@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "fastapi",
+  "buildCommand": "npm --prefix frontend ci && npm --prefix frontend run build",
+  "functions": {
+    "backend/main.py": {
+      "maxDuration": 300,
+      "includeFiles": "{knowledge/**,frontend/dist/**}",
+      "excludeFiles": "{.git/**,.github/**,.vercel/**,.venv/**,.ops-audit-venv/**,**/__pycache__/**,**/.pytest_cache/**,**/.cache/**,**/.ruff_cache/**,**/.mypy_cache/**,**/.vite/**,.pytest-tmp/**,artifacts/**,backend/tests/**,tests/**,docs/**,scripts/**,deploy/**,frontend/node_modules/**,frontend/src/**,frontend/e2e/**,frontend/test-results/**,frontend/playwright-report/**,**/.env,**/.env.*,**/*.env,**/*.env.*,data/**,logs/**,private-backups/**,**/*.sqlite*,**/*.tasks.key,**/*.data.keys.json,**/*.keyring,**/*.encrypted-backup}"
+    }
+  }
+}

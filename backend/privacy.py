@@ -12,10 +12,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .storage import now
 
-NOTICE_VERSION = '2026-10-13.v1'
+NOTICE_VERSION = '2026-10-14.v2'
 NOTICE_TEXT = (
     '健康自述、既往情况、用药和聊天可能包含敏感个人信息。本工具用于就诊准备和健康资料学习，不提供诊断、处方或医师接诊。'
-    '同意本机保存后，表单、聊天和任务将加密保存在当前服务的数据存储中，仅供本访客或已绑定账号使用。'
+    '同意保存后，表单、聊天和任务将加密保存在当前服务的数据存储中，仅供本访客或已绑定账号使用。'
+    '本机运行时资料保存在本机服务；云端运行时资料保存在云端数据库，不是浏览器本地存储。实际保存位置会在同意项中显示。'
     '你可选择1、7或30天留存，并可导出、删除或撤回；撤回会停止处理并删除本服务中的记录与任务。'
     '撤回或删除不能自动删除你已下载的文件、运维备份或服务商既有数据。请优先使用虚构资料演示。'
     '外部AI处理须另行选择：仅向DeepSeek发送受限症状片段，或任务目标、已填字段名称及观察数量等元数据；'
@@ -32,8 +33,9 @@ class ConsentRequest(BaseModel):
 
 
 class Privacy:
-    def __init__(self, store, required=True):
+    def __init__(self, store, required=True, *, cloud_storage=False):
         self.store, self.required = store, bool(required)
+        self.cloud_storage = bool(cloud_storage)
         with store.lock, store.connect() as conn:
             conn.execute('CREATE TABLE IF NOT EXISTS privacy_events (id TEXT PRIMARY KEY, owner TEXT NOT NULL REFERENCES sessions(id), payload TEXT NOT NULL, created_at TEXT NOT NULL)')
             conn.execute('CREATE TABLE IF NOT EXISTS privacy_current (owner TEXT PRIMARY KEY REFERENCES sessions(id), event_id TEXT NOT NULL REFERENCES privacy_events(id), payload TEXT NOT NULL)')
@@ -45,6 +47,8 @@ class Privacy:
         accepted = bool(state.get('local_storage') and state.get('notice_version') == NOTICE_VERSION)
         return {'consent_required': self.required, 'accepted': accepted,
                 'notice_version': NOTICE_VERSION, 'notice_text': NOTICE_TEXT,
+                'storage_mode': 'cloud' if self.cloud_storage else 'local',
+                'storage_label': '云端服务' if self.cloud_storage else '当前本机服务',
                 'scopes': {'local_storage': accepted, 'external_ai': accepted and bool(state.get('external_ai'))},
                 'retention_days': state.get('retention_days', 7), 'accepted_at': state.get('accepted_at'),
                 'local_default': True, 'notice': '健康记录采用加密存储；请使用虚构演示资料。',
@@ -52,13 +56,15 @@ class Privacy:
 
     def require(self, owner, scope='local_storage'):
         if self.required and not self.status(owner)['scopes'].get(scope):
-            raise HTTPException(403, '请先阅读隐私告知并单独同意本机留存。' if scope == 'local_storage' else '尚未单独同意外部AI处理，未发送资料。')
+            raise HTTPException(403, '请先阅读隐私告知并单独同意服务留存。' if scope == 'local_storage' else '尚未单独同意外部AI处理，未发送资料。')
 
     def _write(self, owner, state, action):
         identifier, stamp = uuid4().hex, now()
+        state = {**state, 'storage_mode': 'cloud' if self.cloud_storage else 'local'}
         with self.store.lock, self.store.connect() as conn:
             event = {'action': action, 'notice_version': NOTICE_VERSION, 'at': stamp,
-                     'local_storage': state['local_storage'], 'external_ai': state['external_ai'], 'retention_days': state['retention_days']}
+                     'local_storage': state['local_storage'], 'external_ai': state['external_ai'],
+                     'retention_days': state['retention_days'], 'storage_mode': state['storage_mode']}
             conn.execute('INSERT INTO privacy_events VALUES (?,?,?,?)', (identifier, owner, self.store.seal_value('privacy_event', owner, identifier, event), stamp))
             conn.execute('INSERT INTO privacy_current VALUES (?,?,?) ON CONFLICT(owner) DO UPDATE SET event_id=excluded.event_id,payload=excluded.payload', (owner, identifier, self.store.seal_value('privacy_current', owner, identifier, state)))
 
@@ -66,7 +72,7 @@ class Privacy:
         if body.notice_version != NOTICE_VERSION:
             raise HTTPException(409, '隐私告知版本已变化，请重新阅读。')
         if not body.local_storage or body.retention_days not in {1, 7, 30}:
-            raise HTTPException(422, '本机留存须明确同意，留存期请选择1、7或30天。')
+            raise HTTPException(422, '服务留存须明确同意，留存期请选择1、7或30天。')
         self._write(owner, {'notice_version': NOTICE_VERSION, 'local_storage': True, 'external_ai': body.external_ai,
                             'retention_days': body.retention_days, 'accepted_at': now()}, 'consent_granted')
         return self.status(owner)
@@ -75,13 +81,15 @@ class Privacy:
         # Clear health records but retain minimal encrypted consent history.
         # Both actions commit together; no accepted state survives a withdrawal.
         identifier, stamp = uuid4().hex, now()
-        state = {'notice_version': NOTICE_VERSION, 'local_storage': False, 'external_ai': False, 'retention_days': 7, 'accepted_at': None}
+        state = {'notice_version': NOTICE_VERSION, 'local_storage': False, 'external_ai': False,
+                 'retention_days': 7, 'accepted_at': None, 'storage_mode': 'cloud' if self.cloud_storage else 'local'}
         with self.store.lock, self.store.connect() as conn:
             conn.execute('DELETE FROM visits WHERE owner=?', (owner,))
             conn.execute('DELETE FROM bookmarks WHERE owner=?', (owner,))
             for table in ('task_audit', 'task_audit_heads'):
                 conn.execute(f'DELETE FROM {table} WHERE owner=?', (owner,))
-            event = {'action': 'consent_withdrawn_and_data_deleted', 'notice_version': NOTICE_VERSION, 'at': stamp, 'local_storage': False, 'external_ai': False}
+            event = {'action': 'consent_withdrawn_and_data_deleted', 'notice_version': NOTICE_VERSION,
+                     'at': stamp, 'local_storage': False, 'external_ai': False, 'storage_mode': state['storage_mode']}
             conn.execute('INSERT INTO privacy_events VALUES (?,?,?,?)', (identifier, owner, self.store.seal_value('privacy_event', owner, identifier, event), stamp))
             conn.execute('INSERT INTO privacy_current VALUES (?,?,?) ON CONFLICT(owner) DO UPDATE SET event_id=excluded.event_id,payload=excluded.payload', (owner, identifier, self.store.seal_value('privacy_current', owner, identifier, state)))
         return self.status(owner)

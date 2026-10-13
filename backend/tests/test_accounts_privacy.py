@@ -63,6 +63,25 @@ def test_default_consent_blocks_health_processing_without_implicit_acceptance(tm
         fictional_visit(client, headers)
 
 
+@pytest.mark.parametrize('cloud,mode,label', [(False, 'local', '当前本机服务'), (True, 'cloud', '云端服务')])
+def test_consent_history_records_actual_storage_location_and_notice(tmp_path, cloud, mode, label):
+    from backend.privacy import Privacy, ConsentRequest
+    from backend.storage import Store
+
+    store = Store(tmp_path / 'fictional-location.sqlite3')
+    _, owner, _ = store.new_session()
+    privacy = Privacy(store, cloud_storage=cloud)
+    initial = privacy.status(owner)
+    assert initial['storage_mode'] == mode and initial['storage_label'] == label
+    assert '不是浏览器本地存储' in initial['notice_text']
+    privacy.grant(owner, ConsentRequest(notice_version=NOTICE_VERSION, local_storage=True))
+    assert privacy.status(owner)['accepted']
+    assert privacy.history(owner)[0]['storage_mode'] == mode
+    privacy.withdraw(owner)
+    assert not privacy.status(owner)['accepted']
+    assert privacy.history(owner)[-1]['storage_mode'] == mode
+
+
 @pytest.mark.parametrize('change,status', [
     ({'notice_version': 'unread-old-version'}, 409),
     ({'local_storage': False}, 422),

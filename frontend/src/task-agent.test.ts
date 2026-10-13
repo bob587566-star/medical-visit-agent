@@ -21,6 +21,14 @@ beforeEach(() => { setCsrfToken('csrf-task'); vi.stubGlobal('fetch', vi.fn()); H
 afterEach(() => { wrapper?.unmount(); wrapper = undefined; vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('实际任务与外部规划边界', () => {
+  it('云端任务显示服务内规则规划，外部模型未配置时仍明确其状态', async () => {
+    vi.mocked(fetch).mockResolvedValue(response({ items: [job()] }))
+    wrapper = mount(TaskAgentPanel, { props: { ...props, cloud: true, modelAvailable: false } }); await flushPromises()
+    expect(wrapper.get('.task-plan').text()).toContain('服务内规则规划')
+    expect(wrapper.get('.task-model-choice').text()).toContain('外部规划未配置，使用服务内规则')
+    expect(wrapper.text()).not.toContain('本机规则规划')
+    expect(wrapper.get('.task-model-choice input').attributes('disabled')).toBeDefined()
+  })
   it('当前红警立即覆盖旧任务的可保存展示，即使旧结果还未重新读取', async () => {
     vi.mocked(fetch).mockResolvedValue(response({ items: [job()] }))
     wrapper = mount(TaskAgentPanel, { props }); await flushPromises()
@@ -68,7 +76,7 @@ describe('实际任务与外部规划边界', () => {
     expect(reads).toBe(2)
   })
   it('只有独立选中规划开关才发送 true，回退原因实际显示，危险输出仍是文字', async () => {
-    const task = job(); task.result!.plan.planner_mode = 'fallback'; task.result!.planner_notice = '计划未通过校验，已按本机规则执行。'; task.result!.planner_error = 'invalid_plan'
+    const task = job(); task.result!.plan.planner_mode = 'fallback'; task.result!.planner_notice = '计划未通过校验，已按内置规则执行。'; task.result!.planner_error = 'invalid_plan'
     const mocked = vi.mocked(fetch).mockImplementation(async (_path, options) => response(options?.method === 'POST' ? { task } : { items: [] }))
     wrapper = mount(TaskAgentPanel, { props }); await flushPromises()
     expect((wrapper.get('.task-model-choice input').element as HTMLInputElement).checked).toBe(false)

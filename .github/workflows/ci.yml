@@ -35,7 +35,7 @@ jobs:
           Path('.pytest-tmp').mkdir(exist_ok=True)
           config = read_project_env(Path('data/runtime-check.env'))
           env = {**os.environ, 'MEDICAL_TEST_DATABASE_URL': config['DATABASE_URL'], 'MEDICAL_TEST_REDIS_URL': config['REDIS_URL']}
-          raise SystemExit(subprocess.call([sys.executable, '-m', 'pytest', 'backend/tests/test_postgres_storage.py', 'backend/tests/test_persistent_worker.py', '-q', '--basetemp=.pytest-tmp/ci-shared-runtime'], env=env))
+          raise SystemExit(subprocess.call([sys.executable, '-m', 'pytest', 'backend/tests/test_postgres_storage.py', 'backend/tests/test_persistent_worker.py', 'backend/tests/test_serverless_runtime.py', '-q', '--basetemp=.pytest-tmp/ci-shared-runtime'], env=env))
           PY
       - run: python scripts/check_redis_runtime.py
       - if: always()

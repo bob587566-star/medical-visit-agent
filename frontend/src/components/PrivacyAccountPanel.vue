@@ -24,6 +24,8 @@ const accountActionAllowed = computed(() => !props.dirty || discardDraft.value)
 const validRecoveryCode = computed(() => recoveryInput.value.length >= 32 && recoveryInput.value.length <= 100 && /^[a-f0-9]{64}$/i.test(recoveryInput.value.trim().replaceAll('-', '')))
 const validCredentials = computed(() => /^[A-Za-z][A-Za-z0-9._-]{2,39}$/.test(username.value.trim()) && password.value.length >= 15 && password.value.length <= 128 && (mode.value !== 'recover' || validRecoveryCode.value))
 const noticeVersion = computed(() => props.privacy?.notice_version || '')
+const cloud = computed(() => props.privacy?.storage_mode === 'cloud')
+const storageLabel = computed(() => props.privacy?.storage_label || (cloud.value ? '云端服务' : props.privacy?.storage_mode === 'local' ? '当前本机服务' : '当前服务'))
 const roleLabel = computed(() => ({ user: '个人账号', reviewer: '内容审核账号', admin: '管理账号' }[props.account?.role || 'user']))
 watch(() => props.privacy, privacy => {
   localStorageConsent.value = privacy?.accepted === true && privacy?.scopes?.local_storage === true
@@ -106,10 +108,10 @@ async function confirmDestructive(): Promise<void> {
       <div class="privacy-account-grid">
         <form class="privacy-consent-form" @submit.prevent="consent">
           <h3>保存与外部辅助，分别选择</h3><p class="privacy-notice-text">{{ privacy?.notice_text || '隐私说明尚未读取，请重新连接后再选择保存。' }}</p><p class="privacy-version">告知版本：{{ noticeVersion || '尚未读取' }}</p>
-          <label class="privacy-check"><input v-model="localStorageConsent" type="checkbox" :disabled="locked" /><span>同意将本人的健康自述保存在本机<small>填写、对话和任务结果可能包含敏感健康信息。</small></span></label>
+          <label class="privacy-check"><input v-model="localStorageConsent" type="checkbox" :disabled="locked" /><span>同意将本人的健康自述保存在{{ storageLabel }}<small>填写、对话和任务结果可能包含敏感健康信息。{{ cloud ? '资料加密保存在云端数据库。' : '资料保存在当前服务的数据存储中。' }}</small></span></label>
           <label class="privacy-retention">保存期限<select v-model="retention" :disabled="locked"><option :value="1">1 天</option><option :value="7">7 天</option><option :value="30">30 天</option></select></label>
           <label class="privacy-check"><input v-model="externalAiConsent" type="checkbox" :disabled="locked" /><span>另行同意外部模型辅助<small>{{ privacy?.model_notice || '默认不发送。外部模型的数据用途说明尚未读取。' }}</small></span></label>
-          <p class="privacy-small">未选择外部辅助仍可使用本机整理。该选择只是授权范围，问答和目标任务还需分别主动开启外部模型。</p>
+          <p class="privacy-small">未选择外部辅助仍可使用{{ cloud ? '服务内规则整理' : '本机整理' }}。该选择只是授权范围，问答和目标任务还需分别主动开启外部模型。</p>
           <button type="submit" class="primary-button privacy-consent-submit" :disabled="locked || !localStorageConsent || !noticeVersion">{{ action === 'consent' ? '正在保存选择…' : privacy?.accepted ? '更新隐私选择' : '确认选择，开始准备' }}</button>
         </form>
         <section class="privacy-account-card">

@@ -32,6 +32,7 @@ export interface Account { id: string; username: string; role: 'user' | 'reviewe
 export interface PrivacyNotice {
   consent_required: boolean; accepted: boolean; notice_version: string;
   scopes: { local_storage: boolean; external_ai: boolean }; retention_days: number;
+  storage_mode?: 'local' | 'cloud'; storage_label?: string;
   notice_text: string; model_notice: string
 }
 export interface ComplianceInfo { operator?: { name: string | null; contact_url: string | null; privacy_url: string | null }; product_name?: string; positioning?: string; public_service_status?: string; records?: { type: 'provider_model' | 'application' | 'algorithm'; label: string; model_name?: string | null; status: 'unconfigured' | 'configured'; number: string | null; url: string | null }[] }

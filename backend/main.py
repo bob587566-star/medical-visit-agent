@@ -38,13 +38,14 @@ from .data_crypto import DataIntegrityError, DataConsentError
 from .postgres_storage import DataConflictError
 from .production_runtime import RedisRuntime, RedisRateLimiter, RuntimeUnavailable
 from .egress import authorized_egress, model_request_hook
+from .deployment import RuntimeDeployment, is_vercel
 
 ROOT = Path(__file__).resolve().parents[1]
 COOKIE = "zhihe_visitor"
 
 
 def create_app(db_path: Path | None = None, model_service: ModelService | None = None, *, consent_required: bool = True) -> FastAPI:
-    config = read_project_env(ROOT / ".env")
+    config = {} if is_vercel() else read_project_env(ROOT / ".env")
     config.update({key: os.environ[key] for key in (
         "DEEPSEEK_API_KEY", "DEEPSEEK_MODEL", "MODEL_TIMEOUT_SECONDS", "DATA_RETENTION_DAYS",
         "VISIT_DATA_PATH", "COOKIE_SECURE", "LOCAL_SAFETY_ENABLED", "LOCAL_SAFETY_MODEL",
@@ -53,8 +54,9 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         "PUBLIC_PRIVACY_URL", "PROVIDER_MODEL_FILING_NUMBER", "PROVIDER_MODEL_FILING_URL",
         "APPLICATION_REGISTRATION_NUMBER", "APPLICATION_REGISTRATION_URL", "ALGORITHM_FILING_NUMBER",
         "ALGORITHM_FILING_URL", "METRICS_TOKEN",
-        "APP_ALLOWED_HOSTS", "VISITOR_COOKIE_NAME",
+        "APP_ALLOWED_HOSTS", "VISITOR_COOKIE_NAME", "PUBLIC_APP_ORIGIN",
     ) if key in os.environ})
+    deployment = RuntimeDeployment.from_config(config, ROOT, db_path=db_path)
     retention = max(1, min(30, int(config.get("DATA_RETENTION_DAYS", "7"))))
     timeout = max(1, min(30, float(config.get("MODEL_TIMEOUT_SECONDS", "12"))))
     database = db_path or Path(config.get("VISIT_DATA_PATH", str(ROOT / "data" / "visits.sqlite3")))
@@ -68,12 +70,12 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         task_key_path = Path(config['MEDICAL_TASK_KEY_FILE']) if config.get('MEDICAL_TASK_KEY_FILE') else None
         if db_path is None and config.get('DATABASE_URL'):
             from .postgres_storage import PostgreSQLStore
-            application.state.store = PostgreSQLStore(config['DATABASE_URL'], data_dir=ROOT / 'data' / 'postgres',
+            application.state.store = PostgreSQLStore(deployment.database_url, data_dir=deployment.runtime_dir / 'postgres',
                                                        key_path=key_path, data_key=config.get('MEDICAL_DATA_KEY'))
         else:
             application.state.store = Store(database, key_path=key_path, data_key=config.get('MEDICAL_DATA_KEY'))
         application.state.accounts = Accounts(application.state.store)
-        application.state.privacy = Privacy(application.state.store, required=consent_required)
+        application.state.privacy = Privacy(application.state.store, required=consent_required, cloud_storage=deployment.vercel)
         application.state.store.enforce_privacy = consent_required
         application.state.queue_runtime = None
         application.state.rate_runtime = None
@@ -90,12 +92,12 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                 config.get("DEEPSEEK_API_KEY", ""), config.get("DEEPSEEK_MODEL", "deepseek-chat"), client
             )
             application.state.retriever = None
-            application.state.safety_review = LocalSafetyReview(client, config.get('LOCAL_SAFETY_ENABLED', 'false').lower() == 'true', config.get('LOCAL_SAFETY_MODEL', 'qwen2.5:7b'))
+            application.state.safety_review = LocalSafetyReview(client, not deployment.vercel and config.get('LOCAL_SAFETY_ENABLED', 'false').lower() == 'true', config.get('LOCAL_SAFETY_MODEL', 'qwen2.5:7b'))
             warm_task = None
-            if db_path is None:
+            if db_path is None and not deployment.vercel:
                 from .retrieval import HybridRetriever
                 application.state.retriever = HybridRetriever(application.state.knowledge, client,
-                                                               ROOT / "data" / "knowledge-vectors.json")
+                                                               deployment.runtime_dir / "knowledge-vectors.json")
                 warm_task = asyncio.create_task(application.state.retriever.initialize())
             application.state.executor = Executor(application.state.knowledge, application.state.model,
                                                   application.state.retriever, application.state.safety_review)
@@ -132,10 +134,10 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
 
     app = FastAPI(title="知禾 · 健康沟通工作台", version="3.0.0", lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
-    hosts = [host.strip() for host in config.get('APP_ALLOWED_HOSTS', '127.0.0.1,localhost,testserver,[::1]').split(',') if host.strip()]
-    if not hosts or '*' in hosts:
-        raise ValueError('必须显式配置服务主机名，不能使用无限制Host白名单。')
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=deployment.allowed_hosts)
+    app.state.vercel = deployment.vercel
+    app.state.public_app_origin = deployment.public_origin
+    app.state.runtime_dir = deployment.runtime_dir
     app.state.cookie_name = cookie_name
     app.state.commit_lock = asyncio.Lock()
     buckets: dict[str, deque] = defaultdict(deque)
@@ -229,7 +231,9 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         if not supplied.isascii() or len(supplied) > 256 or not secrets.compare_digest(supplied, token):
             raise HTTPException(403, "请求校验失败，请刷新页面后重试。")
         origin = request.headers.get("Origin")
-        allowed = {str(request.base_url).rstrip("/"), "http://127.0.0.1:5174", "http://localhost:5174"}
+        allowed = {deployment.public_origin} if deployment.public_origin else {
+            str(request.base_url).rstrip("/"), "http://127.0.0.1:5174", "http://localhost:5174"
+        }
         if origin and origin.rstrip("/") not in allowed:
             raise HTTPException(403, "不接受其他网站发起的修改请求。")
         return owner
@@ -246,7 +250,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
     def retrieval_status():
         if app.state.retriever:
             return app.state.retriever.status()
-        return {"mode": "topic_bm25", "embedding_available": False, "model": "bge-m3:latest",
+        return {"mode": "lexical_fallback" if deployment.vercel else "topic_bm25", "embedding_available": False, "model": "bge-m3:latest",
                 "document_count": len(app.state.knowledge.all())}
 
     def refresh_collection(visit: Visit):
@@ -296,12 +300,12 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         if not session:
             cookie, owner, token = app.state.store.new_session()
             response.set_cookie(cookie_name, cookie, max_age=30 * 86400, httponly=True,
-                                samesite="strict", secure=config.get("COOKIE_SECURE", "false").lower() == "true")
+                                samesite="strict", secure=deployment.secure_cookie)
         else:
             owner, token = session
             if app.state.accounts.public(owner) is None:
                 response.set_cookie(cookie_name, request.cookies[cookie_name], max_age=30 * 86400, httponly=True,
-                                    samesite='strict', secure=config.get('COOKIE_SECURE', 'false').lower() == 'true')
+                                    samesite='strict', secure=deployment.secure_cookie)
         privacy = app.state.privacy.status(owner)
         visits = app.state.store.list_visits(owner) if privacy['accepted'] or not consent_required else []
         visits = [refresh_collection(visit) for visit in visits]
@@ -603,7 +607,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             app.state.store.clear(owner)
         return Response(status_code=204)
 
-    register_account_routes(app, identity, mutation, cookie_name, config.get('COOKIE_SECURE', 'false').lower() == 'true')
+    register_account_routes(app, identity, mutation, cookie_name, deployment.secure_cookie)
     register_privacy_routes(app, identity, mutation)
     register_task_routes(app, owned, identity, mutation, rate_limit, refresh_collection)
     from .observability import attach_observability

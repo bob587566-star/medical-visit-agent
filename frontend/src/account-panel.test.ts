@@ -18,6 +18,21 @@ afterEach(() => { wrapper?.unmount(); wrapper = undefined; vi.restoreAllMocks();
 async function credentials(): Promise<void> { await wrapper!.get('input[name="username"]').setValue('green_leaf'); await wrapper!.get('input[name="password"]').setValue('independent-secret-123') }
 
 describe('隐私选择与身份边界', () => {
+  it.each([
+    { storage_mode: 'cloud' as const, storage_label: '云端服务', detail: '云端数据库' },
+    { storage_mode: 'local' as const, storage_label: '当前本机服务', detail: '当前服务的数据存储' },
+  ])('保存同意说明实际位置 $storage_label，仍只在本人选择后提交', async ({ storage_mode, storage_label, detail }) => {
+    vi.mocked(fetch).mockResolvedValue(response({}))
+    wrapper = mount(PrivacyAccountPanel, { props: { ...props, privacy: { ...privacy, notice_version: '2026-10-14.v2', storage_mode, storage_label, notice_text: '健康自述保存位置将在同意项中显示。' } } })
+    const consent = wrapper.findAll('.privacy-consent-form .privacy-check')[0]!
+    expect(consent.text()).toContain('保存在' + storage_label)
+    expect(consent.text()).toContain(detail)
+    if (storage_mode === 'cloud') expect(consent.text()).not.toContain('本机')
+    expect(fetch).not.toHaveBeenCalled()
+    await consent.get('input').setValue(true)
+    await wrapper.get('.privacy-consent-form').trigger('submit'); await flushPromises()
+    expect(JSON.parse(String(vi.mocked(fetch).mock.calls[0]![1]!.body))).toEqual({ notice_version: '2026-10-14.v2', local_storage: true, external_ai: false, retention_days: 7 })
+  })
   it('两个同意默认均未勾选，保留期限明确，仅明确确认后发送同意', async () => {
     vi.mocked(fetch).mockResolvedValue(response({}))
     wrapper = mount(PrivacyAccountPanel, { props })

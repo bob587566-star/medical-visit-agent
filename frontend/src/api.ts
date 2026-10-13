@@ -20,7 +20,7 @@ export async function request<T>(path: string, method = 'GET', body?: unknown, a
   let response: Response
   try {
     response = await fetch(path, { method, credentials: 'same-origin', headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
-  } catch { throw new ApiError('暂时无法连接本机服务。请确认服务已启动，然后重试。') }
+  } catch { throw new ApiError('暂时无法连接服务。请检查网络连接，然后重试。') }
   if (!response.ok) {
     const text = await response.text()
     let payload: unknown = text

@@ -26,3 +26,7 @@ artifacts/browser-*.json
 !artifacts/browser-results.json
 .DS_Store
 Thumbs.db
+.vercel/
+
+.vercel
+.env*
