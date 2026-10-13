@@ -32,6 +32,8 @@
 
 `compose.production.yaml` 提供隔离的工程 PostgreSQL／Redis 服务，以及 `application` profile 的 API、独立 worker 和 Prometheus。数据服务仅监听本机 `18432`／`18379`，application 页面为 `8273`，Prometheus 为 `19090`；官方镜像固定 digest。与既有客服、RAG 和 SQLite 数据卷分开。`configure_runtime_check.py` 生成独立口令与 Redis 配置，放在 Git 忽略的数据目录，不打印连接 URL。
 
+`application` profile 先通过无网络的一次性初始化服务，把原 `0600` 密钥复制到消费者所属的私密卷，已有不同副本拒绝覆盖；API／worker 和 Prometheus 只读挂载并保持非 root。宿主文件不放宽权限。完整 Linux profile 验收及只清理新 fixture 卷的命令见 [安全与部署入口](security-and-operations.md)。
+
 ```powershell
 .\.venv\Scripts\python.exe scripts\configure_runtime_check.py
 .\.venv\Scripts\python.exe scripts\configure_runtime_containers.py

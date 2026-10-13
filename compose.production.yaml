@@ -1,6 +1,29 @@
 # Isolated engineering stack. It is NOT a public production deployment.
 # Prepare private local credentials with scripts/configure_runtime_check.py.
 services:
+  secrets-init:
+    profiles: ["application"]
+    image: zhihe-medical-engineering-check:20261013
+    build: .
+    user: "0:0"
+    command: ["python", "/usr/local/bin/zhihe-secrets-init.py"]
+    secrets:
+      - record_key
+      - task_key
+      - metrics_token
+    volumes:
+      - ./deploy/prepare_secrets.py:/usr/local/bin/zhihe-secrets-init.py:ro
+      - runtime-application-secrets:/prepared/application
+      - runtime-metrics-secret:/prepared/metrics
+    network_mode: "none"
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "DAC_OVERRIDE", "FOWNER"]
+    restart: "no"
+    healthcheck:
+      disable: true
   api:
     profiles: ["application"]
     build: .
@@ -9,12 +32,12 @@ services:
       - "127.0.0.1:8273:8270"
     env_file:
       - ./data/runtime-container.env
-    secrets:
-      - record_key
-      - task_key
     volumes:
       - runtime-application:/app/data
+      - runtime-application-secrets:/run/secrets:ro
     depends_on:
+      secrets-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -36,12 +59,12 @@ services:
       - ./data/runtime-container.env
     environment:
       WORKER_MODE: "true"
-    secrets:
-      - record_key
-      - task_key
     volumes:
       - runtime-application:/app/data
+      - runtime-application-secrets:/run/secrets:ro
     depends_on:
+      secrets-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -60,15 +83,17 @@ services:
   prometheus:
     profiles: ["application"]
     image: prom/prometheus:v3.15.0@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+    user: "65534:65534"
     command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--storage.tsdb.retention.time=7d", "--storage.tsdb.retention.size=128MB"]
     ports:
       - "127.0.0.1:19090:9090"
     volumes:
       - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - runtime-prometheus:/prometheus
-    secrets:
-      - metrics_token
+      - runtime-metrics-secret:/run/secrets:ro
     depends_on:
+      secrets-init:
+        condition: service_completed_successfully
       api:
         condition: service_healthy
     restart: unless-stopped
@@ -107,12 +132,14 @@ services:
         max-file: "3"
   redis:
     image: redis:8.2.10-alpine@sha256:b51665e66f00759be7c3152ad5ac3c66fb2f619c13ef62dea7cc1f9914524635
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    entrypoint: ["/bin/sh", "/usr/local/bin/zhihe-redis-entrypoint.sh"]
+    command: ["redis-server"]
     ports:
       - "127.0.0.1:18379:6379"
     volumes:
       - runtime-redis:/data
       - ./data/runtime-redis.conf:/etc/redis/redis.conf:ro
+      - ./deploy/redis-entrypoint.sh:/usr/local/bin/zhihe-redis-entrypoint.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "REDISCLI_AUTH=$$(sed -n 's/^requirepass //p' /etc/redis/redis.conf) redis-cli ping | grep -q PONG"]
       interval: 3s
@@ -136,6 +163,8 @@ secrets:
     file: ./data/runtime-postgres.password
 volumes:
   runtime-application:
+  runtime-application-secrets:
+  runtime-metrics-secret:
   runtime-prometheus:
   runtime-postgres:
   runtime-redis:

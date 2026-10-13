@@ -1,0 +1,32 @@
+name: 问题反馈
+description: 使用虚构资料报告可复现的软件问题
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "请勿提交真实健康资料、Cookie、API Key、密码、恢复码或数据库。安全漏洞请使用 Security → Report a vulnerability 私下报告。"
+  - type: input
+    id: version
+    attributes:
+      label: 版本或提交
+      placeholder: 提交 SHA 或 Release 版本
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 输入和记录均使用虚构内容。
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 运行环境
+      placeholder: 操作系统、浏览器、SQLite 或 PostgreSQL／Redis

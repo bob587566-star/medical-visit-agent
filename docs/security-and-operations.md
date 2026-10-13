@@ -43,6 +43,22 @@ docker compose -p zhihe-engineering-check -f compose.production.yaml --profile a
 
 浏览器访问 8273；请求指标需要私密 Bearer token，Prometheus 通过 Secret 文件读取。接口与 worker 同用原密钥、数据库和队列；Redis 仅投递不透明任务编号，快照保存在加密 SQL 数据中。事务 outbox 补漏、至少一次投递、租约与提交 fencing 防止丢单和重复提交；当前仍是单机基础设施，不能认定高可用。
 
+Linux 上宿主凭据文件保持 `0600`。一次性的 `secrets-init` 在无网络、只读根文件系统中，把原文件复制到两个私密命名卷：API／worker 使用 UID/GID `1000` 的记录与任务密钥，Prometheus 使用 UID/GID `65534` 的指标 token；文件均为 `0600`，目录为 `0700`。消费者只读挂载密钥卷，继续以非 root、只读根文件系统及移除全部 capabilities 运行。初始化只保留复制与设置归属所需的 `CHOWN`／`DAC_OVERRIDE`／`FOWNER`；不会生成新密钥，发现已有副本与原文件不同会拒绝启动。Redis 单独在容器内建立私密配置副本，再交给官方入口下降权限，宿主只读挂载不改权限。
+
+命名卷中的密钥副本也需要私密保管。停机或普通 `down` 会保留数据与密钥卷；不要删除原密钥来重新生成。计划轮换时先停止消费者并执行对应密钥轮换流程，再同步专用密钥卷；不要把初始化拒绝覆盖当作可以重建数据库的理由。
+
+在全新、只含虚构资料的 Linux CI checkout 中，可验证完整 profile；下列删除卷命令只适用于这次新建的 `zhihe-ci-application` 验收环境：
+
+```bash
+python scripts/configure_runtime_check.py
+python scripts/configure_runtime_containers.py
+docker compose -p zhihe-ci-application -f compose.production.yaml --profile application up -d --build --wait --wait-timeout 120
+python deploy/check_application_runtime.py --project zhihe-ci-application
+docker compose -p zhihe-ci-application -f compose.production.yaml --profile application down --volumes
+```
+
+CI 应在 `always()` 清理步骤执行最后一行。检查只访问固定 loopback readiness、需授权的指标和 Prometheus 抓取结果，并核对用户、文件权限和容器限制；不建立健康记录，也不调用外部 AI。
+
 需要进程级验收时先启动 PostgreSQL／Redis，再运行 `scripts/runtime_profile.py start` 与 `tests/runtime_acceptance.py`；结束运行 `scripts/runtime_profile.py stop`。仅控制已核实的本项目验收进程，不操作 8270。运行重启验收前应停止 Docker worker，避免第二个 worker 接走测试刻意暂停的任务。
 
 ## 密钥、恢复与上线边界

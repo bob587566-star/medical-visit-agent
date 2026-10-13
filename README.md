@@ -1,6 +1,12 @@
 # 知禾 · 健康沟通与就诊准备 Agent
 
+[![自动检查](https://github.com/bob587566-star/medical-visit-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/bob587566-star/medical-visit-agent/actions/workflows/ci.yml)
+
 一个中文就诊准备与健康资料 Agent。围绕同一份记录，连接多轮对话、原文候选确认、观察时间线、健康资料检索与目标任务执行，支持桌面与手机浏览器。
+
+**技术栈：** Vue 3 · TypeScript · FastAPI · Pydantic · RAG · DeepSeek 工具规划 · PostgreSQL · Redis · Docker。
+
+[快速启动](#本机启动) · [功能](#六个功能区域) · [技术实现](#技术与执行方式) · [隐私保护](#记录与隐私) · [部署说明](docs/security-and-operations.md) · [自动测试](https://github.com/bob587566-star/medical-visit-agent/actions)
 
 本项目用于学习、演示与工程验证，尚未经临床专家审校。不能诊断、开处方或决定药物剂量，有限的警示规则不能排除疾病或覆盖全部急症。验收均使用虚构病例。
 
@@ -44,6 +50,8 @@ Ollama 不可用时自动回退，接口和页面显示真实状态。**当前�
 Windows 需要 Python 3.11+ 和 Node.js 22+。在项目目录执行：
 
 ```powershell
+git clone https://github.com/bob587566-star/medical-visit-agent.git
+cd medical-visit-agent
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1
 ```
@@ -119,3 +127,9 @@ docker compose up -d --build
 本机 8270 仍使用原 SQLite 数据。隔离的 PostgreSQL／Redis API 与独立 worker 入口为 8272，使用新的虚构资料库，不自动导入原记录。运行方式、加密备份恢复、观测与边界见 [安全与部署](docs/security-and-operations.md)。工程测试不代表医疗资质、备案、等保、真实患者合规、临床有效性或高可用已完成；没有部署到 Kubernetes。
 
 公开服务信息有运营主体、隐私说明、模型供应商备案、本应用登记与适用算法备案展示位；没有真实信息时显示未配置，不造备案号。实际备案／登记、数据处理协议与等保定级需按业务及主管部门要求办理，见 [合规核对](docs/compliance-deployment.md)。
+
+## 仓库与反馈
+
+源代码发布在 [GitHub](https://github.com/bob587566-star/medical-visit-agent)，自动检查覆盖后端、前端、浏览器、真实 PostgreSQL／Redis 与容器启动。仓库发布不包含个人记录、模型密钥、数据库或本机备份，也不代表线上医疗服务已经开放。
+
+提交问题请只使用虚构资料，见 [贡献说明](CONTRIBUTING.md)。安全问题请按 [安全报告方式](SECURITY.md) 私下提交，避免在公开 Issue 里粘贴健康资料、凭据或数据库。
