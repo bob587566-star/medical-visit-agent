@@ -110,6 +110,30 @@ describe('对话优先与下一轮输入', () => {
 })
 
 describe('请求与隐私', () => {
+  it.each([
+    { name: '未返回隐私状态', privacy: undefined },
+    { name: '未返回授权范围', privacy: { accepted: true } },
+    { name: '同意已失效', privacy: { accepted: false, scopes: { local_storage: true, external_ai: true } } },
+  ])('$name时不允许消息或任务使用外部模型', async ({ privacy }) => {
+    const record = visit()
+    const fetchMock = vi.mocked(fetch).mockImplementation(async path => {
+      if (path === '/api/bootstrap') return json({ csrf_token: 'csrf', model_available: true, privacy, visits: [record], current_visit: record, sources: [] })
+      if (String(path).endsWith('/messages')) return json({ user_message: { ...message('虚构问题'), role: 'user' }, assistant_message: message('资料答复'), visit: record })
+      if (String(path).endsWith('/tasks')) return json({ items: [] })
+      return json(record)
+    })
+    wrapper = mount(App); await flushPromises()
+    expect(wrapper.get('.toggle-switch').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('.toggle-switch').attributes('aria-checked')).toBe('false')
+    await wrapper.get('[data-tab="chat"]').trigger('click')
+    await wrapper.get('#question').setValue('【虚构】就诊前准备什么资料？')
+    await wrapper.get('.composer').trigger('submit'); await flushPromises()
+    const sent = fetchMock.mock.calls.find(([path]) => String(path).endsWith('/messages'))!
+    expect(JSON.parse(String(sent[1]?.body)).use_model).toBe(false)
+    await wrapper.get('.task-agent-entry button').trigger('click'); await flushPromises()
+    expect(wrapper.get('.task-model-choice input').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('.task-model-choice').text()).toContain('当前未启用')
+  })
   it('修改请求携带同源 Cookie 与 CSRF，并展示后端 detail 错误', async () => {
     setCsrfToken('test-csrf')
     const fetchMock = vi.mocked(fetch).mockResolvedValue(json({ detail: '会话校验失败，请重新连接。' }, 403))
@@ -121,7 +145,7 @@ describe('请求与隐私', () => {
   it('外部模型默认关闭，只有用户显式开启后才发送 use_model=true', async () => {
     const record = visit()
     const fetchMock = vi.mocked(fetch).mockImplementation(async (path, options) => {
-      if (path === '/api/bootstrap') return json({ csrf_token: 'csrf', model_available: true, visits: [record], current_visit: record, sources: [] })
+      if (path === '/api/bootstrap') return json({ csrf_token: 'csrf', model_available: true, privacy: { accepted: true, scopes: { local_storage: true, external_ai: true } }, visits: [record], current_visit: record, sources: [] })
       if (String(path).endsWith('/messages')) return json({ user_message: { ...message('问题'), role: 'user' }, assistant_message: message('资料答复'), visit: record })
       if (options?.method === 'GET' || !options?.method) return json(record)
       throw new Error(`unexpected ${String(path)}`)

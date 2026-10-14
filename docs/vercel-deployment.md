@@ -2,7 +2,7 @@
 
 本仓库将 Vue 页面与 FastAPI API 部署在同一个 Vercel 项目、同一个 HTTPS 域名下。配置文件并不代表线上服务已经发布或通过验收；访问地址只在实际部署成功并核对后公布。请使用虚构资料验证。
 
-当前公开演示入口：[https://zhihe-medical-visit-agent.vercel.app/](https://zhihe-medical-visit-agent.vercel.app/)。运行区域为 Singapore `sin1`，使用独立 Neon PostgreSQL 与 Upstash Redis。云端没有导入本机记录或账号，外部 DeepSeek 辅助未配置；在线检查记录见 [Vercel 上线验收](../artifacts/Vercel上线验收-20261014.md)。
+当前公开演示入口：[https://zhihe-medical-visit-agent.vercel.app/](https://zhihe-medical-visit-agent.vercel.app/)。运行区域为 Singapore `sin1`，使用独立 Neon PostgreSQL 与 Upstash Redis。云端没有导入本机记录或账号；DeepSeek 辅助需要单独同意及主动选择。首次上线的规则模式检查记录见 [Vercel 上线验收](../artifacts/Vercel上线验收-20261014.md)。
 
 ## 必备资源
 
@@ -21,6 +21,8 @@
 | `PUBLIC_APP_ORIGIN` | 实际公开访问地址的精确 HTTPS origin，仅含协议与域名；不含路径、查询或通配符 |
 | `APP_ALLOWED_HOSTS` | 可选，逗号分隔的精确域名；自定义域名须在这里显式加入，不接受 `*` 或 `*.vercel.app` |
 | `DEEPSEEK_API_KEY`、`DEEPSEEK_MODEL` | 可选；不配置时规则整理与资料检索仍可使用，外部模型功能关闭 |
+| `MODEL_OWNER_MINUTE_LIMIT` | Vercel 每访客每分钟的外部模型调用尝试上限，默认 5，范围 1–120 |
+| `MODEL_GLOBAL_DAY_LIMIT` | Vercel 全站滚动 24 小时共享的调用尝试上限，默认 100，范围 1–10000 |
 
 Vercel 自动提供 `VERCEL=1`、`VERCEL_URL` 等平台变量。应用只接受平台当前部署域名、项目生产域名与显式配置的域名。`PUBLIC_APP_ORIGIN` 必须对应允许的实际域名；预览页面也须使用与其访问入口匹配的 origin 和独立测试资源。
 
@@ -47,6 +49,8 @@ npx vercel deploy --prod
 健康自述、账号与任务记录保存在 PostgreSQL，任务投递及共享限流使用 Redis。函数的 `/tmp` 只用于可丢弃的运行文件，不能作为持久记录或密钥存储。云端不连接本机 Ollama，也不启动本机语义复核；健康资料使用主题与词法检索。页面的保存同意与处理位置根据后端返回的 `storage_mode` 和 `storage_label` 显示。
 
 PostgreSQL 的 `search_path` 与查询超时在每次数据库事务内使用 `set_config(..., true)` 设置，兼容 Neon 的事务连接池；事务结束后不会把测试 schema 或超时设置传给其他连接池使用者。
+
+Vercel 的外部模型发送前先检查本人同意、记录归属与安全状态，再以 Redis 单次 Lua 原子检查两项额度，等待后再次核对同意。额度计入发送尝试，供应商错误或超时不自动返还；模型限额已满或 Redis 不可验证时，不发送外部请求，规则处理仍可用。更换 Cookie 不能绕过全站额度。Redis 中只保存匿名归属标识、随机投递标识和时间，不写入健康内容或模型密钥。达到额度时，任务规划会明确显示规则回退。
 
 Vercel 中的目标任务在已认证请求内等待执行：单次引擎执行限制 85 秒，请求推进限制 90 秒。任务记录、投递标识与租约保存在外部服务；请求中断后，本人重新打开记录或轮询该任务时会检查并继续处理，未过期的租约会避免重复执行。此方式不提供无人访问时持续运行的独立 worker；关闭页面后不能保证任务会自行完成。需要持续处理队列时，使用已有 PostgreSQL／Redis 部署并单独运行 `backend.worker`，见 [安全与部署](security-and-operations.md)。
 

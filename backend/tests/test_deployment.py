@@ -185,6 +185,7 @@ def test_cloud_startup_cookie_origin_and_lexical_fallback(isolated_app_module, m
 
     class QueueDouble:
         client = None
+        namespace = 'fictional-cloud-runtime'
         def __init__(self):
             self.client = self
         async def initialize_queue(self):

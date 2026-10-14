@@ -4,7 +4,7 @@
 
 一个中文就诊准备与健康资料 Agent。围绕同一份记录，连接多轮对话、原文候选确认、观察时间线、健康资料检索与目标任务执行，支持桌面与手机浏览器。
 
-**在线演示：** [知禾健康沟通工作台](https://zhihe-medical-visit-agent.vercel.app/)。云端使用 PostgreSQL 与 Redis，可用昵称注册、登录和恢复记录；当前开放规则与健康资料模式，外部 DeepSeek 辅助尚未启用。请使用虚构资料体验。
+**在线演示：** [知禾健康沟通工作台](https://zhihe-medical-visit-agent.vercel.app/)。云端使用 PostgreSQL 与 Redis，可用昵称注册、登录和恢复记录。DeepSeek 辅助受限症状片段提取与任务工具规划，默认关闭，需单独同意并主动开启；资料答复依据已有来源，不提供诊断、处方或剂量建议。请使用虚构资料体验。
 
 **技术栈：** Vue 3 · TypeScript · FastAPI · Pydantic · RAG · DeepSeek 工具规划 · PostgreSQL · Redis · Docker。
 

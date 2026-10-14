@@ -21,13 +21,32 @@ beforeEach(() => { setCsrfToken('csrf-task'); vi.stubGlobal('fetch', vi.fn()); H
 afterEach(() => { wrapper?.unmount(); wrapper = undefined; vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('实际任务与外部规划边界', () => {
-  it('云端任务显示服务内规则规划，外部模型未配置时仍明确其状态', async () => {
+  it('云端任务显示服务内规则规划，外部规划尚未启用时不误报未配置', async () => {
     vi.mocked(fetch).mockResolvedValue(response({ items: [job()] }))
     wrapper = mount(TaskAgentPanel, { props: { ...props, cloud: true, modelAvailable: false } }); await flushPromises()
     expect(wrapper.get('.task-plan').text()).toContain('服务内规则规划')
-    expect(wrapper.get('.task-model-choice').text()).toContain('外部规划未配置，使用服务内规则')
+    expect(wrapper.get('.task-model-choice').text()).toContain('外部规划当前未启用，使用服务内规则')
+    expect(wrapper.get('.task-model-choice').text()).not.toContain('未配置')
     expect(wrapper.text()).not.toContain('本机规则规划')
     expect(wrapper.get('.task-model-choice input').attributes('disabled')).toBeDefined()
+  })
+  it('实际 DeepSeek 计划成功与额度限制回退分别显示，不把回退标成模型成功', async () => {
+    const task = job()
+    task.result!.plan.planner_mode = 'model'
+    vi.mocked(fetch).mockResolvedValue(response({ items: [task] }))
+    wrapper = mount(TaskAgentPanel, { props: { ...props, cloud: true } }); await flushPromises()
+    expect(wrapper.get('.task-planner').text()).toBe('DeepSeek 规划')
+    expect(wrapper.find('.task-fallback').exists()).toBe(false)
+    wrapper.unmount()
+    task.result!.plan.planner_mode = 'fallback'
+    task.result!.planner_error = 'rate_limited'
+    task.result!.planner_notice = '已暂停外部规划，使用内置规则执行。'
+    wrapper = mount(TaskAgentPanel, { props: { ...props, cloud: true } }); await flushPromises()
+    expect(wrapper.get('.task-planner').text()).toBe('服务内回退规划')
+    expect(wrapper.get('.task-fallback').text()).toContain('体验调用额度已用完或请求过于频繁')
+    expect(wrapper.get('.task-fallback').text()).toContain('已使用服务内规则')
+    expect((wrapper.get('.task-model-choice input').element as HTMLInputElement).checked).toBe(false)
+    expect(vi.mocked(fetch).mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true)
   })
   it('当前红警立即覆盖旧任务的可保存展示，即使旧结果还未重新读取', async () => {
     vi.mocked(fetch).mockResolvedValue(response({ items: [job()] }))

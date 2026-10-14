@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 from .egress import check_egress
+from .model_budget import ModelCallLimitError
 import json
 import re
 import time
@@ -113,7 +114,7 @@ class TaskRun(TaskModel):
     checklist: list[ChecklistItem] = Field(default_factory=list)
     preparation_plan: PreparationPlan | None = None
     planner_notice: str = ""
-    planner_error: Literal["unavailable", "timeout", "network_error", "invalid_plan"] | None = None
+    planner_error: Literal["unavailable", "timeout", "network_error", "invalid_plan", "rate_limited"] | None = None
     knowledge_version: str = ""
 
 
@@ -240,6 +241,8 @@ class TaskEngine:
             proposed = _ModelPlan.model_validate(json.loads(content))
             plan = TaskPlan(objective=OBJECTIVES[goal], planner_mode="model", steps=[PlannedStep(**step.model_dump(), label=LABELS[step.tool]) for step in proposed.steps])
             return _ordered_plan(plan, goal), None
+        except ModelCallLimitError:
+            return _local_plan(goal, "fallback"), "rate_limited"
         except (asyncio.TimeoutError, httpx.TimeoutException):
             return _local_plan(goal, "fallback"), "timeout"
         except httpx.HTTPError:
@@ -409,4 +412,6 @@ class TaskEngine:
                 content += "\n\n待补充或核对：" + "、".join(FIELD_LABELS[key] for key in missing) + "。"
         if status == "failed":
             content = "部分任务步骤未能完成，已停止依赖这些结果的步骤。可查看实际执行记录；原始资料没有更改。\n\n" + content
-        return TaskRun(id=identifier, goal=goal, status=status, created_at=stamp, duration_ms=int((time.monotonic() - started) * 1000), plan=plan, steps=results, content=content, risk=risk, sources=sources, evidence_ledger=evidence, missing_fields=missing, next_question=question if status == "needs_input" else None, summary=summary, checklist=checklist_output.items if checklist_output else [], preparation_plan=preparation, planner_notice="外部规划不可用或计划未通过校验，已按内置规则执行。" if planner_error else "", planner_error=planner_error, knowledge_version=source_version)
+        planner_notice = ("外部模型体验额度已用完，已按内置规则执行。" if planner_error == 'rate_limited'
+                          else "外部规划不可用或计划未通过校验，已按内置规则执行。" if planner_error else "")
+        return TaskRun(id=identifier, goal=goal, status=status, created_at=stamp, duration_ms=int((time.monotonic() - started) * 1000), plan=plan, steps=results, content=content, risk=risk, sources=sources, evidence_ledger=evidence, missing_fields=missing, next_question=question if status == "needs_input" else None, summary=summary, checklist=checklist_output.items if checklist_output else [], preparation_plan=preparation, planner_notice=planner_notice, planner_error=planner_error, knowledge_version=source_version)

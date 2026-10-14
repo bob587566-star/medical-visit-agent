@@ -39,6 +39,7 @@ from .postgres_storage import DataConflictError
 from .production_runtime import RedisRuntime, RedisRateLimiter, RuntimeUnavailable
 from .egress import authorized_egress, model_request_hook
 from .deployment import RuntimeDeployment, is_vercel
+from .model_budget import ModelCallBudget
 
 ROOT = Path(__file__).resolve().parents[1]
 COOKIE = "zhihe_visitor"
@@ -55,6 +56,7 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
         "APPLICATION_REGISTRATION_NUMBER", "APPLICATION_REGISTRATION_URL", "ALGORITHM_FILING_NUMBER",
         "ALGORITHM_FILING_URL", "METRICS_TOKEN",
         "APP_ALLOWED_HOSTS", "VISITOR_COOKIE_NAME", "PUBLIC_APP_ORIGIN",
+        "MODEL_GLOBAL_DAY_LIMIT", "MODEL_OWNER_MINUTE_LIMIT",
     ) if key in os.environ})
     deployment = RuntimeDeployment.from_config(config, ROOT, db_path=db_path)
     retention = max(1, min(30, int(config.get("DATA_RETENTION_DAYS", "7"))))
@@ -85,9 +87,16 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
             application.state.queue_runtime = RedisRuntime.from_url(config['REDIS_URL'])
             await application.state.queue_runtime.initialize_queue()
             application.state.rate_runtime = RedisRateLimiter.from_url(config['REDIS_URL'])
+        application.state.model_budget = (ModelCallBudget(
+            application.state.queue_runtime,
+            per_owner_minute=int(config.get('MODEL_OWNER_MINUTE_LIMIT', '5')),
+            global_day=int(config.get('MODEL_GLOBAL_DAY_LIMIT', '100')),
+        ) if deployment.vercel else None)
         application.state.knowledge = Knowledge(ROOT / "knowledge" / "articles.json")
+        async def guarded_model_request(request):
+            await model_request_hook(request, budget=application.state.model_budget)
         async with httpx.AsyncClient(timeout=httpx.Timeout(timeout), trust_env=False,
-                                     event_hooks={'request': [model_request_hook]}) as client:
+                                     event_hooks={'request': [guarded_model_request]}) as client:
             application.state.model = model_service or ModelService(
                 config.get("DEEPSEEK_API_KEY", ""), config.get("DEEPSEEK_MODEL", "deepseek-chat"), client
             )
@@ -307,6 +316,11 @@ def create_app(db_path: Path | None = None, model_service: ModelService | None =
                 response.set_cookie(cookie_name, request.cookies[cookie_name], max_age=30 * 86400, httponly=True,
                                     samesite='strict', secure=deployment.secure_cookie)
         privacy = app.state.privacy.status(owner)
+        if app.state.model_budget:
+            privacy['model_notice'] += (
+                f"公开体验额度为每位访客每分钟{app.state.model_budget.per_owner_minute}次，"
+                f"全站滚动24小时共享{app.state.model_budget.global_day}次；达到额度时使用规则回退。"
+            )
         visits = app.state.store.list_visits(owner) if privacy['accepted'] or not consent_required else []
         visits = [refresh_collection(visit) for visit in visits]
         return {"csrf_token": token, "model_available": app.state.model.available,

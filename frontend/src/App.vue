@@ -38,7 +38,7 @@ const defaultProcessingLabel = computed(() => cloud.value ? '默认由云端服�
 const compliance = ref<ComplianceInfo | null>(null)
 const privacyPanelOpen = ref(false)
 const consentGate = computed(() => privacy.value?.consent_required === true && (privacy.value.accepted !== true || privacy.value.scopes?.local_storage !== true))
-const externalAiAllowed = computed(() => !privacy.value?.scopes || privacy.value.scopes.external_ai === true)
+const externalAiAllowed = computed(() => privacy.value?.accepted === true && privacy.value.scopes?.external_ai === true)
 const permittedModelAvailable = computed(() => modelAvailable.value && externalAiAllowed.value)
 const error = ref('')
 const notice = ref('')
