@@ -62,6 +62,21 @@ def pg_store(tmp_path):
         engine.dispose()
 
 
+def test_real_pg_schema_and_timeout_are_transaction_local(pg_store):
+    store, _, schema, _ = pg_store
+    with store.engine.begin() as raw:
+        before = (raw.execute(text('SHOW search_path')).scalar_one(),
+                  raw.execute(text('SHOW statement_timeout')).scalar_one())
+        assert schema not in before[0]
+    with store.connect() as conn:
+        assert conn.execute('SELECT current_schema()').fetchone()[0] == schema
+        assert conn.execute('SHOW statement_timeout').fetchone()[0] == '10s'
+    with store.engine.begin() as raw:
+        after = (raw.execute(text('SHOW search_path')).scalar_one(),
+                 raw.execute(text('SHOW statement_timeout')).scalar_one())
+        assert after == before
+
+
 def test_real_pooled_pg_encrypted_crud_csrf_and_bookmarks(pg_store):
     store, url, schema, directory = pg_store
     cookie, owner, csrf = store.new_session()

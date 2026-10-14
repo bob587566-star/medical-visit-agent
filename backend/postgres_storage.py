@@ -149,8 +149,7 @@ class PostgreSQLStore(Store):
         self.engine = create_engine(url.set(drivername='postgresql+psycopg'),
                                     pool_size=5, max_overflow=5, pool_timeout=10,
                                     pool_recycle=300, pool_pre_ping=True, hide_parameters=True,
-                                    connect_args={'connect_timeout': 5,
-                                                  'options': f'-csearch_path={schema} -cstatement_timeout=10000'})
+                                    connect_args={'connect_timeout': 5})
         self.schema = schema
         with self.connect() as conn:
             # The configured schema must already exist; production migrations
@@ -183,6 +182,11 @@ class PostgreSQLStore(Store):
     @contextmanager
     def connect(self):
         with self.engine.begin() as connection:
+            # Transaction-local settings work through PgBouncer and do not leak
+            # a schema or timeout into another pooled client's transaction.
+            connection.execute(text("SELECT set_config('search_path', :schema, true)"),
+                               {'schema': self.schema})
+            connection.execute(text("SELECT set_config('statement_timeout', '10000', true)"))
             # Reviewed legacy CRUD contains multi-statement audit and identity
             # transitions. Serialize these short database transactions across
             # workers; external model/network execution is outside this lock.
