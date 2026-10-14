@@ -69,7 +69,7 @@ async function openApp(page: Page): Promise<void> {
   await page.goto('/')
   await expect(page.locator('.local-status')).toContainText('本机服务已连接')
   if (await page.locator('.privacy-gate-note').count()) {
-    await page.getByRole('checkbox', { name: '同意将本人的健康自述保存在本机', exact: false }).check()
+    await page.getByRole('checkbox', { name: '同意将本人的健康自述保存在当前本机服务', exact: false }).check()
     await page.getByRole('button', { name: '确认选择，开始准备' }).click()
     await expect(page.locator('.privacy-gate-note')).toHaveCount(0)
   }

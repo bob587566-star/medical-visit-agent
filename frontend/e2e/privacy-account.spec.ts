@@ -19,7 +19,7 @@ test.afterEach(async ({ page }) => {
 })
 
 async function agree(page: Page) {
-  await page.getByRole('checkbox', { name: '同意将本人的健康自述保存在本机', exact: false }).check()
+  await page.getByRole('checkbox', { name: '同意将本人的健康自述保存在当前本机服务', exact: false }).check()
   await page.getByRole('button', { name: '确认选择，开始准备' }).click()
   await expect(page.locator('.privacy-gate-note')).toHaveCount(0)
   await expect(page.locator('.new-visit')).toBeEnabled()
