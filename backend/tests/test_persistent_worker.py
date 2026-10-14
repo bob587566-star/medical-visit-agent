@@ -422,9 +422,18 @@ def test_real_pending_stream_reclaim_reexecutes_after_simulated_dead_consumer(re
         delivery = (await runtime.dequeue('dead-consumer', block_ms=1))[0]
         lease = await runtime.claim(job.id)
         app.state.persistent_tasks.claim(job.id, lease, consent_required=True)
-        # Advance only this fixture's pending-message idle clock; do not sleep or
-        # alter server time. The original process is modeled as no longer running.
-        await runtime.client.xclaim(runtime.stream, runtime.group, 'dead-consumer', 0, [delivery.message_id], idle=121_000)
+        # Prefer advancing only this fixture's pending-message idle clock. Some
+        # managed Redis services omit XCLAIM's IDLE option; only that explicit
+        # capability error falls back to real elapsed idle time, keeping the
+        # product's 120-second reclaim threshold unchanged.
+        from redis.exceptions import ResponseError
+        try:
+            await runtime.client.xclaim(runtime.stream, runtime.group, 'dead-consumer', 0, [delivery.message_id], idle=121_000)
+        except ResponseError as error:
+            unsupported = 'IDLE,TIME,RETRYCOUNT,FORCE,LASTID options are not implemented'
+            if str(error).strip().removeprefix('ERR ') != unsupported:
+                raise
+            await asyncio.sleep(121)
         await runtime.release(job.id, lease)
         _, reclaimed = await runtime.recover('replacement-consumer')
         assert len(reclaimed) == 1 and reclaimed[0].task_id == job.id

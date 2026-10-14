@@ -2,6 +2,8 @@
 
 本仓库将 Vue 页面与 FastAPI API 部署在同一个 Vercel 项目、同一个 HTTPS 域名下。配置文件并不代表线上服务已经发布或通过验收；访问地址只在实际部署成功并核对后公布。请使用虚构资料验证。
 
+当前公开演示入口：[https://zhihe-medical-visit-agent.vercel.app/](https://zhihe-medical-visit-agent.vercel.app/)。运行区域为 Singapore `sin1`，使用独立 Neon PostgreSQL 与 Upstash Redis。云端没有导入本机记录或账号，外部 DeepSeek 辅助未配置；在线检查记录见 [Vercel 上线验收](../artifacts/Vercel上线验收-20261014.md)。
+
 ## 必备资源
 
 部署需要可访问的 Vercel 账号，以及独立的云端 PostgreSQL 数据库、支持标准 Redis TCP 协议的 TLS Redis 服务。Redis 需要支持 Streams、消费者组、Lua 与带过期时间的锁；只有 REST 接口或不支持这些命令的缓存不能替代它。
@@ -43,6 +45,8 @@ npx vercel deploy --prod
 ## 云端运行行为
 
 健康自述、账号与任务记录保存在 PostgreSQL，任务投递及共享限流使用 Redis。函数的 `/tmp` 只用于可丢弃的运行文件，不能作为持久记录或密钥存储。云端不连接本机 Ollama，也不启动本机语义复核；健康资料使用主题与词法检索。页面的保存同意与处理位置根据后端返回的 `storage_mode` 和 `storage_label` 显示。
+
+PostgreSQL 的 `search_path` 与查询超时在每次数据库事务内使用 `set_config(..., true)` 设置，兼容 Neon 的事务连接池；事务结束后不会把测试 schema 或超时设置传给其他连接池使用者。
 
 Vercel 中的目标任务在已认证请求内等待执行：单次引擎执行限制 85 秒，请求推进限制 90 秒。任务记录、投递标识与租约保存在外部服务；请求中断后，本人重新打开记录或轮询该任务时会检查并继续处理，未过期的租约会避免重复执行。此方式不提供无人访问时持续运行的独立 worker；关闭页面后不能保证任务会自行完成。需要持续处理队列时，使用已有 PostgreSQL／Redis 部署并单独运行 `backend.worker`，见 [安全与部署](security-and-operations.md)。
 
